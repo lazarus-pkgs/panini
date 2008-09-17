@@ -241,5 +241,16 @@ void GLview::set_view( int i )
 		 panAngle, tiltAngle, spinAngle, hFOV, vFOV );
 	 emit reportView( s );
  }
+
+ void GLview::newPicture(){
+	 if( thePic.setPicType( pvQt::ask ) ) displayPic( thePic );
+ }
+
+ void GLview::displayPic( pvQt & pic ){
+	 if( !pic.isValid() ) {
+		 qWarning("GLview::displayPic: invalid pic" );
+		 return;
+	 }
+ }
  
 

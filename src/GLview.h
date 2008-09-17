@@ -33,6 +33,9 @@ public:
 	 void step_roll( int dp );
 	 void set_view( int i );
 
+	 void newPicture();
+	 void displayPic( pvQt & pic );
+
  signals:
 	 void reportView( QString msg );
 
@@ -44,7 +47,7 @@ public:
      void mouseMoveEvent(QMouseEvent *event);
 
  private:
- 
+	 pvQt thePic;
      GLuint makeSphere();
      double normalizeAngle(int &iangle, double lwr, double upr);
 	 void showview();
