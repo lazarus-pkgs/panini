@@ -19,18 +19,18 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>19</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File" >
     <property name="title" >
      <string>&amp;Project</string>
     </property>
+    <addaction name="actionLoad_Image" />
     <addaction name="action_New" />
     <addaction name="action_Load" />
     <addaction name="action_Edit" />
     <addaction name="action_Save" />
-    <addaction name="actionLoad_Image" />
     <addaction name="action_Quit" />
    </widget>
    <widget class="QMenu" name="menu_View" >
@@ -96,7 +96,7 @@
     <string>Reset</string>
    </property>
    <property name="shortcut" >
-    <string>Ctrl+Home</string>
+    <string>Home</string>
    </property>
   </action>
   <action name="actionZoom_In" >
@@ -104,7 +104,7 @@
     <string>Zoom &amp;In</string>
    </property>
    <property name="shortcut" >
-    <string>Shift+Up</string>
+    <string>Ctrl+=</string>
    </property>
   </action>
   <action name="actionZoom_Out" >
@@ -112,7 +112,7 @@
     <string>Zoom &amp;Out</string>
    </property>
    <property name="shortcut" >
-    <string>Shift+Down</string>
+    <string>Ctrl+-</string>
    </property>
   </action>
   <action name="actionPan_Left" >
@@ -160,7 +160,7 @@
     <string>Roll Left</string>
    </property>
    <property name="shortcut" >
-    <string>Shift+Left</string>
+    <string>Ctrl+Left</string>
    </property>
   </action>
   <action name="actionRoll_Right" >
@@ -168,12 +168,12 @@
     <string>Roll Right</string>
    </property>
    <property name="shortcut" >
-    <string>Shift+Right</string>
+    <string>Ctrl+Right</string>
    </property>
   </action>
   <action name="actionLoad_Image" >
    <property name="text" >
-    <string>load &amp;Image...</string>
+    <string>load &amp;Picture...</string>
    </property>
   </action>
  </widget>

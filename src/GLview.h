@@ -5,7 +5,7 @@
 #ifndef GLVIEW_H
 #define GLVIEW_H
 
-#include <QGLWidget>
+#include <QtOpenGL/QGLWidget>
 #include "pvQt.h"
 
 class GLview : public QGLWidget{

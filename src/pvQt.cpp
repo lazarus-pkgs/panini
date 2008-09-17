@@ -1,17 +1,4 @@
 #include "pvQt.h"
-/*
-
-
-private:
-  PicType type;
-  QList<QSize>  idims;
-  QList<QSize>	ddims;
-  QList<QSizeF> dfovs;
-  QList<QString> names;
-  QList<void *> addrs;
-  QList<int> 	kinds; // coded image format
-  QImage *	theImage;
-*/
 /* 
   kcode -- a terse image format descriptor packed in one int
 	byte 0: bpc = bits per color
@@ -237,6 +224,16 @@ bool pvQt::loadOther( int kind, void * addr )
 {
 	return false;
 }
+/*
+  PicType type;
+  QList<QSize>  idims;
+  QList<QSize>	ddims;
+  QList<QSizeF> dfovs;
+  QList<QString> names;
+  QList<void *> addrs;
+  QList<int> 	kinds; // coded image format
+  QImage *	theImage;
+*/
 
 bool pvQt::buildInteractive(){
 	return false;

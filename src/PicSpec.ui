@@ -1,0 +1,327 @@
+<ui version="4.0" >
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>368</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="font" >
+   <font>
+    <pointsize>10</pointsize>
+   </font>
+  </property>
+  <property name="windowTitle" >
+   <string>pvQt -- Picture Specifications</string>
+  </property>
+  <widget class="QDialogButtonBox" name="buttonBox" >
+   <property name="geometry" >
+    <rect>
+     <x>0</x>
+     <y>250</y>
+     <width>341</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="orientation" >
+    <enum>Qt::Horizontal</enum>
+   </property>
+   <property name="standardButtons" >
+    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="filesBox" >
+   <property name="geometry" >
+    <rect>
+     <x>70</x>
+     <y>30</y>
+     <width>271</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="font" >
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+   <property name="maxVisibleItems" >
+    <number>6</number>
+   </property>
+   <property name="maxCount" >
+    <number>6</number>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label" >
+   <property name="geometry" >
+    <rect>
+     <x>20</x>
+     <y>30</y>
+     <width>41</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="font" >
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+   <property name="text" >
+    <string>File(s)</string>
+   </property>
+   <property name="buddy" >
+    <cstring>filesBox</cstring>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_2" >
+   <property name="geometry" >
+    <rect>
+     <x>20</x>
+     <y>70</y>
+     <width>46</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Format</string>
+   </property>
+   <property name="buddy" >
+    <cstring>comboBox</cstring>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="comboBox" >
+   <property name="geometry" >
+    <rect>
+     <x>80</x>
+     <y>70</y>
+     <width>69</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="maxVisibleItems" >
+    <number>5</number>
+   </property>
+   <property name="maxCount" >
+    <number>5</number>
+   </property>
+  </widget>
+  <widget class="QGroupBox" name="groupBox" >
+   <property name="geometry" >
+    <rect>
+     <x>20</x>
+     <y>110</y>
+     <width>321</width>
+     <height>131</height>
+    </rect>
+   </property>
+   <property name="title" >
+    <string>Displayed Size</string>
+   </property>
+   <widget class="QLabel" name="label_3" >
+    <property name="geometry" >
+     <rect>
+      <x>20</x>
+      <y>50</y>
+      <width>61</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text" >
+     <string>Degrees</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_4" >
+    <property name="geometry" >
+     <rect>
+      <x>20</x>
+      <y>80</y>
+      <width>61</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text" >
+     <string>Pixels</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_5" >
+    <property name="geometry" >
+     <rect>
+      <x>120</x>
+      <y>20</y>
+      <width>41</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text" >
+     <string>width</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_6" >
+    <property name="geometry" >
+     <rect>
+      <x>240</x>
+      <y>20</y>
+      <width>41</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text" >
+     <string>height</string>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="spinBox" >
+    <property name="geometry" >
+     <rect>
+      <x>110</x>
+      <y>80</y>
+      <width>61</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="accelerated" >
+     <bool>true</bool>
+    </property>
+    <property name="keyboardTracking" >
+     <bool>false</bool>
+    </property>
+    <property name="maximum" >
+     <number>20000</number>
+    </property>
+    <property name="singleStep" >
+     <number>10</number>
+    </property>
+    <property name="value" >
+     <number>500</number>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="spinBox_2" >
+    <property name="geometry" >
+     <rect>
+      <x>230</x>
+      <y>80</y>
+      <width>61</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="accelerated" >
+     <bool>true</bool>
+    </property>
+    <property name="keyboardTracking" >
+     <bool>false</bool>
+    </property>
+    <property name="maximum" >
+     <number>20000</number>
+    </property>
+    <property name="singleStep" >
+     <number>10</number>
+    </property>
+    <property name="value" >
+     <number>500</number>
+    </property>
+   </widget>
+   <widget class="QDoubleSpinBox" name="doubleSpinBox" >
+    <property name="geometry" >
+     <rect>
+      <x>110</x>
+      <y>50</y>
+      <width>62</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="keyboardTracking" >
+     <bool>false</bool>
+    </property>
+    <property name="decimals" >
+     <number>1</number>
+    </property>
+    <property name="minimum" >
+     <double>10.000000000000000</double>
+    </property>
+    <property name="maximum" >
+     <double>360.000000000000000</double>
+    </property>
+    <property name="value" >
+     <double>90.000000000000000</double>
+    </property>
+   </widget>
+   <widget class="QDoubleSpinBox" name="doubleSpinBox_2" >
+    <property name="geometry" >
+     <rect>
+      <x>230</x>
+      <y>50</y>
+      <width>62</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="accelerated" >
+     <bool>true</bool>
+    </property>
+    <property name="keyboardTracking" >
+     <bool>false</bool>
+    </property>
+    <property name="decimals" >
+     <number>1</number>
+    </property>
+    <property name="minimum" >
+     <double>10.000000000000000</double>
+    </property>
+    <property name="maximum" >
+     <double>180.000000000000000</double>
+    </property>
+    <property name="value" >
+     <double>60.000000000000000</double>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QLabel" name="FileSizeLabel" >
+   <property name="geometry" >
+    <rect>
+     <x>170</x>
+     <y>70</y>
+     <width>171</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>No file selected</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>Dialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>248</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>Dialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>316</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

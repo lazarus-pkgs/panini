@@ -58,6 +58,7 @@ void GLview::set_view( int i )
   switch(i){
   case 0:
 	initView();
+	setFOV();
 	updateGL();
 	showview();
 	break;
@@ -220,7 +221,7 @@ void GLview::set_view( int i )
 
 
  void GLview::step_pan( int dp ){
-	 setPan( ipan - dp * panstep  );
+	 setPan( ipan + dp * panstep  );
  }
 
  void GLview::step_tilt( int dp ){

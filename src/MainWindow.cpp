@@ -9,7 +9,11 @@
 
 MainWindow::MainWindow( QWidget * parent)
 {
+	errorMsgHandler = QErrorMessage::qtHandler();	
+
 	setupUi( this );
+
+	qWarning("MainWindow c'tor");
 
 bool ok = true;
 if(ok) ok =
@@ -51,9 +55,12 @@ if(ok){
 	ok = glwindow->isOK();
 	setCentralWidget( glwindow );
 }
+#ifdef _DEBUG
+ok = false;
+#endif
 
 	if( ok ) statusBar()->showMessage(tr("Ready"));
-	else  statusBar()->showMessage(tr("Setup failed"));
+	else  qFatal("MainWindow setup failed");
 
 
 }
@@ -103,13 +110,7 @@ void MainWindow::resetView(){
 
 void MainWindow::loadImage()
 {
-// get an existing image file name
-	imgFnm = QFileDialog::getOpenFileName(this,
-       tr("Open Panoramic Image"), "", tr("Image Files (*.png *.jpg *.tif *.tiff)"));
-	if( imgFnm.isEmpty() ) return;
-// find out if it is a displayable panorama
-// if so, send it to the display engine
-
+	emit newPicture();
 }
 
 

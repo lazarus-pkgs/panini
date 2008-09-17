@@ -7,7 +7,8 @@ HEADERS += GLview.h \
  MainWindow.h \
  ui_MainWindow.h \
  pvQt.h
-FORMS += MainWindow.ui
+FORMS += MainWindow.ui \
+ PicSpec.ui
 SOURCES += GLview.cpp \
  GLwindow.cpp \
  MainWindow.cpp \

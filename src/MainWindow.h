@@ -14,6 +14,7 @@
 #include "ui_MainWindow.h"
 class GLwindow;
 class QActionGroup;
+class QErrorMessage;
 
 class MainWindow :
 	public QMainWindow,
@@ -30,9 +31,10 @@ signals:
 	void step_zoom( int d );
 	void step_roll( int d );
 	void set_view( int i );
-	void openImage( QString fnm );
+	void newPicture();
 protected:
 	void closeEvent( QCloseEvent * ev );
+	QErrorMessage * errorMsgHandler;
 private:
 	GLwindow * glwindow;
 	QString imgFnm;
