@@ -7,13 +7,37 @@
 #include "GLwindow.h"
 #include "pvQt.h"
 
+/* modal error message display
+  Note QErrorMessage::qtHandler installs a non-modal handler, so
+  you don't get to see the message before the program bombs 
+*/
+static void errMsgHandler( QtMsgType type, const char * msg ){
+	QString s;
+	bool die = false;
+	switch( type ){
+		case QtDebugMsg:
+		  s = "Debug: ";
+		case QtWarningMsg:
+		  s += msg;
+		  QMessageBox::warning( 0, "pvQt", s );
+		break;
+		case QtFatalMsg:
+		  die = true;
+		  s = "Fatal: ";
+		case QtCriticalMsg:
+		  s += msg;
+		  QMessageBox::critical( 0, "pvQt", s );
+		break;
+	}
+    if( die ) exit( 3 );
+}
+
 MainWindow::MainWindow( QWidget * parent)
 {
-	errorMsgHandler = QErrorMessage::qtHandler();	
-
+// install modal error message handler
+	qInstallMsgHandler( errMsgHandler );
+	
 	setupUi( this );
-
-	qWarning("MainWindow c'tor");
 
 bool ok = true;
 if(ok) ok =
@@ -55,12 +79,10 @@ if(ok){
 	ok = glwindow->isOK();
 	setCentralWidget( glwindow );
 }
-#ifdef _DEBUG
-ok = false;
-#endif
 
-	if( ok ) statusBar()->showMessage(tr("Ready"));
-	else  qFatal("MainWindow setup failed");
+  if( !ok ) qFatal("MainWindow setup failed");
+  
+	statusBar()->showMessage(tr("Ready"));
 
 
 }
