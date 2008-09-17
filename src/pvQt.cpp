@@ -237,3 +237,7 @@ bool pvQt::loadOther( int kind, void * addr )
 {
 	return false;
 }
+
+bool pvQt::buildInteractive(){
+	return false;
+}
