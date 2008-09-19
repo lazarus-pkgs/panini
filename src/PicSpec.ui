@@ -48,10 +48,10 @@
     </font>
    </property>
    <property name="maxVisibleItems" >
-    <number>6</number>
+    <number>7</number>
    </property>
    <property name="maxCount" >
-    <number>6</number>
+    <number>7</number>
    </property>
   </widget>
   <widget class="QLabel" name="label" >
@@ -69,7 +69,7 @@
     </font>
    </property>
    <property name="text" >
-    <string>File(s)</string>
+    <string>File</string>
    </property>
    <property name="buddy" >
     <cstring>filesBox</cstring>
@@ -88,23 +88,23 @@
     <string>Format</string>
    </property>
    <property name="buddy" >
-    <cstring>comboBox</cstring>
+    <cstring>formatBox</cstring>
    </property>
   </widget>
-  <widget class="QComboBox" name="comboBox" >
+  <widget class="QComboBox" name="formatBox" >
    <property name="geometry" >
     <rect>
-     <x>80</x>
+     <x>70</x>
      <y>70</y>
-     <width>69</width>
+     <width>141</width>
      <height>22</height>
     </rect>
    </property>
    <property name="maxVisibleItems" >
-    <number>5</number>
+    <number>6</number>
    </property>
    <property name="maxCount" >
-    <number>5</number>
+    <number>6</number>
    </property>
   </widget>
   <widget class="QGroupBox" name="groupBox" >
@@ -171,7 +171,7 @@
      <string>height</string>
     </property>
    </widget>
-   <widget class="QSpinBox" name="spinBox" >
+   <widget class="QSpinBox" name="widthPix" >
     <property name="geometry" >
      <rect>
       <x>110</x>
@@ -196,7 +196,7 @@
      <number>500</number>
     </property>
    </widget>
-   <widget class="QSpinBox" name="spinBox_2" >
+   <widget class="QSpinBox" name="heightPix" >
     <property name="geometry" >
      <rect>
       <x>230</x>
@@ -221,7 +221,7 @@
      <number>500</number>
     </property>
    </widget>
-   <widget class="QDoubleSpinBox" name="doubleSpinBox" >
+   <widget class="QDoubleSpinBox" name="widthDeg" >
     <property name="geometry" >
      <rect>
       <x>110</x>
@@ -246,7 +246,7 @@
      <double>90.000000000000000</double>
     </property>
    </widget>
-   <widget class="QDoubleSpinBox" name="doubleSpinBox_2" >
+   <widget class="QDoubleSpinBox" name="heightDeg" >
     <property name="geometry" >
      <rect>
       <x>230</x>
@@ -275,17 +275,33 @@
     </property>
    </widget>
   </widget>
-  <widget class="QLabel" name="FileSizeLabel" >
+  <widget class="QComboBox" name="faceBox" >
    <property name="geometry" >
     <rect>
-     <x>170</x>
+     <x>270</x>
      <y>70</y>
-     <width>171</width>
+     <width>71</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="maxVisibleItems" >
+    <number>7</number>
+   </property>
+   <property name="maxCount" >
+    <number>7</number>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_7" >
+   <property name="geometry" >
+    <rect>
+     <x>230</x>
+     <y>70</y>
+     <width>41</width>
      <height>21</height>
     </rect>
    </property>
    <property name="text" >
-    <string>No file selected</string>
+    <string>Face</string>
    </property>
   </widget>
  </widget>

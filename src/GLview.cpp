@@ -18,6 +18,7 @@
  GLview::GLview(QWidget *parent)
      : QGLWidget(parent)
  {
+	 thePic = new pvQt( this );
      theSphere = 0;
      Width = Height = 400;
      initView();
@@ -243,7 +244,7 @@ void GLview::set_view( int i )
  }
 
  void GLview::newPicture(){
-	 if( thePic.setPicType( pvQt::ask ) ) displayPic( thePic );
+	 if( thePic->setPicType( pvQt::ask ) ) displayPic( *thePic );
  }
 
  void GLview::displayPic( pvQt & pic ){

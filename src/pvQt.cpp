@@ -1,4 +1,7 @@
+#include <QFileDialog>
+
 #include "pvQt.h"
+#include "picSpec.h"
 /* 
   kcode -- a terse image format descriptor packed in one int
 	byte 0: bpc = bits per color
@@ -34,6 +37,7 @@ void pvQt::clear()
 {
 	if(theImage) delete theImage;
 	theImage = 0;
+	type = nil;
 	numimgs = numexpected = 0;
 	dfovs = QSizeF(0,0);
 	ddims = QSize(0,0);
@@ -41,16 +45,17 @@ void pvQt::clear()
 		idims[i] = QSize(0,0);	
 		names[i].clear();	
 		addrs[i] = 0;	
-		kinds[i] = 0;			
+		kinds[i] = 0;
+		cubeidx[i] = 0;
+		specidx[i] = 0;
 	}
 }
 
-pvQt::pvQt( PicType typ )
+pvQt::pvQt( QWidget * parent )
 {
+	theParent = parent;
 	theImage = 0;
-	numimgs = 0;
-	type = typ;
-	if( type == ask ) buildInteractive();
+	clear();
 }
 
 pvQt::~pvQt()
@@ -224,17 +229,37 @@ bool pvQt::loadOther( int kind, void * addr )
 {
 	return false;
 }
-/*
-  PicType type;
-  QList<QSize>  idims;
-  QList<QSize>	ddims;
-  QList<QSizeF> dfovs;
-  QList<QString> names;
-  QList<void *> addrs;
-  QList<int> 	kinds; // coded image format
-  QImage *	theImage;
-*/
 
 bool pvQt::buildInteractive(){
-	return false;
+// pop a fileselector to get one or more image files
+	QFileDialog fd( 0, tr("pvQt -- Select Image File(s)"));
+	QStringList filters;
+	filters << tr("Image files (*.jpg *.mov *.png *.tif *.tiff)")
+		    << tr("All files (*.*)");
+	fd.setNameFilters( filters );
+	fd.setFileMode( QFileDialog::ExistingFiles );
+	fd.setDirectory( picDir );
+	if( fd.exec() == 0 ) return false;
+	picDir = fd.directory();
+	
+	QStringList files( fd.selectedFiles() );
+
+	int n = files.size();
+	if( n < 1 || n > 6 ) return false;
+
+return true;
+  // get filespecs, leave just the name in files.
+	filespecs.clear();
+	for(int i = 0; i < n; i++){
+		filespecs.append( QFileInfo( files[i] ) );
+		files[i] = filespecs[i].baseName();
+	}
+
+	picspec->setFiles( files );
+
+	if( picspec->exec() == 0 ) 
+		return false;
+
+
+	return true;
 }

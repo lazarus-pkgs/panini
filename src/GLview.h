@@ -47,7 +47,7 @@ public:
      void mouseMoveEvent(QMouseEvent *event);
 
  private:
-	 pvQt thePic;
+	 pvQt  * thePic;
      GLuint makeSphere();
      double normalizeAngle(int &iangle, double lwr, double upr);
 	 void showview();

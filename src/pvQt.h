@@ -20,9 +20,10 @@
 #ifndef __PVQT_H__
 #define __PVQT_H__
 #include <QtGui>
+class picSpec;
 
-class pvQt
-{
+class pvQt : public QObject
+{	Q_OBJECT
 public:
 /* Valid c'tor arguments. 
    All but the first are type codes for things pvQt can display
@@ -36,8 +37,8 @@ typedef enum {
   cub		// A cubic panorama (six rectilinear images of specific angular size)
  } PicType;
  
- pvQt( PicType typ = ask ); // default interactive c'tor
- ~pvQt();
+ pvQt( QWidget * parent = 0 );
+~pvQt();
  
 // functions that return displayable images or info about them
  bool isValid();
@@ -47,8 +48,10 @@ typedef enum {
  QSizeF getFOV();	// degrees
  QImage * getImage( int index = 0 );
 
+ QString getDir();
+
 // functions for building programmatically
- bool setPicType( PicType pt ); // call first, clears everything else
+ bool setPicType( PicType pt ); // call first, clears pic
  bool setSize( QSize dims );	// sets the displayable size
  bool setFOV( QSizeF fovs );
  bool setImage( int index, QString file );
@@ -59,23 +62,34 @@ typedef enum {
  			    bool packedPixels = true,
  			    int alignBytes = 0 );
 
+// the picture file directory
+	QDir  picDir;
+
+	QWidget * theParent;
+
 private:
-  PicType type;
-  int numimgs;
-  int numexpected;
-  QSize			ddims;
-  QSizeF		dfovs;
-  QString 		names[6];
-  void *		addrs[6];
-  QSize			idims[6];
-  int		 	kinds[6];
-  QImage *	theImage;
-  
-  void clear();
-  bool buildInteractive();
-  bool loadFile( QString name );
-  bool loadQImage( QImage * pimg );
-  bool loadOther( int kind, void * addr );
+	picSpec * picspec;
+	PicType type;
+	int numimgs;
+	int numexpected;
+	QSize		ddims;
+	QSizeF		dfovs;
+  // arrays indexed by cube face
+	QString		names[6];
+	void *		addrs[6];
+	QSize		idims[6];
+	int		 	kinds[6];
+	QImage *	theImage;
+  // file specs indexed by file index
+	QFileInfoList filespecs;
+	int cubeidx[6];	// translate spec index to cube index
+	int specidx[6];	// translate cube index to spec index
+
+	void clear();
+	bool buildInteractive();
+	bool loadFile( QString name );
+	bool loadQImage( QImage * pimg );
+	bool loadOther( int kind, void * addr );
   
  
 };
