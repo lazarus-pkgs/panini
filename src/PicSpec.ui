@@ -6,7 +6,7 @@
     <x>0</x>
     <y>0</y>
     <width>368</width>
-    <height>300</height>
+    <height>242</height>
    </rect>
   </property>
   <property name="font" >
@@ -20,10 +20,10 @@
   <widget class="QDialogButtonBox" name="buttonBox" >
    <property name="geometry" >
     <rect>
-     <x>0</x>
-     <y>250</y>
-     <width>341</width>
-     <height>32</height>
+     <x>220</x>
+     <y>200</y>
+     <width>121</width>
+     <height>21</height>
     </rect>
    </property>
    <property name="orientation" >
@@ -37,7 +37,7 @@
    <property name="geometry" >
     <rect>
      <x>70</x>
-     <y>30</y>
+     <y>20</y>
      <width>271</width>
      <height>22</height>
     </rect>
@@ -58,7 +58,7 @@
    <property name="geometry" >
     <rect>
      <x>20</x>
-     <y>30</y>
+     <y>20</y>
      <width>41</width>
      <height>21</height>
     </rect>
@@ -79,7 +79,7 @@
    <property name="geometry" >
     <rect>
      <x>20</x>
-     <y>70</y>
+     <y>50</y>
      <width>46</width>
      <height>16</height>
     </rect>
@@ -95,7 +95,7 @@
    <property name="geometry" >
     <rect>
      <x>70</x>
-     <y>70</y>
+     <y>50</y>
      <width>141</width>
      <height>22</height>
     </rect>
@@ -107,179 +107,11 @@
     <number>6</number>
    </property>
   </widget>
-  <widget class="QGroupBox" name="groupBox" >
-   <property name="geometry" >
-    <rect>
-     <x>20</x>
-     <y>110</y>
-     <width>321</width>
-     <height>131</height>
-    </rect>
-   </property>
-   <property name="title" >
-    <string>Displayed Size</string>
-   </property>
-   <widget class="QLabel" name="label_3" >
-    <property name="geometry" >
-     <rect>
-      <x>20</x>
-      <y>50</y>
-      <width>61</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text" >
-     <string>Degrees</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_4" >
-    <property name="geometry" >
-     <rect>
-      <x>20</x>
-      <y>80</y>
-      <width>61</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text" >
-     <string>Pixels</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_5" >
-    <property name="geometry" >
-     <rect>
-      <x>120</x>
-      <y>20</y>
-      <width>41</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text" >
-     <string>width</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_6" >
-    <property name="geometry" >
-     <rect>
-      <x>240</x>
-      <y>20</y>
-      <width>41</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text" >
-     <string>height</string>
-    </property>
-   </widget>
-   <widget class="QSpinBox" name="widthPix" >
-    <property name="geometry" >
-     <rect>
-      <x>110</x>
-      <y>80</y>
-      <width>61</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="accelerated" >
-     <bool>true</bool>
-    </property>
-    <property name="keyboardTracking" >
-     <bool>false</bool>
-    </property>
-    <property name="maximum" >
-     <number>20000</number>
-    </property>
-    <property name="singleStep" >
-     <number>10</number>
-    </property>
-    <property name="value" >
-     <number>500</number>
-    </property>
-   </widget>
-   <widget class="QSpinBox" name="heightPix" >
-    <property name="geometry" >
-     <rect>
-      <x>230</x>
-      <y>80</y>
-      <width>61</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="accelerated" >
-     <bool>true</bool>
-    </property>
-    <property name="keyboardTracking" >
-     <bool>false</bool>
-    </property>
-    <property name="maximum" >
-     <number>20000</number>
-    </property>
-    <property name="singleStep" >
-     <number>10</number>
-    </property>
-    <property name="value" >
-     <number>500</number>
-    </property>
-   </widget>
-   <widget class="QDoubleSpinBox" name="widthDeg" >
-    <property name="geometry" >
-     <rect>
-      <x>110</x>
-      <y>50</y>
-      <width>62</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="keyboardTracking" >
-     <bool>false</bool>
-    </property>
-    <property name="decimals" >
-     <number>1</number>
-    </property>
-    <property name="minimum" >
-     <double>10.000000000000000</double>
-    </property>
-    <property name="maximum" >
-     <double>360.000000000000000</double>
-    </property>
-    <property name="value" >
-     <double>90.000000000000000</double>
-    </property>
-   </widget>
-   <widget class="QDoubleSpinBox" name="heightDeg" >
-    <property name="geometry" >
-     <rect>
-      <x>230</x>
-      <y>50</y>
-      <width>62</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="accelerated" >
-     <bool>true</bool>
-    </property>
-    <property name="keyboardTracking" >
-     <bool>false</bool>
-    </property>
-    <property name="decimals" >
-     <number>1</number>
-    </property>
-    <property name="minimum" >
-     <double>10.000000000000000</double>
-    </property>
-    <property name="maximum" >
-     <double>180.000000000000000</double>
-    </property>
-    <property name="value" >
-     <double>60.000000000000000</double>
-    </property>
-   </widget>
-  </widget>
   <widget class="QComboBox" name="faceBox" >
    <property name="geometry" >
     <rect>
      <x>270</x>
-     <y>70</y>
+     <y>50</y>
      <width>71</width>
      <height>22</height>
     </rect>
@@ -295,13 +127,196 @@
    <property name="geometry" >
     <rect>
      <x>230</x>
-     <y>70</y>
+     <y>50</y>
      <width>41</width>
      <height>21</height>
     </rect>
    </property>
    <property name="text" >
     <string>Face</string>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="widthPix" >
+   <property name="geometry" >
+    <rect>
+     <x>140</x>
+     <y>130</y>
+     <width>61</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="accelerated" >
+    <bool>true</bool>
+   </property>
+   <property name="keyboardTracking" >
+    <bool>false</bool>
+   </property>
+   <property name="maximum" >
+    <number>20000</number>
+   </property>
+   <property name="singleStep" >
+    <number>10</number>
+   </property>
+   <property name="value" >
+    <number>500</number>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_3" >
+   <property name="geometry" >
+    <rect>
+     <x>50</x>
+     <y>160</y>
+     <width>61</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Degrees</string>
+   </property>
+  </widget>
+  <widget class="QDoubleSpinBox" name="widthDeg" >
+   <property name="geometry" >
+    <rect>
+     <x>140</x>
+     <y>160</y>
+     <width>62</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="keyboardTracking" >
+    <bool>false</bool>
+   </property>
+   <property name="decimals" >
+    <number>1</number>
+   </property>
+   <property name="minimum" >
+    <double>10.000000000000000</double>
+   </property>
+   <property name="maximum" >
+    <double>360.000000000000000</double>
+   </property>
+   <property name="value" >
+    <double>90.000000000000000</double>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_4" >
+   <property name="geometry" >
+    <rect>
+     <x>50</x>
+     <y>130</y>
+     <width>61</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Reduce to</string>
+   </property>
+  </widget>
+  <widget class="QDoubleSpinBox" name="heightDeg" >
+   <property name="geometry" >
+    <rect>
+     <x>260</x>
+     <y>160</y>
+     <width>62</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="accelerated" >
+    <bool>true</bool>
+   </property>
+   <property name="keyboardTracking" >
+    <bool>false</bool>
+   </property>
+   <property name="decimals" >
+    <number>1</number>
+   </property>
+   <property name="minimum" >
+    <double>10.000000000000000</double>
+   </property>
+   <property name="maximum" >
+    <double>180.000000000000000</double>
+   </property>
+   <property name="value" >
+    <double>60.000000000000000</double>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="heightPix" >
+   <property name="geometry" >
+    <rect>
+     <x>260</x>
+     <y>130</y>
+     <width>61</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="accelerated" >
+    <bool>true</bool>
+   </property>
+   <property name="keyboardTracking" >
+    <bool>false</bool>
+   </property>
+   <property name="maximum" >
+    <number>20000</number>
+   </property>
+   <property name="singleStep" >
+    <number>10</number>
+   </property>
+   <property name="value" >
+    <number>500</number>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_5" >
+   <property name="geometry" >
+    <rect>
+     <x>50</x>
+     <y>100</y>
+     <width>81</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Width, height</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="wid_label" >
+   <property name="geometry" >
+    <rect>
+     <x>140</x>
+     <y>100</y>
+     <width>61</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="frameShape" >
+    <enum>QFrame::StyledPanel</enum>
+   </property>
+   <property name="frameShadow" >
+    <enum>QFrame::Sunken</enum>
+   </property>
+   <property name="text" >
+    <string>1345</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="hgt_label" >
+   <property name="geometry" >
+    <rect>
+     <x>260</x>
+     <y>100</y>
+     <width>61</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="frameShape" >
+    <enum>QFrame::StyledPanel</enum>
+   </property>
+   <property name="frameShadow" >
+    <enum>QFrame::Sunken</enum>
+   </property>
+   <property name="text" >
+    <string>1345</string>
+   </property>
+   <property name="alignment" >
+    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
    </property>
   </widget>
  </widget>

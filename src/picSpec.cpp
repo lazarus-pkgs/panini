@@ -7,17 +7,15 @@ picSpec::picSpec( QWidget * parent )
 {
 	setupUi( this );
 	filesBox->setEditable( false );
-	for(int i = 0; i < 7; i++){
-		filesBox->addItem(tr(" add a file..."));
-	}
 
 	formatBox->setEditable( false );
+// indices == pvQt format codes...
 	formatBox->addItem(tr(" ??? "));
-	formatBox->addItem(tr("equirectangular"));
 	formatBox->addItem(tr("rectilinear"));
 	formatBox->addItem(tr("spherical"));
-	formatBox->addItem(tr("cube faces"));
-	formatBox->addItem(tr("QTVR"));
+	formatBox->addItem(tr("cylindrical"));
+	formatBox->addItem(tr("equirectangular"));
+	formatBox->addItem(tr("cubic"));
 
 	faceBox->setEditable( false );
 	faceBox->addItem(tr(" ??? "));
@@ -27,21 +25,43 @@ picSpec::picSpec( QWidget * parent )
 	faceBox->addItem(tr("left"));
 	faceBox->addItem(tr("up"));
 	faceBox->addItem(tr("down"));
+	
+	clear( 1 );
 }
 
-void picSpec::setFiles( QStringList files ){
-	int n = files.size();
-	for(int i = 0; i < n; i++){
-		filesBox->setItemText( i, files[i] );
+void picSpec::clear( int nmax )
+{
+	filesBox->clear();
+	nfiles = 0;
+	if( nmax > 0 ){
+		maxfiles = nmax;
+		filesBox->setMaxCount( maxfiles );
+		filesBox->setMaxVisibleItems( maxfiles < 10 ? maxfiles : 10 );
+		filesBox->addItem(tr(" add file(s)..."));
+		filesBox->setEnabled( true );
+	} else {
+		maxfiles = 0;
+		filesBox->setEnabled( false );
 	}
-	for(int i = n; i < 7; i++){
-		filesBox->setItemText(i, tr(" add a file..."));
-	}
+
+	faceBox->setCurrentIndex ( 0 );
+	formatBox->setCurrentIndex ( 0 );
 }
 
-void picSpec::setFile( int idx, QString name ){
-	if( idx >= 0 && idx < filesBox->count()){
-		filesBox->setItemText( idx, name );
+// add a file if nfiles < maxfiles
+bool picSpec::addFile( QString file )
+{
+	if( nfiles >= maxfiles ) return false;
+	filesBox->setItemText( nfiles, file );
+	if( ++nfiles < maxfiles ){
+		filesBox->addItem( tr(" add file(s)..."));
 	}
+	return true;
 }
+
+// add file(s) clicked -- ask for more
+void picSpec::on_filesBox_activated ( int idx ){
+	if( idx == nfiles && idx < maxfiles ) emit wantFiles( maxfiles - nfiles );
+}
+
 

@@ -1,7 +1,7 @@
 #include <QFileDialog>
 
 #include "pvQt.h"
-#include "picSpec.h"
+
 /* 
   kcode -- a terse image format descriptor packed in one int
 	byte 0: bpc = bits per color
@@ -38,23 +38,28 @@ void pvQt::clear()
 	if(theImage) delete theImage;
 	theImage = 0;
 	type = nil;
-	numimgs = numexpected = 0;
+	numfaces = 0;
+	maxfaces = 1;
+	ddims = QSize(0,0);	
 	dfovs = QSizeF(0,0);
-	ddims = QSize(0,0);
-	for( int i = 0; i < 6; i++){
+	for( int i = 0; i < FACELIMIT; i++){
 		idims[i] = QSize(0,0);	
-		names[i].clear();	
 		addrs[i] = 0;	
 		kinds[i] = 0;
-		cubeidx[i] = 0;
-		specidx[i] = 0;
+		faceidx[i] = i;
+		specidx[i] = i;
 	}
+	filespecs.clear();
+	picspec.clear();
+//note leave picDir as-is
 }
 
 pvQt::pvQt( QWidget * parent )
 {
 	theParent = parent;
 	theImage = 0;
+	connect( &picspec, SIGNAL(wantFiles( int )),
+			 this, SLOT(getFiles( int )));
 	clear();
 }
 
@@ -63,29 +68,28 @@ pvQt::~pvQt()
 	if( theImage ) delete theImage;
 }
 
-// functions that return displayable images or info about them
+// functions that return display faces or info about them
 
 bool pvQt::isValid()
 {
 	if( type <= 0 ) return false;
-	if( numimgs <= 0 ) return false;
-	if( numimgs != numexpected ) return false;
+	if( numfaces <= 0 ) return false;
 	if(ddims.isEmpty() || dfovs.isEmpty() ) return false;
-	for(int i = 0; i < numimgs; i++){
+	int nf = 0;
+	for(int i = 0; i < FACELIMIT; i++){
 		int k = kinds[i];
+		if( k == 0 ) continue;
+		++nf;
 		switch( k ){
 			case -1:	// file
-				if( names[i].isEmpty() ) return false;
-				break;
-			case 0:		// none
-				return false;
+				if( !filespecs[specidx[i]].isReadable() ) return false;
 				break;
 			default:	// in-core
 				if( addrs[i] == 0 ) return false;
 				break;
 		}
 	}
-	return true;
+	return nf == numfaces;
 }
 
 pvQt::PicType pvQt::getPicType()
@@ -93,12 +97,12 @@ pvQt::PicType pvQt::getPicType()
  	return type;
 }
 
-int pvQt::getNumImgs()
+QSize pvQt::getNFaces()
 {
- 	return numimgs;
+ 	return QSize(numfaces, maxfaces);
 }
 
-QSize pvQt::getSize()
+QSize pvQt::getFaceSize()
 {
 	return ddims;
 }
@@ -108,16 +112,16 @@ QSizeF pvQt::getFOV()
 	return dfovs;
 }
 
-QImage * pvQt::getImage( int index )
+QImage * pvQt::getFace( int index )
 {
-	if(index < 0 || index >= numimgs)
+	if(index < 0 || index >= maxfaces)
 		return 0;
   // load the image...
     bool ok = false;
 	int kind = kinds[index];
 	switch( kind ){
 		case -1:	// file...
-			ok = loadFile( names[index] );
+			ok = loadFile( index );
 			break;
 		case -2:	// QImage in core...
 			ok = loadQImage( (QImage *) addrs[index] );
@@ -139,31 +143,13 @@ bool pvQt::setPicType( PicType pt )
 {
 	clear();
 	if( pt == ask ) return buildInteractive();
+	if( pt < rec || pt > cub ) return false;
 	type = pt;
-	switch( pt ){
-		case nil: 
-			break;
-		case rec:		// A rectilinear image up to 135 x 135 degrees
-			numexpected = 1;
-			break;
-		case eqr:		// An equirectangular image up to 360 x 180 degrees
-			numexpected = 1;
-			break;
-		case sph:		// A spherical (or fisheye) image up to 200 degrees diameter
-			numexpected = 1;
-			break;
-		case cub:		// A cubic panorama (six rectilinear images of specific angular size)
-			numexpected = 6;
-			break;
-		default:
-			type = nil;
-			return false;
-			break;
-	}
+	if( pt == cub )	maxfaces = 6;
 	return true;
 }
 
-bool pvQt::setSize( QSize dims )
+bool pvQt::setFaceSize( QSize dims )
 {
 	ddims = dims;
 	if( ddims.isEmpty() ) {
@@ -183,39 +169,28 @@ bool pvQt::setFOV( QSizeF fovs )
 	return true;
 }
 
-bool pvQt::setImage( int index, QString file )
+bool pvQt::setFace( int index, QImage * img )
 {
-	if( index > numimgs ||
-	    index >= numexpected ) return false;
-	if( index == numimgs ) ++numimgs;
-	names[index] = file;
-	kinds[index] = -1 ;
-	return true;
-}
-
-bool pvQt::setImage( int index, QImage * img )
-{
-	if( index > numimgs ||
-	    index >= numexpected ) return false;
-	if( index == numimgs ) ++numimgs;
+	if( index < 0 || index >= maxfaces ) return false;
+	if( kinds[index] == 0 ) ++numfaces;
 	addrs[index] = img;
 	kinds[index] = -2 ;
 	return true;
 }
 
-bool pvQt::setImage( int index, int wid, int hgt, void * addr,
+bool pvQt::setFace( int index, int wid, int hgt, void * addr,
 		int bpc, int cpp, bool fp, bool pk, int alg )
 {
-	if( index > numimgs ||
-	    index >= numexpected ) return false;
-	if( index == numimgs ) ++numimgs;
+	if( index < 0 || index >= maxfaces ) return false;
 	idims[index] = QSize( wid, hgt );
 	addrs[index] = addr;
-	kinds[index] = kcode( bpc, cpp, alg, fp, pk ) ;
+	int k = kcode( bpc, cpp, alg, fp, pk ) ;
+	if( kinds[index] == 0 && k != 0) ++numfaces;
+	kinds[index] = k;
 	return true;
 }
 
-bool pvQt::loadFile( QString name )
+bool pvQt::loadFile( int faceindex )
 {
 	return false;
 }
@@ -231,7 +206,23 @@ bool pvQt::loadOther( int kind, void * addr )
 }
 
 bool pvQt::buildInteractive(){
-// pop a fileselector to get one or more image files
+// set picspec to accept up to 6 file names
+	picspec.clear( 6 );
+// load initial files and their attributes
+	getFiles(6);
+// run dialog to verify the attributes	
+	if( picspec.exec() == 0 ) return false;
+// post validated picture specifications
+
+	return true;
+}
+
+// pop a fileselector to let user add up to m image files to
+// the filespecs list (no duplicates).  Returns number added.
+int pvQt::askFiles( int m )
+{
+	if( m < 1 ) return 0;
+	
 	QFileDialog fd( 0, tr("pvQt -- Select Image File(s)"));
 	QStringList filters;
 	filters << tr("Image files (*.jpg *.mov *.png *.tif *.tiff)")
@@ -239,27 +230,47 @@ bool pvQt::buildInteractive(){
 	fd.setNameFilters( filters );
 	fd.setFileMode( QFileDialog::ExistingFiles );
 	fd.setDirectory( picDir );
-	if( fd.exec() == 0 ) return false;
-	picDir = fd.directory();
+	if( fd.exec() == 0 ) return 0;
 	
+	picDir = fd.directory();
 	QStringList files( fd.selectedFiles() );
+	int nf = files.size();
+	if( nf < 1 ) return 0;
 
-	int n = files.size();
-	if( n < 1 || n > 6 ) return false;
-
-return true;
-  // get filespecs, leave just the name in files.
-	filespecs.clear();
-	for(int i = 0; i < n; i++){
-		filespecs.append( QFileInfo( files[i] ) );
-		files[i] = filespecs[i].baseName();
+  // add to filespecs, no dupes
+  // (assume no dupes in files)
+	int n = 0;
+	int k = filespecs.size();
+	for(int i = 0; m > n && i < nf; i++){
+		QString fn = files[i];
+		QFileInfo fs( fn );
+		int j;
+		for( j = 0; j < k; j++ ){
+			if( fs.absoluteFilePath() == filespecs[i].absoluteFilePath()) break;
+		}
+		if( j == k ){
+			filespecs.append( fs );
+			n++;
+		}
 	}
+	return n;
+}
 
-	picspec->setFiles( files );
-
-	if( picspec->exec() == 0 ) 
-		return false;
-
-
-	return true;
+/*  get and validate some image files
+  slot: also handles request from picspec for more image files
+  user picks filenames; we post those that are unique, readable 
+  images to picspec, along with their formats and sizes, and a 
+  suggested display tile size.
+*/
+void pvQt::getFiles( int nmax ){
+	int k = filespecs.size();
+	int n = askFiles( nmax );
+	for( int i = 0; i < n; i++ ){
+		QString fn = filespecs[i+k].fileName();
+		imgreader.setFileName( fn );
+		if( imgreader.canRead() ){
+			QByteArray fmt = imgreader.format();
+			picspec.addFile( fn );
+		}
+	}
 }
