@@ -14,6 +14,10 @@
   resized or otherwise transformed from the source images.
   
   Source image files may be of type jpeg, tiff, png or QTVR. 
+
+  Note: on Windows (Vista32, at least) you must give the c'tor a valid 
+  parent widget pointer, else subdialogs tend to crash intermittently
+
   
  */
 
@@ -72,19 +76,27 @@ typedef enum {
 
 public slots:
 	void getFiles( int nmax );
+	void filePick( int filidx );	
+	void facePick( int filidx, int facidx );
+	void formatPick( int idx );
 
 private:
 	QDir  picDir;		// current image file directory
-	QFileInfoList filespecs;	// image files
-	QImageReader imgreader;		// verify & load
+	QString imageFileFilter;	// supported file extensions
+	QFileInfoList filespecs;	// user-picked files
+	int file2face[FACELIMIT];	// face ids (0:5) by valid file, or -1
+	int face2file[FACELIMIT];	// index in filespecs by face id, or -1
+	QList<QSize> validDims;
+	int nValidFiles;			// counts same
+	QImageReader imgreader;		// called to verify & load image files
 	picSpec picspec;	// image file attributes dialog
 
 	PicType type;
-	int numfaces;
-	int maxfaces;
+	int numfaces;		// <= maxfaces
+	int maxfaces;		// 1, 2, or 6
   /* NOTE 
-	The only supported cases for numfaces > 1 are cubic (1 to 6 faces)
-	and hemispherical (1 or 2).  All faces must have the same display 
+	The types with numfaces > 1 are cubic (1 to 6 faces)and 
+	hemispherical (1 or 2).  All faces must have the same display 
 	dimensions and fov's, so there is only one ddims and one dfovs.
 	But we do admit the possibility of different filed dimensions.
 	Note, too that there can be multiple faces but only one file.
@@ -92,22 +104,21 @@ private:
   // display face size
 	QSize		ddims;	// pixels
 	QSizeF		dfovs;	// degrees
-  // file specs <=> faces
-	int faceidx[FACELIMIT];	// translate spec index to face index
-	int specidx[FACELIMIT];	// translate face index to spec index
-  // arrays indexed by face
+  // arrays indexed by face id
 	QSize		idims[FACELIMIT];	// source dimensions
 	void *		addrs[FACELIMIT];	// address if in-core
 	int		 	kinds[FACELIMIT];	// coded source type
 	
 	QImage *	theImage;
 
+	void setImageFileFilter();
 	void clear();
 	bool buildInteractive();
 	bool loadFile( int faceidx );
 	bool loadQImage( QImage * pimg );
 	bool loadOther( int kind, void * addr );
 	int askFiles( int nmax );
+	void likelySetup();
   
  
 };

@@ -33,6 +33,29 @@ static void kdecode( int k, int &bpc, int &cpp, int &alg, bool &fp, bool &pk ){
 	pk = (k & 0x2000000) != 0;
 }
 
+
+
+pvQt::pvQt( QWidget * parent )
+{
+	theParent = parent;
+	theImage = 0;
+	connect( &picspec, SIGNAL(wantFiles( int )),
+			 this, SLOT(getFiles( int )));
+	connect( &picspec, SIGNAL(filePick( int )),
+			 this, SLOT(filePick( int )));
+	connect( &picspec, SIGNAL(facePick( int, int )),
+			 this, SLOT(facePick( int, int )));
+	connect( &picspec, SIGNAL(formatPick( int )),
+			 this, SLOT(formatPick( int )));
+	clear();
+}
+
+pvQt::~pvQt()
+{
+	if( theImage ) delete theImage;
+}
+
+// reset internal state
 void pvQt::clear()
 {
 	if(theImage) delete theImage;
@@ -46,26 +69,15 @@ void pvQt::clear()
 		idims[i] = QSize(0,0);	
 		addrs[i] = 0;	
 		kinds[i] = 0;
-		faceidx[i] = i;
-		specidx[i] = i;
+		face2file[i] = -1;
+		file2face[i] = -1;
 	}
 	filespecs.clear();
-	picspec.clear();
+	validDims.clear();
+	nValidFiles = 0;
+	picspec.clear(FACELIMIT);
 //note leave picDir as-is
-}
-
-pvQt::pvQt( QWidget * parent )
-{
-	theParent = parent;
-	theImage = 0;
-	connect( &picspec, SIGNAL(wantFiles( int )),
-			 this, SLOT(getFiles( int )));
-	clear();
-}
-
-pvQt::~pvQt()
-{
-	if( theImage ) delete theImage;
+	setImageFileFilter();
 }
 
 // functions that return display faces or info about them
@@ -76,13 +88,13 @@ bool pvQt::isValid()
 	if( numfaces <= 0 ) return false;
 	if(ddims.isEmpty() || dfovs.isEmpty() ) return false;
 	int nf = 0;
-	for(int i = 0; i < FACELIMIT; i++){
+	for(int i = 0; i < FACELIMIT; i++){ //loop over faces
 		int k = kinds[i];
-		if( k == 0 ) continue;
+		if( k == 0 ) continue;	// this face not valid
 		++nf;
-		switch( k ){
+		switch( k ){	// where is source image...
 			case -1:	// file
-				if( !filespecs[specidx[i]].isReadable() ) return false;
+				if( !filespecs[face2file[i]].isReadable() ) return false;
 				break;
 			default:	// in-core
 				if( addrs[i] == 0 ) return false;
@@ -205,11 +217,85 @@ bool pvQt::loadOther( int kind, void * addr )
 	return false;
 }
 
+/* post a likely setup based on current type and valid files.
+	If type is nil, guess a type from file specs; then adjust 
+	state to be legal for the type.  This may invlove dropping
+	some files.
+*/
+
+void pvQt::likelySetup()
+{
+// display dimensions (assumes all files same size)
+	QSize & sz = validDims[0];
+	int w = sz.width(), h = sz.height();
+	ddims = sz;
+	dfovs = QSizeF( 1, (double)h / (double)w ); // scaled below
+
+// if no type, guess type based on file count & dimensions
+	if( type == nil && nValidFiles > 0 ){
+		if(nValidFiles > 2)			type = cub;		
+		else if(nValidFiles == 2)	type = hem;
+		else {	
+			if( w == 2 * h )		type = eqr;
+			else if( w == h )		type = sph;
+			else if( w > 2 * h )	type = cyl;
+			else					type = rec;
+		}
+	}
+// set maxfaces for new type
+	switch( type ){
+	case ask:
+	case nil: 
+		clear(); 
+		break;
+	case rec: case sph: case eqr: case cyl:
+		maxfaces = 1;
+		break;
+	case cub:
+		maxfaces = 6;
+		break;
+	case hem:
+		maxfaces = 2;
+		break;
+	}
+// drop any excess files
+	while( nValidFiles > maxfaces ){
+		filespecs.removeAt( --nValidFiles );
+		validDims.removeAt( nValidFiles );
+	}
+
+// set likely FOV
+	qreal s;
+	switch( type ){
+	case ask:
+	case nil: s = 0; break;
+	case cub:
+	case rec: s = 90; break;
+	case sph: 
+	case hem: s = 180; break;
+	case eqr: 
+	case cyl: s = 360; break;
+	}
+	dfovs.scale( s, s, (Qt::AspectRatioMode)0 );
+
+  // post to dialog
+	picspec.clear( maxfaces );
+	picspec.setFormat( type );
+	picspec.setDims( ddims );
+	picspec.setFovs( dfovs );
+	for( int i = 0; i < nValidFiles; i++ ){
+		picspec.addFile( filespecs[i].fileName(), validDims[i] );
+	}
+}
+
+
+/* Let user set up picture specs
+*/
 bool pvQt::buildInteractive(){
-// set picspec to accept up to 6 file names
-	picspec.clear( 6 );
+	clear();
 // load initial files and their attributes
 	getFiles(6);
+	if(nValidFiles < 1) return false;
 // run dialog to verify the attributes	
 	if( picspec.exec() == 0 ) return false;
 // post validated picture specifications
@@ -219,26 +305,26 @@ bool pvQt::buildInteractive(){
 
 // pop a fileselector to let user add up to m image files to
 // the filespecs list (no duplicates).  Returns number added.
+
 int pvQt::askFiles( int m )
 {
 	if( m < 1 ) return 0;
-	
-	QFileDialog fd( 0, tr("pvQt -- Select Image File(s)"));
-	QStringList filters;
-	filters << tr("Image files (*.jpg *.mov *.png *.tif *.tiff)")
-		    << tr("All files (*.*)");
-	fd.setNameFilters( filters );
-	fd.setFileMode( QFileDialog::ExistingFiles );
-	fd.setDirectory( picDir );
-	if( fd.exec() == 0 ) return 0;
-	
-	picDir = fd.directory();
-	QStringList files( fd.selectedFiles() );
+
+     QFileDialog::Options options;
+ //crashes on WinVista...   options |= QFileDialog::DontUseNativeDialog;
+     QString selectedFilter;
+     QStringList files = QFileDialog::getOpenFileNames(
+                                 (QWidget *)0,		// no parent
+								 tr("pvQt -- Select Image File(s)"),
+                                 picDir.absolutePath(),
+                                 imageFileFilter + tr(";;All files (*.*)"),
+                                 0,		// don't return filter index
+                                 options);
+
 	int nf = files.size();
 	if( nf < 1 ) return 0;
 
-  // add to filespecs, no dupes
-  // (assume no dupes in files)
+  // add to filespecs, no dupes(assume no dupes in files)
 	int n = 0;
 	int k = filespecs.size();
 	for(int i = 0; m > n && i < nf; i++){
@@ -253,24 +339,70 @@ int pvQt::askFiles( int m )
 			n++;
 		}
 	}
+  // set picDir to the directory of the added files
+	k = filespecs.size() - 1;
+	picDir.setPath( filespecs[k].absolutePath() );
+
 	return n;
 }
 
 /*  get and validate some image files
   slot: also handles request from picspec for more image files
-  user picks filenames; we post those that are unique, readable 
-  images to picspec, along with their formats and sizes, and a 
-  suggested display tile size.
+  user picks filenames; we keep those that are unique, readable 
+  images in picspec, and their sizes, and a 
+
+  Accepts files that QImageReader says it can read, warns about
+  and drops the others.  
 */
 void pvQt::getFiles( int nmax ){
 	int k = filespecs.size();
-	int n = askFiles( nmax );
-	for( int i = 0; i < n; i++ ){
-		QString fn = filespecs[i+k].fileName();
-		imgreader.setFileName( fn );
-		if( imgreader.canRead() ){
-			QByteArray fmt = imgreader.format();
-			picspec.addFile( fn );
+	int n = askFiles( nmax );	// this posts all files
+  // post the valid image files, drop the others
+	for( int i = 0; i < n && nValidFiles < FACELIMIT; i++ ){
+		QFileInfo & fi = filespecs[i+k];
+		QString fn = fi.fileName();
+		imgreader.setFileName( fi.absoluteFilePath() );
+		if( imgreader.canRead() ){	// accept...
+			QSize siz = imgreader.size();
+			validDims.append( siz );
+		} else {					// drop..
+			qWarning("%s is not a valid image file", fn.toUtf8().data() );
+			filespecs.removeAt(i);
+			--i; --nValidFiles;
 		}
 	}
 }
+
+void pvQt::setImageFileFilter(){
+	QList<QByteArray> fmts = QImageReader::supportedImageFormats();
+	QString & ff = imageFileFilter;
+	ff = tr("Image files (");
+	int n = fmts.size();
+	for(int i = 0; i < n; i++ ){
+		QString fmt = QString(fmts[i]);
+		ff += "*." + fmt.toLower();
+		if( 1 + 1 == n ) break;
+		ff += " ";
+	}
+	ff += ")";
+}
+
+/* handle associating faces with files
+*/
+void pvQt::filePick( int filidx ){
+	picspec.setFace( file2face[filidx] );
+}
+
+void pvQt::facePick( int filidx, int facidx ){
+	face2file[facidx] = filidx;
+	file2face[filidx] = facidx;
+}
+
+void pvQt::formatPick( int idx ){
+	if( type < cub || idx < type ){
+		type = (PicType)idx;
+		picspec.setFormat( type );
+	}
+}
+
+
