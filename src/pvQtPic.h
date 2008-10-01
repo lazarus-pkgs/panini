@@ -138,7 +138,8 @@ enum{
  bool setType( PicType pt ); 		// clears, sets all defaults
  bool setFaceSize( QSize dims );
  bool setFaceFOV( QSizeF fovs );
- // single source images, by face
+ 
+ // assign source images to display faces
  bool setFaceImage( PicFace face, QImage * img );
  bool setFaceImage( PicFace face, int width, int height, void * addr,
  				int bitsPerColor, int colorsPerPixel, 
@@ -147,6 +148,19 @@ enum{
  			    int alignBytes = 0 );
  bool setFaceImage( PicFace face, QString path );
  bool setFaceImage( PicFace face, QUrl url );
+ 
+ // limits on display image size (default: none)
+ void set_maxVideoRAM( double Bytes ){
+ 	 maxVideoRAM = Bytes;
+ }
+ 
+ void set_maxFaceDims( QSize dims ){
+ 	maxFaceDims = dims;
+ }
+ 
+ void set_pwrOfTwoFaceDims( bool yes ){
+ 	pwrOfTwoFaceDims = yes;
+ }
  
  /* Set "empty image" styles
    face = any sets all faces; label = "*" uses face names
@@ -161,11 +175,17 @@ private:
 	PicType type;
 	int maxfaces;	// 1, 2, or 6
 	int numimgs;	// no. of faces with source images
-  // display face info
+	int numsizes;	// no. of faces with valid source sizes
+  // display face size limits
+    double 		maxVideoRAM;	//  Bytes
+    QSize		maxFaceDims;	// pixels
+    bool		pwrOfTwoFaceDims;	// ancient OpenGL
+  // display face properties
   	QImage::Format faceformat;
 	QSize		facedims;	// pixels
 	QSizeF		facefovs;	// degrees
 	QSizeF		maxfovs, minfovs;	// limits
+	bool 		lockfovs;	// true => fixed fov & aspect ratio
   // arrays indexed by face id, 0:maxfaces-1
 	int		 	kinds[6];	// coded source type
 	int			formats[6];	// QImage::Format, or a kcode
@@ -175,20 +195,29 @@ private:
 	QString		labels[6];	// for empty images...
 	QColor		borders[6];
 	QColor		fills[6];
- 
+// common logic for assigning an image to a face
+	bool	addimgsize( int iface, QSize dims );
 // load local images for a face
+	QImage * loadEmpty( int face );
 	QImage * loadFile( int face );
 	QImage * loadQImage( int face );
 	QImage * loadRaster( int face );
 
  /*  virtual functions for remote images --
 	 reimplement in subclasses that can fetch these.
-	 gotFaceURL called when non-local url is put in urls[face]. 
-	 loadURL called when it is time to fetch same.
+   gotURL is called when a non-local url is put in urls[face].
+     It must return true for a (probably) loadable image, else
+     false.  If possible it should put image dimensions in dims,
+	 however that can be deferred until the image is loaded. 
+   loadURL is called when it is time to fetch the image. 
 
   */
-	virtual bool gotFaceURL( int face ){ return false; }
-	virtual QImage * loadURL( int face ){ return 0; }
+	virtual bool gotURL( QUrl url, QSize & dims ){
+		 return false; 
+	}
+	virtual QImage * loadURL( QUrl url ){ 
+		return 0; 
+	}
 };
 
 #endif // __PVQTPIC_H__

@@ -33,7 +33,12 @@ public:
 	 void step_zoom( int dp );
 	 void step_roll( int dp );
 	 void step_dist( int dp );
+  // preset views
+  	 void reset_view();	// reinit all params
 	 void home_view();	// zero view angles
+	 void full_frame();	// stereographic, min zoom
+	 void super_fish();	// circular superwide
+	 
 
   /* set the picture to be displayed
 	pic = 0 resets to base screen display.  Otherwise

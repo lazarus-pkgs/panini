@@ -73,10 +73,19 @@ if(ok) ok =
 	connect(actionEye_Out, SIGNAL(triggered()),
 		    this, SLOT(eyeOut()) );
 if(ok) ok =
-	connect(action_ResetView, SIGNAL(triggered()),
+	connect(action_Home, SIGNAL(triggered()),
+		    this, SLOT(homeView()) );
+if(ok) ok =
+	connect(actionReset, SIGNAL(triggered()),
 		    this, SLOT(resetView()) );
 if(ok) ok =
-	connect(actionLoad_Image, SIGNAL(triggered()),
+	connect(action_SuperFish, SIGNAL(triggered()),
+		    this, SLOT(superFish()) );
+if(ok) ok =
+	connect(actionFullFrame, SIGNAL(triggered()),
+		    this, SLOT(fullFrame()) );
+if(ok) ok =
+	connect(action_Load, SIGNAL(triggered()),  ////TEST
 		    this, SLOT(loadImage()) );
 
 if(ok){
@@ -139,8 +148,17 @@ void MainWindow::eyeOut(){
 	emit step_dist(1);
 }
 
-void MainWindow::resetView(){
+void MainWindow::homeView(){
 	emit home_view();
+}
+void MainWindow::resetView(){
+	emit reset_view();
+}
+void MainWindow::fullFrame(){
+	emit full_frame();
+}
+void MainWindow::superFish(){
+	emit super_fish();
 }
 
 void MainWindow::loadImage()

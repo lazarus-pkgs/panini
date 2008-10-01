@@ -13,7 +13,7 @@
 #endif
 
 /**** maximum projection angle at eye ****/ 
-#define MAXPROJFOV  135.0
+#define MAXPROJFOV  137.5
 
 
  pvQtView::pvQtView(QWidget *parent)
@@ -98,12 +98,27 @@
  }
 
  void pvQtView::step_zoom( int dp ){
-	 setZoom( izoom - dp * zoomstep );
+	 setZoom( izoom - dp * zoomstep ); // note zoom = 1/FOV
  }
 
  void pvQtView::step_roll( int dp ){
-	 setSpin( ispin - dp * spinstep );
+	 setSpin( ispin + dp * spinstep );
  }
+
+ void pvQtView::step_dist( int dp ){
+	 idist += dp * diststep;
+	 setDist( idist );
+	 updateGL();
+	 showview();
+ }
+
+  /**  preset views  **/
+  
+ void pvQtView::reset_view(){
+ 	initView();
+ 	updateGL();
+ 	showview();
+}
 
  void pvQtView::home_view(){
 	panAngle = tiltAngle = spinAngle = 0;
@@ -111,12 +126,23 @@
 	updateGL();
 	showview();
  }
-
- void pvQtView::step_dist( int dp ){
-	 idist += dp * diststep;
-	 setDist( idist );
+ 
+ void pvQtView::full_frame(){
+	setDist( 100 );
+	setFOV( maxFOV );
+	updateGL();
+	showview();
+ }
+ 
+ void pvQtView::super_fish(){
+	setDist( 110 );
+	setFOV( maxFOV );
+	updateGL();
+	showview();
  }
 
+ /** report current view **/
+ 
  void pvQtView::showview(){
 	 QString s;
 	 s.sprintf("Yaw %.1f  Pitch %.1f  Roll %.1f  Dist %.1f  vFOV %.1f",
@@ -175,8 +201,8 @@ void pvQtView::initView()
 	default user step increments 
 */
 	 eyeDistance = 0.0; // spherical projection
-	 minDist = 0.0; maxDist = 2.0;	// fixed limits
-	 idist = 0; diststep = 20;	// % of radius
+	 minDist = 0.0; maxDist = 1.1;	// fixed limits
+	 idist = 0; diststep = 10;	// % of radius
 
      minFOV = 5.0;  maxFOV = MAXPROJFOV;
      zoomstep = 5 * 16;	// 5 degrees in FOV
@@ -202,14 +228,10 @@ void pvQtView::setFOV( double newvfov ){
 	izoom = iAngle( vFOV );	
 	wFOV = vFOV / (eyeDistance + 1);
 
-	Znear = 0.05; Zfar = 7;
-	
 }
 
 void pvQtView::setDist( int id ){
 /*  set distance of eye from sphere center,
-	and adjust vFOV so that magnification at
-	view center is unchanged.  
 	Post new vFOV limits.
 	Then update the screen.
 */
@@ -223,8 +245,6 @@ void pvQtView::setDist( int id ){
 	if( m < minFOV ) m = minFOV;
 	maxFOV = m;
 	setFOV( );
-	updateGL();
-	showview();
 }
 
  void pvQtView::setPan(int angle)
@@ -239,7 +259,7 @@ void pvQtView::setDist( int id ){
 
  void pvQtView::setTilt(int angle)
  {
-     tiltAngle = normalizeAngle(angle, -90, 90);
+     tiltAngle = normalizeAngle(angle, -180, 180);
      if (angle != itilt) {
          itilt = angle;
          updateGL();
@@ -260,6 +280,7 @@ void pvQtView::setDist( int id ){
  void pvQtView::setZoom(int angle)
  {
  	double a = normalizeAngle(angle, minFOV, maxFOV);
+ 	angle = iAngle( a );
 	if (angle != izoom) {
          izoom = angle;
          setFOV(a);
@@ -290,9 +311,10 @@ void pvQtView::setDist( int id ){
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 
-    glTexGenf( GL_S, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP );
-	glTexGenf( GL_T, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP );
-	glTexGenf( GL_R, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP );
+	int tmode = GL_REFLECTION_MAP;
+    glTexGenf( GL_S, GL_TEXTURE_GEN_MODE, tmode );
+	glTexGenf( GL_T, GL_TEXTURE_GEN_MODE, tmode );
+	glTexGenf( GL_R, GL_TEXTURE_GEN_MODE, tmode );
     glEnable( GL_TEXTURE_GEN_S );
     glEnable( GL_TEXTURE_GEN_T );
     glEnable( GL_TEXTURE_GEN_R );
@@ -313,19 +335,19 @@ void pvQtView::setDist( int id ){
 
 	glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
+	Znear = 0.05; Zfar = 7;
 	gluPerspective( wFOV, portAR, 
 				    Znear,  Zfar);
-	double D = eyeDistance;
-    gluLookAt( -D, 0, 0,
-	           0.01, 0, 0,
-			   0, 0, 1 );
-//	glTranslated( eyeDistance, 0, 0 );
+    gluLookAt( 0, 0, -eyeDistance,
+	           0, 0, 1,
+			   0, 1, 0 );
 	glFrontFace( GL_CW );
 
- // Treat rotations as Euler angles
-	glRotated( spinAngle, 1, 0, 0 );     
-	glRotated( tiltAngle, 0, 1, 0 );
-	glRotated( panAngle, 0, 0, 1 );
+ // rotations are Euler angles
+ // note orientation & sense are set here
+	glRotated( 180 - spinAngle, 0, 0, 1 );     
+	glRotated( -tiltAngle, 1, 0, 0 );
+	glRotated( 180 - panAngle, 0, 1, 0 );
 	glMatrixMode(GL_MODELVIEW);
 
 	glCallList(theScreen);
@@ -361,22 +383,18 @@ void pvQtView::makeSphere( GLuint list )
 void pvQtView::setupPic( pvQtPic * pic )
 {
 	static GLenum cubefaces[6] = {
-		GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,	// front
-		GL_TEXTURE_CUBE_MAP_POSITIVE_X, // right
-		GL_TEXTURE_CUBE_MAP_POSITIVE_Z,	// back
-		GL_TEXTURE_CUBE_MAP_NEGATIVE_X,	// left
+		GL_TEXTURE_CUBE_MAP_POSITIVE_Z, // front
+		GL_TEXTURE_CUBE_MAP_POSITIVE_X,	// right
+		GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,	// back
+		GL_TEXTURE_CUBE_MAP_NEGATIVE_X, // left
 		GL_TEXTURE_CUBE_MAP_POSITIVE_Y,	// top
-		GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, // bottom
+		GL_TEXTURE_CUBE_MAP_NEGATIVE_Y	// bottom
 	};
 
 	thePic = pic;
 	makeCurrent();	// get OGL's attention
   // QImage row alignment
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-
-  // disable texture mapping
-//	if( textgt ) glDisable( textgt );
-//	textgt = 0;
 
 	if( pic ){
 		pvQtPic::PicType pictype = pic->Type();
@@ -387,9 +405,9 @@ void pvQtView::setupPic( pvQtPic * pic )
 				QImage * p = pic->FaceImage(pvQtPic::PicFace(i));
 				if( p ){
 					glTexImage2D( cubefaces[i], 0, GL_RGB,
-						p->width(), p->height(), 1, // no border?
+						p->width(), p->height(), 0,
 						GL_RGB, GL_UNSIGNED_BYTE,
-						p->data_ptr() );
+						p->bits() );
 					delete p;
 				}
 			}
@@ -399,9 +417,9 @@ void pvQtView::setupPic( pvQtPic * pic )
 			QImage * p = pic->FaceImage(pvQtPic::PicFace(0));
 			if( p ){
 				glTexImage2D( textgt, 0, GL_RGB,
-					p->width(), p->height(), 0, // no border?
+					p->width(), p->height(), 0, 
 					GL_RGB, GL_UNSIGNED_BYTE,
-					p->data_ptr() );
+					p->bits() );
 				delete p;
 			}
 		}

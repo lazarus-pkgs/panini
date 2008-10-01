@@ -32,6 +32,9 @@ signals:
 	void step_roll( int d );
 	void step_dist( int d );
 	void home_view();
+	void reset_view();
+	void super_fish();
+	void full_frame();
 	void newPicture();
 protected:
 	void closeEvent( QCloseEvent * ev );
@@ -52,7 +55,11 @@ private slots:
 	void rollRight();
 	void eyeIn();
 	void eyeOut();
+	void homeView();
 	void resetView();
+	void superFish();
+	void fullFrame();
+	
 	void loadImage();
 
 };
