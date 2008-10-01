@@ -30,7 +30,8 @@ signals:
 	void step_tilt( int d );
 	void step_zoom( int d );
 	void step_roll( int d );
-	void set_view( int i );
+	void step_dist( int d );
+	void home_view();
 	void newPicture();
 protected:
 	void closeEvent( QCloseEvent * ev );
@@ -49,6 +50,8 @@ private slots:
 	void zoomOut();
 	void rollLeft();
 	void rollRight();
+	void eyeIn();
+	void eyeOut();
 	void resetView();
 	void loadImage();
 

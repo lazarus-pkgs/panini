@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioProject
+	ProjectType="Visual C++"
+	Version="9.00"
+	Name="pvQt_1"
+	ProjectGUID="{A70594CC-2C31-4F76-AC81-DB3B0475F57E}"
+	Keyword="MakeFileProj"
+	TargetFrameworkVersion="196613"
+	>
+	<Platforms>
+		<Platform
+			Name="Win32"
+		/>
+	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
+	<Configurations>
+		<Configuration
+			Name="Debug|Win32"
+			OutputDirectory="..\bin"
+			IntermediateDirectory="..\build"
+			ConfigurationType="0"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="cd ..\.. &#x0D;&#x0A;make debug"
+				ReBuildCommandLine="cd ..\.. &#x0D;&#x0A;make clean &#x0D;&#x0A;make debug &#x0D;&#x0A;&#x0D;&#x0A;"
+				CleanCommandLine="cd ..\.. &#x0D;&#x0A;make clean"
+				Output="pvQt_1.exe"
+				PreprocessorDefinitions="WIN32;_DEBUG"
+				IncludeSearchPath="C:\Qt\4.4.1\include;C:\MinGW\include"
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release|Win32"
+			OutputDirectory="..\bin"
+			IntermediateDirectory="..\build"
+			ConfigurationType="0"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="cd ..\.. &#x0D;&#x0A;make release"
+				ReBuildCommandLine="cd ..\.. &#x0D;&#x0A;make clean &#x0D;&#x0A;make release &#x0D;&#x0A;"
+				CleanCommandLine="cd ..\.. &#x0D;&#x0A;make clean"
+				Output="pvQt_1.exe"
+				PreprocessorDefinitions="WIN32;NDEBUG"
+				IncludeSearchPath="C:\Qt\4.4.1\include;C:\MinGW\include"
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+	</Configurations>
+	<References>
+	</References>
+	<Files>
+		<Filter
+			Name="Source Files"
+			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
+			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
+			>
+			<File
+				RelativePath="..\..\src\GLwindow.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\main.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\MainWindow.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\pvQtPic.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\pvQtView.cpp"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Header Files"
+			Filter="h;hpp;hxx;hm;inl;inc;xsd"
+			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
+			>
+			<File
+				RelativePath="..\..\src\GLwindow.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\MainWindow.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\pvQtPic.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\pvQtView.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Resource Files"
+			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
+			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
+			>
+		</Filter>
+		<File
+			RelativePath="..\..\ui\mainwindow.ui"
+			>
+		</File>
+		<File
+			RelativePath="..\..\pvQt_1.pro"
+			>
+		</File>
+		<File
+			RelativePath="..\..\pvQtSpecification.txt"
+			>
+		</File>
+	</Files>
+	<Globals>
+	</Globals>
+</VisualStudioProject>

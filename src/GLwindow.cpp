@@ -3,13 +3,15 @@
 */
 #include "GLwindow.h"
 
-#include "GLview.h"
+#include "pvQtView.h"
 
 GLwindow::GLwindow (QWidget * parent )
 : QWidget(parent)
 {
-	glview = new GLview(this);
-  ok = (glview != 0 );
+	glview = new pvQtView(this);
+	pvpic = new pvQtPic( pvQtPic::cub );
+
+  ok = (glview != 0 && pvpic != 0 );
 
   if(ok) ok = 
 	connect( parent, SIGNAL(step_pan( int )),
@@ -24,14 +26,17 @@ GLwindow::GLwindow (QWidget * parent )
 	connect( parent, SIGNAL(step_roll( int )),
 		     glview, SLOT(step_roll( int )));
   if(ok) ok = 
-	connect( parent, SIGNAL(set_view( int )),
-		     glview, SLOT(set_view( int )));
+	connect( parent, SIGNAL(step_dist( int )),
+		     glview, SLOT(step_dist( int )));
+  if(ok) ok = 
+	connect( parent, SIGNAL(home_view()),
+		     glview, SLOT(home_view()));
   if(ok) ok = 
 	connect( glview, SIGNAL(reportView( QString )),
 			 parent, SLOT(showStatus( QString )) );
   if(ok) ok = 
 	connect( parent, SIGNAL(newPicture()),
-			 glview, SLOT(newPicture()) );
+			 this, SLOT(newPicture()) );
   if(!ok) {
 	  qFatal("GLwindow setup failed");
   }
@@ -41,4 +46,9 @@ GLwindow::GLwindow (QWidget * parent )
 // relay window resize to the GL widget
 void GLwindow::resizeEvent( QResizeEvent * ev ){
 		glview->resize( size() );
+}
+
+// attach picture to display
+void GLwindow::newPicture(){
+	glview->showPic( pvpic );
 }

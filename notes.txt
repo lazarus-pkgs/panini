@@ -1,0 +1,21 @@
+Development notes for pvQt
+
+20 Sept 08	Adapting the freepv QTVR reader
+
+Goal:
+  use Pablo's QTVRDecoder, with QImage replacing his Image
+
+Files copied from freepv/src:
+	Image.h
+	JpegReader.h, .cpp
+	Parameters.h, .cpp
+	QTVRDecoder.h, .cpp
+
+Initial strategy:
+  make Image class a wrapper around QImage,
+  modify Parameters to fit into Qt framework,
+  use QTVRDecoder unchanged.
+  replace freepv jpeg decoder with Qt's (use QBuffer as "device")
+
+	
+	

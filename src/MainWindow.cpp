@@ -5,7 +5,6 @@
 
 #include "MainWindow.h"
 #include "GLwindow.h"
-#include "pvQt.h"
 
 /* modal error message display
   Note QErrorMessage::qtHandler installs a non-modal handler, so
@@ -68,6 +67,12 @@ if(ok) ok =
 	connect(actionRoll_Left, SIGNAL(triggered()),
 		    this, SLOT(rollLeft()) );
 if(ok) ok =
+	connect(actionEye_In, SIGNAL(triggered()),
+		    this, SLOT(eyeIn()) );
+if(ok) ok =
+	connect(actionEye_Out, SIGNAL(triggered()),
+		    this, SLOT(eyeOut()) );
+if(ok) ok =
 	connect(action_ResetView, SIGNAL(triggered()),
 		    this, SLOT(resetView()) );
 if(ok) ok =
@@ -126,8 +131,16 @@ void MainWindow::rollRight(){
 	emit step_roll(1);
 }
 
+void MainWindow::eyeIn(){
+	emit step_dist(-1);
+}
+
+void MainWindow::eyeOut(){
+	emit step_dist(1);
+}
+
 void MainWindow::resetView(){
-	emit set_view(0);
+	emit home_view();
 }
 
 void MainWindow::loadImage()
