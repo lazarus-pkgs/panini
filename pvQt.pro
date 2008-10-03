@@ -12,5 +12,5 @@ HEADERS += src/pvQtView.h src/MainWindow.h src/GLwindow.h
 SOURCES += src/pvQtView.cpp src/MainWindow.cpp src/GLwindow.cpp
 QT += opengl
 INCLUDEPATH += c:/MinGW/include c:/MinGW/GnuWin32/include
-HEADERS += src/pvQt_Image.h src/pvQt_QTVR.h 
+HEADERS += src/pvQt_QTVR.h 
 SOURCES += src/pvQt_QTVR.cpp

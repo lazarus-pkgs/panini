@@ -1,10 +1,10 @@
 
-/*	pvQt_QTVR.h  for pvQt_QTVR.cpp only  02 Oct 2008 TKS
+/*	Qt_QTVR.h  for pvQt  03 Oct 2008 TKS
  *
  *  To make QTVRDecoder work with Qt imaging components
  *
- *  Adapted from Image.h and QTVRDecoder.h, part of the freepv 
- *  panoramic viewer by Pablo d'Angelo <pablo.dangelo@web.de>
+ *  Adapted from QTVRDecoder.h, part of the freepv panoramic
+ *  viewer by Pablo d'Angelo <pablo.dangelo@web.de>
  *
  *  $Id: QTVRDecoder.h 64 2006-10-08 10:54:23Z dangelo $
  *
@@ -28,14 +28,14 @@
 	 
  */
 
-#ifndef PVQT_QTVR_H
-#define PVQT_QTVR_H
+#ifndef QT_QTVR_H
+#define QT_QTVR_H
 
 #include <vector>
-class Image;
+#include <QtCore>
 
-/** possible panorama types */
-enum PanoType { PANO_UNKNOWN, PANO_CUBIC, PANO_QTVR, PANO_SPHERICAL, PANO_CYLINDRICAL};
+/** possible QTVR panorama types  **/
+enum PanoType { PANO_UNKNOWN, PANO_CUBIC, PANO_HORZ_CYL, PANO_VERT_CYL };
 
 // various typedefs required by the structs copied from various places
 typedef unsigned int uint32;
@@ -66,28 +66,17 @@ class QTVRDecoder
 
 public:
 
-/****************************/
-/*    PROTOTYPES            */
-/****************************/
-
-
     QTVRDecoder();
     ~QTVRDecoder();
 
+// scan a file
     bool parseHeaders(const char * theDataFilePath);
-    bool extractCubeImages(Image * imgs[6]);
-    bool extractCylImage(Image * & img);
-  // glue...
-    bool extractCubeImages(QImage * imgs[6]);
-    bool extractCylImage(QImage * & img);
-
-    PanoType getType() 
-    {
-        return m_type;
-    }
-
-    std::string & getErrorDescr()
-    { return m_error; }
+// get the type of pano it contains
+    PanoType getType() { return m_type; }
+// get one image (new QImage)
+    QImage * getImage( int face = 0 );
+// get error message
+    std::string & getErrorDescr(){ return m_error; }
 
 private:
         
@@ -104,8 +93,10 @@ void ReadAtom_TREF(long size);
 void ReadAtom_QTVR_PDAT(long size);
 void ReadAtom_QTVR_TREF(long size);
 void ReadAtom_QTVR_CUFA(long size);
-bool SeekAndExtractImages_Tiled(Image * imgs[6]);
-bool SeekAndExtractImagesCyl_Tiled(Image * & img);
+bool extractCubeImage(int i, QImage * &img);
+bool extractCylImage(QImage * &img);
+bool SeekAndExtractImage_Tiled( int i, QImage * &img );
+bool SeekAndExtractImageCyl_Tiled( QImage * &img );
 void LoadTilesForFace(int chunkNum);
 void Swizzle(int32 *value);
 void Swizzle(uint32 *value);
@@ -122,7 +113,7 @@ uint32  gCurrentTrackMedia;                 // 'pano' or ...
 //                                          // anything after that is the fast-start track, so we ignore it.
 bool gFoundJPEGs;
 bool gImagesAreTiled;
-int     gNumTilesPerImage;
+int  gNumTilesPerImage;
 
 int32       gPanoChunkOffset;
 int32       gPanoSampleSize;
@@ -131,7 +122,7 @@ int         gVideoSampleSize[MAX_IMAGE_OFFSETS];
 
 int32       gTileSize[MAX_TILES_PER_FACE];
 
-    FILE        *gFile;                             // FILE ref used for fopen().  Not used on Mac since mac uses FSSpec
+    FILE *gFile;  // FILE ref used for fopen().  Not used on Mac since mac uses FSSpec
     FILE * m_mainFile;
     FILE * m_cmovFile;
 
@@ -149,10 +140,9 @@ int32       gTileSize[MAX_TILES_PER_FACE];
 
     bool m_horizontalCyl;
     bool m_cmovZLib;
-    
-    // information about the panorama track
 
     PanoType m_type;
+
 };
 
-#endif //ndef PVQT_QTVR_H
+#endif //ndef QT_QTVR_H

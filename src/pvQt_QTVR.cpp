@@ -9,8 +9,11 @@
  *
  *  Modified for FreePV by Pablo d'Angelo <pablo.dangelo@web.de>
  *
- *  .$Id: QTVRDecoder.cpp 101 2006-12-01 23:42:33Z dangelo $
- *
+	Further modified by TKSharpless to use QImage and other Qt
+	data types, and to return cube face images one by one instead
+	of all at once.  Also simplified and corrected the tiled image
+	building code.
+	
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation; version 2.1 of
@@ -26,27 +29,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-////TEMPORARY FIXES////
-#define DEBUG_ERROR( x )
-#define DEBUG_DEBUG( x )
 
 #include <math.h>
 #include <errno.h>
 #include <vector>
 #include <zlib.h>
 
-#include <QTCore>
+#include <QtCore>
 #include <QImage>
 #include <QImageReader>
 #include "pvQt_QTVR.h"
-
-/****  interface to QImage    *****/
-
-struct Size2D {
-	int w, h;
-	Size2D():w(0),h(0){}
-	Size2D( int ww, int hh ):w(ww),h(hh){}
-};
 
 
 enum colorChannels{
@@ -55,99 +47,6 @@ enum colorChannels{
    RGB	=  QImage::Format_RGB888,
    RGBA	=  QImage::Format_ARGB32
 };
-
-
-class Image
-{
-
-public:
-
-	Image() : pqim(0), bpp(0) {}
-	~Image(){
-		if( pqim ) delete pqim;
-	}
-
-	Image(Size2D sz, colorChannels channels = RGB){
-		makeQI( sz, channels );
-	}
-
-	QImage * getQIm(){ return pqim; }
-
- 	/** Set image size.
-     *  
-     *  Can be used to resize an existing image as well.
-     *  In this case, the previous image data is lost
-     */
-	bool setSize(Size2D size, colorChannels channels = RGB){
-		return makeQI( size, channels );
-	}
-  /** get pointer to raster data.
-    QImage row data are always 32-bit aligned, use getRowStride() too!
-  */
-    unsigned char * getData(){
-		if( pqim == 0 ) return 0;
-		return pqim->scanLine(0);
-    }
-  /** get address increment (bytes) per row.
-  */
-    size_t getRowStride(){   
-		if( pqim == 0 ) return 0;
-		return pqim->bytesPerLine();   
-	}
-  /** get the number of bytes per pixel
-  */
-    int getColorChannels(){
-		return bpp;   
-	}
-  /** get the format code
-  */
-    colorChannels getType(){
-		if( pqim == 0 ) return NOCOLOR;
-		return colorChannels(pqim->format());   
-    }
-  /* get the image dimensions.
-  */
-    Size2D size(){   
-		if( pqim == 0 ) return Size2D(0, 0);
-		QSize s = pqim->size();
-		return Size2D(s.width(), s.height());   
-	}
-
-  /** access the red pixel component at coordinates \p x and \p y 
-    note this won't work for QImages in general, but should here
-    unsigned char & operator()(int x, int y) 
-    {
-        assert(pqim != 0);
-        return *(pqim->scanLine(y) + bpp*x);
-    }
-  */
-
-
-private:
-
-	QImage * pqim;
-	int bpp;
-
-	bool makeQI( Size2D sz, colorChannels channels ){
-		if( pqim ) delete pqim; pqim = 0;  
-		switch( channels ){
-		case GRAY: bpp = 1; break;
-		case RGB:  bpp = 3; break;
-		case RGBA: bpp = 4; break;
-		default:   bpp = 0; return false;
-		}
-		pqim = new QImage(QSize(sz.w, sz.h), QImage::Format(channels));
-		if( pqim == 0 ) bpp = 0;
-		return( pqim != 0 );
-	}
-
-
-// copying is forbidden.
-    Image(const Image & other) {};
-    void operator=(const Image & other) {};
-};
-
-/*****  end interface to QImage   *****/
 
 typedef unsigned long u_long;
 typedef bool Boolean;
@@ -188,18 +87,18 @@ bool decodeJPEG( QIODevice * dev, QImage * img, bool rot90 )
 }
 
 // source is a buffer
-bool decodeJPEG( char * buffer, size_t buf_len, Image & image, bool rot90=false)
+bool decodeJPEG( char * buffer, size_t buf_len, QImage & image, bool rot90=false)
 {
 	QByteArray qb( buffer, int(buf_len) );
 	QBuffer buf(&qb);
-	return decodeJPEG( &buf, image.getQIm(), rot90 );
+	return decodeJPEG( &buf, &image, rot90 );
 }
 
 // source is an open file
-bool decodeJPEG(FILE *f, Image & image, bool rot90=false){
+bool decodeJPEG( FILE *f, QImage & image, bool rot90=false){
 	QFile qf;
 	qf.open( f, QIODevice::ReadOnly );
-	return decodeJPEG( &qf, image.getQIm(), rot90 );
+	return decodeJPEG( &qf, &image, rot90 );
 }
 
 
@@ -312,7 +211,7 @@ struct QTVRTrackRefEntry{
 /* Decompress from file source to file dest until stream ends or EOF.
    inf() returns Z_OK on success, Z_MEM_ERROR if memory could not be
    allocated for processing, Z_DATA_ERROR if the deflate data is
-   invalid or incomplete, Z_VERSION_ERROR if the version of zlib.h and
+   invalid or incomplete, Z_VERSION_ERROR if the version of zlib.height() and
    the version of the library linked do not match, or Z_ERRNO if there
    is an error reading or writing the files. */
 int decompressZLIBFile(FILE *source, FILE *dest)
@@ -349,7 +248,10 @@ int decompressZLIBFile(FILE *source, FILE *dest)
             strm.avail_out = DECOMP_CHUNK;
             strm.next_out = out;
             ret = inflate(&strm, Z_NO_FLUSH);
-            assert(ret != Z_STREAM_ERROR);  /* state not clobbered */
+            ///assert(ret != Z_STREAM_ERROR);  /* state not clobbered */
+            if(ret == Z_STREAM_ERROR){
+            	qFatal("pvQt_QTVR::Z_STREAM_ERROR");
+           	}
             switch (ret) {
                 case Z_NEED_DICT:
                     ret = Z_DATA_ERROR;     /* and fall through */
@@ -419,7 +321,7 @@ bool QTVRDecoder::parseHeaders(const char * theDataFilePath)
    	gFile = fopen (theDataFilePath, "rb");
 	if  (!gFile)           
 	{
-        DEBUG_ERROR("fopen() failed: " << strerror(errno) );
+        m_error = "fopen() failed";
 		return false;
 	}
     m_mainFile = gFile;
@@ -873,8 +775,6 @@ void QTVRDecoder::ReadAtom_DCOM(long size)
         return;
     }
 
-    DEBUG_DEBUG("compression type: " << comp);
-
     if (strcmp(comp, "zlib") != 0 ) {
         m_error = std::string("unsupported compressed header: ") + comp;
         return;
@@ -1262,7 +1162,6 @@ void QTVRDecoder::ReadAtom_STSC(long size)
         Swizzle(&tmp.startChunk);
         Swizzle(&tmp.samplesPerChunk);
         Swizzle(&tmp.sampleDescriptionID);
-        DEBUG_DEBUG("Adding sample2chunk: chunk " << tmp.startChunk << " # samp " << tmp.samplesPerChunk << " descrID " << tmp.sampleDescriptionID);
         m_sample2ChunkTable.push_back(tmp);
     }
 }
@@ -1323,8 +1222,6 @@ int32			componentSubType;
 	componentSubType = info->componentSubType;									// get comp sub type
 	Swizzle(&componentSubType);												// convert BigEndian data to LittleEndian (if not Mac)
     char * t = (char*) & componentSubType;
-    DEBUG_DEBUG("componentSubType: " << t[0] << t[1] << t[2] << t[3]);
-
 
 	if (componentSubType == 'pano')
 	{
@@ -1354,10 +1251,6 @@ int32			componentSubType;
 void QTVRDecoder::ReadAtom_TKHD(long size)
 {
     int32 trackid;
-//int32         count;
-//    HandlerAtom     *atom;
-//    PublicHandlerInfo   *info;
-//    int32           componentSubType;
 
     int ret = fseek(gFile, 12, SEEK_CUR);
     if ( ret != 0 )
@@ -1374,10 +1267,7 @@ void QTVRDecoder::ReadAtom_TKHD(long size)
     }
     Swizzle(&trackid);
 
-    DEBUG_DEBUG("track id: " << trackid);
-
     if (trackid == m_mainTrack) {
-        DEBUG_DEBUG("This is the full resolution image track: " << trackid);
         // this is the main pano track.
         m_currTrackIsImageTrack = true;
     }
@@ -1430,11 +1320,10 @@ void QTVRDecoder::ReadAtom_TREF(long size)
                 subsize -= sz;
                 size -= sz;
                 Swizzle(&track);
-                DEBUG_DEBUG("adding imgt track: " << track);
                 if (i < MAX_REF_TRACKS)
                     m_panoTracks[i] = track;
                 else
-                    DEBUG_ERROR("maximum number of reference tracks exceeded");
+                    qFatal("maximum number of reference tracks exceeded");
                 i++;
             }
         } else {
@@ -1498,34 +1387,27 @@ VRPanoSampleAtom *atom;
     m_panoType = atom->panoType;
 	Swizzle(&m_panoType);											// convert BigEndian data to LittleEndian (if not Mac)
     char *t = (char*)&m_panoType;
-    DEBUG_DEBUG("panoType: " << t[3] << t[2] << t[1] << t[0]);
 
     if (m_panoType == kQTVRCube) {
-        // abort reading
-//        m_error = "Cylindrical panoramas are not supported yet.";
         m_type = PANO_CUBIC;
     } else if (m_panoType == 'hcyl' ){
-        DEBUG_DEBUG("horizontal cylindrical panorama");
-        m_type = PANO_CYLINDRICAL;
+        m_type = PANO_HORZ_CYL;
         // orientation of panorama.
         m_horizontalCyl = true;
     } else if (m_panoType == 'vcyl' ){
-        DEBUG_DEBUG("vertical cylindrical panorama");
-        m_type = PANO_CYLINDRICAL;
+        m_type = PANO_VERT_CYL;
         // orientation of panorama.
         m_horizontalCyl = false;
     } else if (m_panoType == 0 ) {
         // old QT format, orientation stored in flags
-        m_type = PANO_CYLINDRICAL;
         m_horizontalCyl = (atom->flags & 1);
+        m_type = m_horizontalCyl ? PANO_HORZ_CYL : PANO_VERT_CYL;
     }
 
     // get the track number of the real pano
     m_imageRefTrackIndex = atom->imageRefTrackIndex;
     Swizzle(&m_imageRefTrackIndex);                                         // convert BigEndian data to LittleEndian (if not Mac)
-    DEBUG_DEBUG("imageRefTrackIndex: " << m_imageRefTrackIndex);
     m_mainTrack = m_panoTracks[m_imageRefTrackIndex -1];
-    DEBUG_DEBUG("main pano track: " << m_mainTrack);
 
 	free(atom);
 }
@@ -1554,28 +1436,19 @@ void QTVRDecoder::ReadAtom_QTVR_TREF(long size)
 
 /********************* SEEK AND EXTRACT IMAGES ***************************/
 //
-// Finds the 6 cube faces JPEG's in the .mov file and then draws them into texture buffers.
-//
-
-bool QTVRDecoder::extractCubeImages(Image * cubefaces[6])
+// get the image for cube face iim
+bool QTVRDecoder::extractCubeImage(int iim, QImage * &cubeface)
 {
-//long	count;
-int		i;
-
     if (m_type != PANO_CUBIC) {
         m_error = "not a cubic panorama";
         return false;
     }
-
-				/* SEE IF WE NEED TO SPECIAL-CASE TILED IMAGES */
+	/* SEE IF WE NEED TO SPECIAL-CASE TILED IMAGES */
 				
 	if (gImagesAreTiled)
 	{
-		return SeekAndExtractImages_Tiled(cubefaces);
+		return SeekAndExtractImage_Tiled(iim, cubeface);
 	}
-
-	//printf("\n\n_______SEEK & EXTRACT IMAGES_______\n\n");
-
 
 	if (!gFoundJPEGs)
 	{
@@ -1583,212 +1456,37 @@ int		i;
 		return false;
 	}
 
-	for (i = 0; i < 6; i++)
-	{
-        DEBUG_DEBUG("extracting tile # " <<  i << "  chunk: " << gVideoChunkOffset[i]);
-		//printf("Processing image # %d...\n", i);
 
-					/***************************/
-					/* SEEK TO THE JPEG'S DATA */
-					/***************************/
-					
-		fseek(gFile, gVideoChunkOffset[i], SEEK_SET);
+	int i = iim;
+	/* SEEK TO THE JPEG'S DATA */
+	fseek(gFile, gVideoChunkOffset[i], SEEK_SET);
 		
-        cubefaces[i] = new Image;
-        // decode jpeg cube face
-        if (!decodeJPEG(gFile, *cubefaces[i])) {
-            m_error = "JPEG decoding failed";
-            DEBUG_ERROR(m_error);
-            for (int i=0; i<6; i++) {
-                if (cubefaces[i]) {
-                    delete cubefaces[i];
-                    cubefaces[i] = 0;
-                }
-            }
-            return false;
-        }
-	}
+    cubeface = new QImage;
+    if (!decodeJPEG(gFile, *cubeface)) {
+       m_error = "JPEG decoding failed";
+       delete cubeface;
+       cubeface = 0;
+       return false;
+ 	}
+ 	
     return true;
 }
 
 
-
-
-
-/********************* SEEK AND EXTRACT IMAGES:  TILED ***************************/
-
-bool QTVRDecoder::SeekAndExtractImages_Tiled(Image * cubefaces[6])
-{
-int		i;
-int		tileDimensions; //, compSize;
-int     faceSize;
-
-
-
-	//printf("\n\n_______SEEK & EXTRACT TILED IMAGES_______\n\n");
-
-	tileDimensions = (int) sqrt((float)gNumTilesPerImage);
-	
-	//printf("tileDimensions = %d\n", tileDimensions);
-
-
-
-	for (i = 0; i < 6; i++)										// for each Cube face...
-	{	
-		int		chunkNum = i * gNumTilesPerImage;
-		
-				/* LOAD ALL OF THE TILE IMAGES FOR THIS FACE */
-				//
-				// We load each tile image into a temp buffer.
-				//
-					
-		//printf("\nLoading tiles for Face #%d\n", i);
-
-
-        // init tile assembly
-        if (cubefaces[i]) {
-            delete cubefaces[i];
-        }
-        cubefaces[i] = 0;
-        int tileSize = 0;
-
-        // load and assemble tiles.
-        for (int t = 0; t < gNumTilesPerImage; t++)
-	    {
-		    int cChunk = chunkNum + t;
-	
-    		//printf("Processing tile #%d...\n", t);
-            DEBUG_DEBUG(" tile: " << t << "  chunk: " << cChunk << "  offset: " << gVideoChunkOffset[cChunk]);
-					/* SEEK TO THE JPEG'S DATA */
-					
-    		fseek(gFile, gVideoChunkOffset[cChunk], SEEK_SET);
-	    	if (ferror(gFile))
-		    {
-			    printf("LoadTilesForFace:  fseek failed!\n");
-    			continue;
-	    	}
-		
-					/* DECODE IT */
-					
-            Image img;
-            // decode jpg
-            if (!decodeJPEG(gFile, img)) 
-            {
-                m_error = "JPEG decoding failed";
-                DEBUG_ERROR(m_error);
-                for (int i=0; i<6; i++) {
-                    if (cubefaces[i]) {
-                        delete cubefaces[i];
-                        cubefaces[i] = 0;
-                    }
-                }
-                return false;
-            }
-
-            /*
-#ifdef DEBUG
-        {
-            std::string tfn;
-            FPV_S2S(tfn, "fpv_dbg_face_" << i <<  "_tile_" << t  << ".ppm");
-            img.writePPM(tfn);
-        }
-#endif
-            */
-                /* CALCULATE THE DIMENSIONS OF THE TARGET IMAGE */
-            if (cubefaces[i] == 0) {
-                // resize cube face
-                tileSize = img.size().w;
-                if (img.size().h != img.size().w) {
-                    DEBUG_ERROR("non square tiles not supported: "
-                                << "cube face # " << i 
-                                << "  tileSize : " << img.size().h << " , " << img.size().w);
-                    return false;
-                }
-                tileSize = img.size().w;
-                faceSize = tileSize * tileDimensions;
-                cubefaces[i] = new Image(Size2D(faceSize, faceSize));
-                DEBUG_DEBUG("cube face # " << i << "  tileSize : " << tileSize
-                            << "  faceSize: " << faceSize);
-            }
-
-            if (img.size().w != tileSize) {
-                // jpeg image size doesn't correspond to tile size
-                DEBUG_ERROR("JPEG size != tile size, tile # " << cChunk);
-                return false;
-            }
-
-
-            ////////////////////////////////////////
-            //   copy to cube face 
-
-            int h = t % tileDimensions;
-            int v = t / tileDimensions;
-
-			int left	= h * tileSize;
-			//int right	= left + tileSize;
-			
-			int top		= v * tileSize;
-			//int bottom	= top + tileSize;
-		
-            unsigned char * srcPtr = img.getData();
-            unsigned char * destPtr = cubefaces[i]->getData() + 3*left + 3*faceSize*top;
-
-            for (int y=0; y< tileSize; y++)
-            {
-                memcpy(destPtr, srcPtr, 3*tileSize);
-                destPtr += 3*faceSize;
-                srcPtr += 3*tileSize;
-            }
-        }
-        /*
-#ifdef DEBUG
-        {
-            std::string t;
-            FPV_S2S(t, "fpv_dbg_face_" << i << ".ppm");
-            cubefaces[i]->writePPM(t);
-        }
-#endif
-        */
-	}
-
-    return true;
-}
-
-bool QTVRDecoder::extractCubeImages(QImage * imgs[6]){
-	Image * tmp[6] = { 0,0,0,0,0,0 };
-	bool ok = extractCubeImages( tmp );
-	if( ok ) for( int i = 0; i < 6; i++ ){
-		imgs[i] = new QImage( *tmp[i]->getQIm() );
-		delete tmp[i];
-	}
-	return ok;
-}
-
-
-
-/********************* SEEK AND EXTRACT IMAGES CYLINDER ***************************/
-//
 // Seek and extract the image from a cylindrical pano
 //
 
-bool QTVRDecoder::extractCylImage(Image * & img)
+bool QTVRDecoder::extractCylImage(QImage * &img)
 {
-//long  count;
-//    int     i;
-
-    if (m_type != PANO_CYLINDRICAL) {
+    if (m_type != PANO_HORZ_CYL) {
         m_error = "not a cylindrical panorama";
         return false;
     }
 
-    /* SEE IF WE NEED TO SPECIAL-CASE TILED IMAGES */
     if (gImagesAreTiled)
     {
-        return SeekAndExtractImagesCyl_Tiled(img);
+        return SeekAndExtractImageCyl_Tiled(img);
     }
-
-    //printf("\n\n_______SEEK & EXTRACT IMAGES   CYL_______\n\n");
-
 
     if (!gFoundJPEGs)
     {
@@ -1796,70 +1494,113 @@ bool QTVRDecoder::extractCylImage(Image * & img)
         return false;
     }
 
-    DEBUG_DEBUG("extracting single cylinder image  chunk: " << gVideoChunkOffset[0]);
-    DEBUG_DEBUG("cylinder orientation: " << (m_horizontalCyl ? "horizontal" : "vertical"));
-    /***************************/
     /* SEEK TO THE JPEG'S DATA */
-    /***************************/
 
     fseek(gFile, gVideoChunkOffset[0], SEEK_SET);
 
-    img = new Image;
+    img = new QImage;
     // decode jpeg cube face, and rotate 90 CW, if required
-    if (!decodeJPEG(gFile, *img, (!m_horizontalCyl))) {
+    if (!decodeJPEG( gFile, *img, (!m_horizontalCyl))) {
         m_error = "JPEG decoding failed";
-        DEBUG_ERROR(m_error);
-        if (img) {
-            delete img;
-        }
+        delete img;
+        img = 0;
         return false;
     }
 
     return true;
 }
 
-bool QTVRDecoder::extractCylImage(QImage * & img){
-	Image * p = 0;
-	bool ok = extractCylImage( p );
-	if(ok){
-		img = p->getQIm();
-		delete p;
-	}
-	return ok;
-}
-
 /********************* SEEK AND EXTRACT IMAGES:  TILED ***************************/
 
-bool QTVRDecoder::SeekAndExtractImagesCyl_Tiled(Image * & image)
+bool QTVRDecoder::SeekAndExtractImage_Tiled(int i, QImage * &cubeface)
 {
-//int     i=0;
-//int     tileDimensions; //, compSize;
-//int     faceSize;
+	int		tileDimensions; //, compSize;
+	int     faceSize;
+	
+//// TKS: this is really cheesy
+	tileDimensions = (int) sqrt((float)gNumTilesPerImage);
 
 
+	int		chunkNum = i * gNumTilesPerImage;
+	
+    // init tile assembly
+    cubeface = 0;
+    int tileSize = 0;
 
-    //printf("\n\n_______SEEK & EXTRACT TILED IMAGES_______\n\n");
+    // load and assemble tiles.
+    for (int t = 0; t < gNumTilesPerImage; t++)
+    {
+	    int cChunk = chunkNum + t;
+   		fseek(gFile, gVideoChunkOffset[cChunk], SEEK_SET);
+    	if (ferror(gFile))
+	    {
+		    printf("LoadTilesForFace:  fseek failed!\n");
+   			continue;
+    	}
+        QImage img;
+        // decode jpg
+        if (!decodeJPEG(gFile, img)) 
+        {
+           m_error = "JPEG decoding failed";
+           return false;
+        }
 
-    //tileDimensions = (int) sqrt((float)gNumTilesPerImage);
-    
-    //printf("tileDimensions = %d\n", tileDimensions);
+        if (tileSize == 0) {
+            // size cube face and create image
+            tileSize = img.size().width();
+            faceSize = tileSize * tileDimensions;
+            cubeface = new QImage(faceSize, faceSize, img.format());
+        }
 
+        if (img.size().height() != img.size().width()) {
+            m_error = "non square tile";
+            return false;
+        }
+        
+        if (img.size().width() != tileSize) {
+            m_error = "tiles of different sizes";
+            return false;
+        }
+        ////////////////////////////////////////
+        //   copy to cube face 
+  // for QImage must use row strides...
+        int tilerowsize = img.bytesPerLine();
+        int facerowsize = cubeface->bytesPerLine();
+  // (and let's use the actual pixel size too)
+        int bpp = facerowsize / faceSize;
+	// tile indices
+        int h = t % tileDimensions;
+        int v = t / tileDimensions;
+	// byte addrs (incl alignment)
+        unsigned char * srcPtr = img.bits();
+        unsigned char * destPtr = cubeface->bits()			// raster
+        			            + facerowsize * tileSize * v	// row
+        			            + bpp * tileSize * h;			// col
+
+        for (int y=0; y< tileSize; y++)
+        {  // loop over rows
+            memcpy(destPtr, srcPtr, bpp*tileSize);
+            destPtr += facerowsize;
+            srcPtr += tilerowsize;
+        }
+    }
+
+    return true;
+}
+
+bool QTVRDecoder::SeekAndExtractImageCyl_Tiled(QImage * &image)
+{
 
     // init tile assembly
     if (image) {
         delete image;
     }
     image = 0;
-    Size2D tileSize;
+    QSize tileSize;
 
     // load and assemble tiles.
     for (int t = 0; t < gNumTilesPerImage; t++)
     {
-
-        //printf("Processing tile #%d...\n", t);
-        DEBUG_DEBUG(" tile: " << t << "  offset: " << gVideoChunkOffset[t]);
-                    /* SEEK TO THE JPEG'S DATA */
-
         fseek(gFile, gVideoChunkOffset[t], SEEK_SET);
         if (ferror(gFile))
             {
@@ -1867,39 +1608,25 @@ bool QTVRDecoder::SeekAndExtractImagesCyl_Tiled(Image * & image)
             continue;
         }
 
-                /* DECODE IT */
-
-        Image tile;
+        QImage tile;
         // decode jpg
         if (!decodeJPEG(gFile, tile, (!m_horizontalCyl))) {
             m_error = "JPEG decoding failed";
-            DEBUG_ERROR(m_error);
             return false;
         }
 
-        /*
-#ifdef DEBUG
-        {
-            std::string tfn;
-            FPV_S2S(tfn, "fpv_dbg_stripe_" << i <<  "_tile_" << t  << ".pnm");
-            tile.writePPM(tfn);
-        }
-#endif
-        */
         /* CALCULATE THE DIMENSIONS OF THE TARGET IMAGE */
-        if (image == 0) {
+        if (tileSize.isEmpty()) {
             // resize cube face
             tileSize = tile.size();
 
-            Size2D imgSize(tileSize.w * gNumTilesPerImage, tileSize.h);
-            image = new Image(imgSize);
-            DEBUG_DEBUG("image tileSize : " << tileSize.w << "x" <<tileSize.h
-                        << "  imgSize: " << imgSize.w << "x" << imgSize.h);
+            int w = tileSize.width() * gNumTilesPerImage, 
+                h = tileSize.height();
+            image = new QImage(w,h,tile.format());
         }
-        if (tile.size().w != tileSize.w || tile.size().h != tileSize.h) {
+        if (tile.size().width() != tileSize.width() || tile.size().height() != tileSize.height()) {
             // jpeg image size doesn't correspond to tile size
             m_error = "Tiles with different size found";
-            DEBUG_ERROR(m_error);
             return false;
         }
 
@@ -1910,31 +1637,22 @@ bool QTVRDecoder::SeekAndExtractImagesCyl_Tiled(Image * & image)
         int left=0;
         int right=0;
         if (m_horizontalCyl) {
-            left    = t * tileSize.w;
-            right   = left + tileSize.w;
+            left    = t * tileSize.width();
+            right   = left + tileSize.width();
         } else {
-            left    = image->size().w - (t+1) * tileSize.w;
-            right   = left + tileSize.w;
+            left    = image->size().width() - (t+1) * tileSize.width();
+            right   = left + tileSize.width();
         }
 
-        unsigned char * srcPtr = tile.getData();
-        unsigned char * destPtr = image->getData() + 3*left;
+        unsigned char * srcPtr = tile.bits();
+        unsigned char * destPtr = image->bits() + 3*left;
 
-        for (int y=0; y< tileSize.h; y++)
+        for (int y=0; y< tileSize.height(); y++)
         {
-            memcpy(destPtr, srcPtr, 3*tileSize.w);
-            destPtr += image->getRowStride();
-            srcPtr += tile.getRowStride();
+            memcpy(destPtr, srcPtr, 3*tileSize.width());
+            destPtr += image->bytesPerLine();
+            srcPtr += tile.bytesPerLine();
         }
-        /*
-#ifdef DEBUG
-        {
-            std::string t;
-            FPV_S2S(t, "fpv_dbg_img_" << i << ".ppm");
-            image->writePPM(t);
-        }
-#endif
-        */
     }
     return true;
 }
@@ -1944,8 +1662,8 @@ bool QTVRDecoder::SeekAndExtractImagesCyl_Tiled(Image * & image)
 //
 // Converts a 4-byte int to reverse the Big-Little Endian order of the bytes.
 //
-// Quicktime movies are in BigEndian format, so when reading on a PC or other Little-Endian
-// machine, we've got to swap the bytes around.
+// Quicktime movies are in BigEndian format, so when reading on a PC or other 
+// Little-Endian machine, we've got to swap the bytes around.
 //
 
 void QTVRDecoder::Swizzle(uint32 *value)

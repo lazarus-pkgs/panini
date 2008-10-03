@@ -5,7 +5,7 @@
 
 #include "pvQtView.h"
 
-#include "pvQt_QTVR.h"
+#include "Qt_QTVR.h"
 
 GLwindow::GLwindow (QWidget * parent )
 : QWidget(parent)
@@ -98,7 +98,7 @@ void GLwindow::newPicture(){
 	// test with a QTVR file
 	QTVRDecoder dec;
 	bool ok = dec.parseHeaders(
-		(const char *)(pfx + QString("pvQt/test/OutsideSionHillCampus.mov")).data()
+		"/home/tommy/pvQt/test/OutsideSionHillCampus.mov"
 	);
 	if( !ok ) return;
 
