@@ -44,10 +44,10 @@ namespace FPV
     typedef short int16;
     typedef unsigned short uint16;
 
-#define MAX_TILE_DIMENSIONS 10                                              // this is the maximum # of tiles x/y that we'll support
+#define MAX_TILE_DIMENSIONS 10    // this is the maximum # of tiles x/y that we'll support
 #define MAX_TILES_PER_FACE  (MAX_TILE_DIMENSIONS * MAX_TILE_DIMENSIONS)
 
-#define MAX_IMAGE_OFFSETS       (MAX_TILES_PER_FACE*6)
+#define MAX_IMAGE_OFFSETS   (MAX_TILES_PER_FACE*6)
 
 #define MAX_REF_TRACKS 10
 
@@ -117,7 +117,7 @@ void Swizzle(uint16 *value);
 
 uint32  gCurrentTrackMedia;                 // 'pano' or ...
 //Boolean   gAlreadyGotVideoMedia;          // we assume that the first video media track is what we want,
-//                                                      // anything after that is the fast-start track, so we ignore it.
+//                                          // anything after that is the fast-start track, so we ignore it.
 bool gFoundJPEGs;
 bool gImagesAreTiled;
 int     gNumTilesPerImage;

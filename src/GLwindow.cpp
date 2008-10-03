@@ -5,6 +5,8 @@
 
 #include "pvQtView.h"
 
+#include "pvQt_QTVR.h"
+
 GLwindow::GLwindow (QWidget * parent )
 : QWidget(parent)
 {
@@ -62,8 +64,14 @@ void GLwindow::resizeEvent( QResizeEvent * ev ){
 // attach picture to display
 void GLwindow::newPicture(){
 ////TEST//// with a cubic pano
-	static int sw = 0;
+#ifdef WIN32
+	QString pfx = QString("/users/tommy/documents/");
+#else
 	QString pfx = QString("/home/tommy/");
+#endif
+#if 0
+  // test with 6 cubic images
+	static int sw = 0;
 	pvpic->setType( pvQtPic::cub );
   
   if( sw > 0 )
@@ -86,6 +94,25 @@ void GLwindow::newPicture(){
 			pfx + QString("pvQt/test/outside_000005.jpg") );
 
   sw = (sw + 1) % 7;
+#else
+	// test with a QTVR file
+	QTVRDecoder dec;
+	bool ok = dec.parseHeaders(
+		(const char *)(pfx + QString("pvQt/test/OutsideSionHillCampus.mov")).data()
+	);
+	if( !ok ) return;
+
+	if( dec.getType() == PANO_CUBIC ){
+		QImage * facims[6];
+		if( dec.extractCubeImages( facims ) ){
+			pvpic->setType( pvQtPic::cub );
+			for( int i = 0; i < 6; i++ ){
+				pvpic->setFaceImage( pvQtPic::PicFace(i), facims[i] );
+			}
+		}
+		
+	}
+#endif
 ////END TEST//// 
 	glview->showPic( pvpic );
 }

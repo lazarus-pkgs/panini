@@ -19,3 +19,26 @@ Initial strategy:
 
 	
 	
+1 October 2008  a bug un ubuntu hardy heron?
+	When main window is maximized, the UI goes dead.
+	This is not the case on Win32 (minGW).
+	
+2 Oct 2008	Adapting QTVRDecoder 
+	It first parses and indexes the QTVR file then extracts 
+	all found pano images by rereading sections as jpeg.
+	It uses stdio so will only work on a local file.  Should 
+	have the ability to work from memory too.
+	It would be good to be able to load the cube faces
+	separately.
+	Repackaging as a QImageIOPlugin would provide a lot of
+	nice behavior.  One downside is that the plugin dll has
+	to be installed in a special directory name.  A probably
+	much easier alternative	is to make a readQTVR class that 
+	just gets the jpeg files in core, and use a QImageReader 
+	on those.  I think this could be done without making
+	the QTVR reader depend on Qt.
+	But first I'll try to use QTVRDecoder pretty much as-is,
+	with a Qt-based Image class, defs from parameters.h or 
+	utils.h replaced with local defs. 
+	
+	

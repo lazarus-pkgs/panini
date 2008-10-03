@@ -373,7 +373,7 @@ void pvQtView::makeSphere( GLuint list )
 ////	gluQuadricTexture(qobj, GL_TRUE );
 
 	glNewList(list, GL_COMPILE);
-		gluSphere(qobj, 1.0, 36, 35);
+		gluSphere(qobj, 1.0, 72, 70);
 	glEndList();
  }
 

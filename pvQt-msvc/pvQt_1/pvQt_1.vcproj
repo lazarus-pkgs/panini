@@ -28,7 +28,7 @@
 				CleanCommandLine="cd ..\.. &#x0D;&#x0A;make clean"
 				Output="pvQt_1.exe"
 				PreprocessorDefinitions="WIN32;_DEBUG"
-				IncludeSearchPath="C:\Qt\4.4.1\include;C:\MinGW\include"
+				IncludeSearchPath="C:\Qt\4.4.1\include;C:\MinGW\include;C:\MinGW\GnuWin32\include"
 				ForcedIncludes=""
 				AssemblySearchPath=""
 				ForcedUsingAssemblies=""
@@ -48,7 +48,7 @@
 				CleanCommandLine="cd ..\.. &#x0D;&#x0A;make clean"
 				Output="pvQt_1.exe"
 				PreprocessorDefinitions="WIN32;NDEBUG"
-				IncludeSearchPath="C:\Qt\4.4.1\include;C:\MinGW\include"
+				IncludeSearchPath="C:\Qt\4.4.1\include;C:\MinGW\include;C:\MinGW\GnuWin32\include"
 				ForcedIncludes=""
 				AssemblySearchPath=""
 				ForcedUsingAssemblies=""
@@ -77,6 +77,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\pvQt_QTVR.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\pvQtPic.cpp"
 				>
 			</File>
@@ -99,6 +103,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\pvQt_Image.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\pvQt_QTVR.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\pvQtPic.h"
 				>
 			</File>
@@ -118,7 +130,11 @@
 			>
 		</File>
 		<File
-			RelativePath="..\..\pvQt_1.pro"
+			RelativePath="..\..\notes.txt"
+			>
+		</File>
+		<File
+			RelativePath="..\..\pvQt.pro"
 			>
 		</File>
 		<File
