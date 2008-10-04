@@ -369,7 +369,7 @@ long QTVRDecoder::ReadQTMovieAtom(void)
     size_t sz = fread(&atomSize, 1, 4, gFile);      
     if (ferror(gFile) || sz != 4)
     {
-        printf("ReadMovieAtom:  fread() failed!\n");
+        m_error = "ReadMovieAtom:  fread() failed!";
         return(-1);
     }   
 
@@ -378,7 +378,7 @@ long QTVRDecoder::ReadQTMovieAtom(void)
     sz = fread(&atomType, 1, 4, gFile);     
     if (ferror(gFile) || sz != 4)
     {
-        printf("ReadMovieAtom:  fread() failed!\n");
+        m_error = "ReadMovieAtom:  fread() failed!";
         return(-1);
     }
 
@@ -388,7 +388,7 @@ long QTVRDecoder::ReadQTMovieAtom(void)
     sz = fread(&childCount, 1, 2, gFile);     
     if (ferror(gFile) || sz != 2)
     {
-        printf("ReadMovieAtom:  fread() failed!\n");
+        m_error = "ReadMovieAtom:  fread() failed!";
         return(-1);
     }
 
@@ -399,16 +399,11 @@ long QTVRDecoder::ReadQTMovieAtom(void)
     Swizzle(&atomType);
     Swizzle(&childCount);
 
-
-    //printf("QTAtom 0x%08X  (0x%08X)  %c%c%c%c child count: %d\n", filePos, (int)atomSize, *(c +3), *(c + 2), *(c + 1) ,*c, childCount );
-
-
-
-            /* READ EXTENDED DATA IF NEEDED */
+   /* READ EXTENDED DATA IF NEEDED */
 
     if (atomSize == 1)                                  // if atom size == 1 then there's extended data in the header
     {
-        printf("ReadMovieAtom: Extended size isn't supported yet...\n");
+        m_error = "ReadMovieAtom: Extended size isn't supported";
         return(-1); 
     }
 
@@ -432,11 +427,9 @@ long QTVRDecoder::ReadQTMovieAtom(void)
             }
             while(remainingSize > 0);
 */
-            //printf("  [Subrecursing 'sean' qt atom]\n");
             for (int i=0; i < childCount; i++) {
                 remainingSize -= ReadQTMovieAtom();
             }
-            //printf("  [End subrecursing 'sean' qt atom]\n");
             break;
         case 'tref':
             ReadAtom_QTVR_TREF(atomSize-20);
@@ -457,14 +450,13 @@ long QTVRDecoder::ReadQTMovieAtom(void)
     
     if (atomSize == 0)                              // if last atom size was 0 then that was the end
     {
-        printf("\n===== that should have been the end.\n");
         return(-1);
     }
     else    
     {
         int r = fseek(gFile, (long)filePos + atomSize, SEEK_SET);
-        if (ferror(gFile) || r != 0)
-            printf("ReadQTMovieAtom: fseek() failed, probably EOF?\n");   
+ ////       if (ferror(gFile) || r != 0)
+ ////           printf("ReadQTMovieAtom: fseek() failed, probably EOF?\n");   
     }
             
     return(atomSize);                               // return the size of the atom
@@ -509,7 +501,7 @@ size_t	filePos;
 	iErr = FSRead(gMovfRefNum, &count, &atomSize);
 	if (iErr)
 	{
-		printf("ReadMovieAtom:  FSRead failed!  %d\n", iErr);
+		m_error = "ReadMovieAtom:  FSRead failed!";
 		return(-1);
 	}	
 		
@@ -518,7 +510,7 @@ size_t	filePos;
 	count = 4;											// type is 4 bytes
 	if (FSRead(gMovfRefNum, &count, &atomType) != noErr)
 	{
-		printf("ReadMovieAtom:  FSRead failed!\n");
+		m_error = "ReadMovieAtom:  FSRead failed!";
 		return(1);
 	}
 
@@ -537,7 +529,7 @@ size_t	filePos;
 	size_t sz = fread(&atomSize, 1, 4, gFile);		
 	if (ferror(gFile) || sz != 4)
 	{
-		printf("ReadMovieAtom:  fread() failed!\n");
+		m_error = "ReadMovieAtom:  fread() failed!";
 		return(-1);
 	}	
 
@@ -546,7 +538,7 @@ size_t	filePos;
 	sz = fread(&atomType, 1, 4, gFile);		
 	if (ferror(gFile) || sz != 4)
 	{
-		printf("ReadMovieAtom:  fread() failed!\n");
+		m_error = "ReadMovieAtom:  fread() failed!";
 		return(-1);
 	}	
 		
@@ -555,17 +547,11 @@ size_t	filePos;
 	Swizzle(&atomType);
 		
 #endif		
-			
-
-    //printf("Atom 0x%08X  (0x%08X)  %c%c%c%c \n", filePos, (int)atomSize, *(c +3), *(c + 2), *(c + 1) ,*c  );
-
-
-
-			/* READ EXTENDED DATA IF NEEDED */
+    /* READ EXTENDED DATA IF NEEDED */
 		
 	if (atomSize == 1)									// if atom size == 1 then there's extended data in the header
 	{
-		printf("ReadMovieAtom: Extended size isn't supported yet...\n");
+		m_error = "ReadMovieAtom: Extended size isn't supported";
 		return(-1);	
 	}
 
@@ -586,14 +572,12 @@ size_t	filePos;
 			//
 			
         case	'moov': // MovieAID:										//'moov'
-				//printf("  [Subrecursing 'moov' atom]\n");
 				remainingSize = atomSize - 8;					// there are n bytes left in this atom to parse
 				do
 				{				
 					remainingSize -= ReadMovieAtom();			// read atom and dec by its size					
 				}
 				while(remainingSize > 0);
-				//printf("  [End subrecurse 'moov' atom]\n");
 				break;
 	
 		
@@ -738,18 +722,17 @@ size_t	filePos;
 	
 	if (atomSize == 0)								// if last atom size was 0 then that was the end
 	{
-		printf("\n===== that should have been the end.\n");
 		return(-1);
 	}
 	else	
 	{
 #ifdef TARGET_OS_MAC		
 		if (SetFPos(gMovfRefNum, fsFromStart, filePos + atomSize))
-			printf("ReadMovieAtom: SetFPos failed, probably EOF?\n");	
+////			printf("ReadMovieAtom: SetFPos failed, probably EOF?\n");	
 #else
 		fseek(gFile, (long)filePos + atomSize, SEEK_SET);
-		if (ferror(gFile))
-			printf("ReadMovieAtom: fseek() failed, probably EOF?\n");	
+////		if (ferror(gFile))
+////			printf("ReadMovieAtom: fseek() failed, probably EOF?\n");	
 #endif		
 	}
 			
@@ -771,12 +754,12 @@ void QTVRDecoder::ReadAtom_DCOM(long size)
     size_t sz = fread(&comp,1 , 4, gFile);
     if (ferror(gFile) || sz != 4)
     {
-        printf("ReadAtom_DCOM:  fread() failed!\n");
+        m_error = "ReadAtom_DCOM:  fread() failed!\n";
         return;
     }
 
     if (strcmp(comp, "zlib") != 0 ) {
-        m_error = std::string("unsupported compressed header: ") + comp;
+        m_error = "unsupported header compression scheme ";
         return;
     }
     m_cmovZLib = true;
@@ -792,7 +775,7 @@ void QTVRDecoder::ReadAtom_CMVD(long size)
     size_t sz = fread(&uncomp_size,1 , 4, gFile);
     if (ferror(gFile) || sz != 4)
     {
-        printf("ReadAtom_CMVD:  fread() failed!\n");
+        m_error = "ReadAtom_CMVD:  fread() failed!\n";
         return;
     }
     size -= (int)sz;
@@ -870,14 +853,14 @@ int				numEntries;
 	count = size;							
 	if (FSRead(gMovfRefNum, &count, atom) != noErr)
 	{
-		printf("ReadAtom_STCO:  FSRead failed!\n");
+		m_error = "ReadAtom_STCO:  FSRead failed!";
 		return;
 	}
 #else
 	fread(atom, size, 1, gFile);		
 	if (ferror(gFile))
 	{
-		printf("ReadAtom_STCO:  fread() failed!\n");
+		m_error = "ReadAtom_STCO:  fread() failed!";
 		return;
 	}	
 #endif		
@@ -938,13 +921,13 @@ int				numEntries;
 #if 0							
 				for (i = 0; i < numEntries; i++)
 				{
-					printf("       # Chunk Offset entries: %d\n", numEntries);
+			////		printf("       # Chunk Offset entries: %d\n", numEntries);
 
 					for (i = 0; i < numEntries; i++)
 					{
 						gVideoChunkOffset[i] = atom->chunkOffsetTable[i];
 						Swizzle(&gVideoChunkOffset[i]);							// convert BigEndian data to LittleEndian (if not Mac)
-						printf("       Chunk offset #%d = %d\n", i, gVideoChunkOffset[i] );
+			////			printf("       Chunk offset #%d = %d\n", i, gVideoChunkOffset[i] );
 					}
 					gCurrentTrackMedia = 0;											// reset this now!
 					break;
@@ -1025,14 +1008,14 @@ int32			numEntries, i;
 	count = size;							
 	if (FSRead(gMovfRefNum, &count, atom) != noErr)
 	{
-		printf("ReadAtom_STSZ:  FSRead failed!\n");
+		m_error = "ReadAtom_STSZ:  FSRead failed!";
 		return;
 	}
 #else
 	fread(atom, size, 1, gFile);		
 	if (ferror(gFile))
 	{
-		printf("ReadAtom_STSZ:  fread() failed!\n");
+		m_error = "ReadAtom_STSZ:  fread() failed!";
 		return;
 	}	
 #endif		
@@ -1058,11 +1041,9 @@ int32			numEntries, i;
             {
 
                 if (m_type == PANO_CUBIC) {
-                    if (numEntries < 6)                     // there MUST be at least 6 jpegs or this isn't a cube
+                    if (numEntries < 6)   // there MUST be at least 6 jpegs or this isn't a cube
                     {
-                        printf("THERE ARE NOT 6 JPEGS IN THIS FILE!  We only support cubic QTVR's, and those have 6 or more JPEGs!\n");
-                        printf("This appears to only have %d\n", numEntries);
-                        m_error="cubic panorama with less than 6 image";
+                        m_error="cubic panorama with less than 6 images";
                         free(atom);
                         return;
                     }
@@ -1080,7 +1061,7 @@ int32			numEntries, i;
                         gImagesAreTiled = true;             
                         if (numEntries > MAX_IMAGE_OFFSETS)             // are there too many tiles
                         {
-                            printf("THERE APPEAR TO BE TOO MANY TILE IMAGES IN THIS FILE!!!!!!!  %d\n", numEntries);
+                            m_error = "Too many tiles!";
                             free(atom);
                             return;
                         }
@@ -1099,7 +1080,7 @@ int32			numEntries, i;
                         gImagesAreTiled = true;             
                         if (numEntries > MAX_IMAGE_OFFSETS)             // are there too many tiles
                         {
-                            printf("THERE APPEAR TO BE TOO MANY TILE IMAGES IN THIS FILE!!!!!!!  %d\n", numEntries);
+                            m_error = "Too many tiles!";
                             free(atom);
                             return;
                         }
@@ -1135,7 +1116,7 @@ void QTVRDecoder::ReadAtom_STSC(long size)
     size_t sz = fread(&numEntries,1 , 4, gFile);
     if (ferror(gFile) || sz != 4)
     {
-        printf("ReadAtom_STSC:  fread() failed!\n");
+        m_error = "ReadAtom_STSC:  fread() failed!";
         return;
     }
 
@@ -1143,7 +1124,7 @@ void QTVRDecoder::ReadAtom_STSC(long size)
     sz = fread(&numEntries,1 , 4, gFile);
     if (ferror(gFile) || sz != 4)
     {
-        printf("ReadAtom_STSC:  fread() failed!\n");
+        m_error = "ReadAtom_STSC:  fread() failed!";
         return;
     }
     Swizzle(&numEntries);
@@ -1156,7 +1137,7 @@ void QTVRDecoder::ReadAtom_STSC(long size)
         sz = fread(&tmp,1 , 12, gFile);
         if (ferror(gFile) || sz != 12)
         {
-            printf("ReadAtom_STSC:  fread() failed!\n");
+	        m_error = "ReadAtom_STSC:  fread() failed!";
             return;
         }
         Swizzle(&tmp.startChunk);
@@ -1203,14 +1184,14 @@ int32			componentSubType;
 	count = size;							
 	if (FSRead(gMovfRefNum, &count, atom) != noErr)
 	{
-		printf("ReadAtom_HDLR:  FSRead failed!\n");
+		m_error = "ReadAtom_HDLR:  FSRead failed!";
 		return;
 	}
 #else
 	fread(atom, size, 1, gFile);		
 	if (ferror(gFile))
 	{
-		printf("ReadAtom_HDLR:  fread() failed!\n");
+		m_error = "ReadAtom_HDLR:  fread() failed!";
 		return;
 	}	
 #endif		
@@ -1255,14 +1236,14 @@ void QTVRDecoder::ReadAtom_TKHD(long size)
     int ret = fseek(gFile, 12, SEEK_CUR);
     if ( ret != 0 )
     {
-        printf("ReadAtom_TKHD:  fseek() failed!\n");
+        m_error = "ReadAtom_TKHD:  fseek() failed!";
         return;
     }
 
     size_t sz = fread(&trackid,1 , 4, gFile);
     if (ferror(gFile) || sz != 4)
     {
-        printf("ReadAtom_TKHD:  fread() failed!\n");
+        m_error = "ReadAtom_TKHD:  fread() failed!";
         return;
     }
     Swizzle(&trackid);
@@ -1291,7 +1272,7 @@ void QTVRDecoder::ReadAtom_TREF(long size)
         size_t sz = fread(&subsize,1 , 4, gFile);
         if (ferror(gFile) || sz != 4)
         {
-            printf("ReadAtom_TREF:  fread() failed!\n");
+            m_error = "ReadAtom_TREF:  fread() failed!";
             return;
         }
         Swizzle(&subsize);
@@ -1300,7 +1281,7 @@ void QTVRDecoder::ReadAtom_TREF(long size)
         sz = fread(&type,1 , 4, gFile);        
         if (ferror(gFile) || sz != 4)
         {
-            printf("ReadAtom_TREF:  fread() failed!\n");
+            m_error = "ReadAtom_TREF:  fread() failed!";
             return;
         }
         Swizzle(&type);
@@ -1314,24 +1295,24 @@ void QTVRDecoder::ReadAtom_TREF(long size)
                 sz = fread(&track,1 , 4, gFile);        
                 if (ferror(gFile) || sz != 4)
                 {
-                    printf("ReadAtom_TREF:  fread() failed!\n");
+                    m_error = "ReadAtom_TREF:  fread() failed!";
                     return;
                 }
                 subsize -= sz;
                 size -= sz;
                 Swizzle(&track);
                 if (i < MAX_REF_TRACKS)
-                    m_panoTracks[i] = track;
-                else
-                    qFatal("maximum number of reference tracks exceeded");
-                i++;
+                    m_panoTracks[i++] = track;
+				else {
+                    m_error = "Too many reference tracks!";
+				}
             }
         } else {
             // seek to next atom
             int ret = fseek(gFile, subsize, SEEK_CUR);
             if (ret != 0)
             {
-                printf("ReadAtom_TREF:  fseek() failed!\n");
+                m_error = "ReadAtom_TREF:  fread() failed!";
                 return;
             }
             size -= sz;
@@ -1369,14 +1350,14 @@ VRPanoSampleAtom *atom;
 	count = size;							
 	if (FSRead(gMovfRefNum, &count, atom) != noErr)
 	{
-		printf("ReadAtom_PDAT:  FSRead failed!\n");
+		m_error = "ReadAtom_PDAT:  FSRead failed!";
 		return;
 	}
 #else
 	size_t sz = fread(atom, size, 1, gFile);		
 	if (ferror(gFile) || sz != 1)
 	{
-		printf("ReadAtom_PDAT:  fread() failed!\n");
+		m_error = "ReadAtom_PDAT:  fread() failed!";
 		return;
 	}	
 #endif		
@@ -1391,17 +1372,17 @@ VRPanoSampleAtom *atom;
     if (m_panoType == kQTVRCube) {
         m_type = PANO_CUBIC;
     } else if (m_panoType == 'hcyl' ){
-        m_type = PANO_HORZ_CYL;
+        m_type = PANO_CYLINDRICAL;
         // orientation of panorama.
         m_horizontalCyl = true;
     } else if (m_panoType == 'vcyl' ){
-        m_type = PANO_VERT_CYL;
+        m_type = PANO_CYLINDRICAL;
         // orientation of panorama.
         m_horizontalCyl = false;
     } else if (m_panoType == 0 ) {
         // old QT format, orientation stored in flags
         m_horizontalCyl = (atom->flags & 1);
-        m_type = m_horizontalCyl ? PANO_HORZ_CYL : PANO_VERT_CYL;
+        m_type = PANO_CYLINDRICAL;
     }
 
     // get the track number of the real pano
@@ -1452,7 +1433,7 @@ bool QTVRDecoder::extractCubeImage(int iim, QImage * &cubeface)
 
 	if (!gFoundJPEGs)
 	{
-		printf("No usable JPEG images were found, or we didn't find 6 which is needed to make a cubic pano\n");
+		m_error = "Missing cubic images";
 		return false;
 	}
 
@@ -1478,7 +1459,7 @@ bool QTVRDecoder::extractCubeImage(int iim, QImage * &cubeface)
 
 bool QTVRDecoder::extractCylImage(QImage * &img)
 {
-    if (m_type != PANO_HORZ_CYL) {
+    if (m_type != PANO_CYLINDRICAL) {
         m_error = "not a cylindrical panorama";
         return false;
     }
@@ -1490,7 +1471,7 @@ bool QTVRDecoder::extractCylImage(QImage * &img)
 
     if (!gFoundJPEGs)
     {
-        printf("No usable JPEG images were found\n");
+        m_error = "No usable JPEG image found";
         return false;
     }
 
@@ -1534,8 +1515,8 @@ bool QTVRDecoder::SeekAndExtractImage_Tiled(int i, QImage * &cubeface)
    		fseek(gFile, gVideoChunkOffset[cChunk], SEEK_SET);
     	if (ferror(gFile))
 	    {
-		    printf("LoadTilesForFace:  fseek failed!\n");
-   			continue;
+		    m_error = "LoadTilesForFace:  fseek failed!";
+   			return false;
     	}
         QImage img;
         // decode jpg
@@ -1604,8 +1585,8 @@ bool QTVRDecoder::SeekAndExtractImageCyl_Tiled(QImage * &image)
         fseek(gFile, gVideoChunkOffset[t], SEEK_SET);
         if (ferror(gFile))
             {
-            printf("LoadTilesForFace:  fseek failed!\n");
-            continue;
+            m_error = "LoadTilesForFace:  fseek failed!";
+            return false;
         }
 
         QImage tile;
@@ -1709,4 +1690,30 @@ void QTVRDecoder::Swizzle(int16 *value)
     }
 }
 
+/* Get a new QImage or a null pointer
+*/
+QImage * QTVRDecoder::getImage( int face )
+{
+	QImage * pim = 0;
+	m_error = 0;
+	switch( m_type ){
+	case PANO_CUBIC:
+		if( !extractCubeImage( face, pim ) ){
+			if(!m_error) m_error = "extractCubeImage() failed";
+			if(pim) delete pim;
+			pim = 0;
+		}
 
+	case PANO_CYLINDRICAL:
+		if( face != 0 ||
+		   !extractCylImage( pim ) ){
+			if(!m_error) m_error = "extractCylImage() failed";
+			if(pim) delete pim;
+			pim = 0;
+		}
+		break;
+	default:
+		m_error = "No pano loaded";
+	}
+	return pim;
+}

@@ -31,14 +31,23 @@ Initial strategy:
 	It would be good to be able to load the cube faces
 	separately.
 	Repackaging as a QImageIOPlugin would provide a lot of
-	nice behavior.  One downside is that the plugin dll has
-	to be installed in a special directory name.  A probably
-	much easier alternative	is to make a readQTVR class that 
-	just gets the jpeg files in core, and use a QImageReader 
-	on those.  I think this could be done without making
-	the QTVR reader depend on Qt.
+	nice behavior.  The downside is that it would be a lot of 
+	work and the plugin dll has to be installed in a special 
+	directory name.  A probably much easier alternative	is to 
+	make a readQTVR class that just gets the jpeg files in core, 
+	and use a QImageReader on those.  I think this could be done
+	without making	the QTVR reader depend on Qt.
+  [no it can't, much better to revise QTVRDecoder to use QImage
+  and a few other Qt types.  This I have done.]
 	But first I'll try to use QTVRDecoder pretty much as-is,
 	with a Qt-based Image class, defs from parameters.h or 
 	utils.h replaced with local defs. 
+ 3 Oct:  pvQt_QTVR.{h,cpp} have a Qt-based QTVRDecoder that
+    returns QImages, one at a time.  It still uses stdio and
+    a C-string file name.  I revised the tile copy logic to
+    also do the 90 degree rotation of cylindrical panos -- it
+    now uses a single generalized add tile to image routine
+    for all cases.
+    
 	
 	

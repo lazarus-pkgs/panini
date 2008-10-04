@@ -35,7 +35,7 @@
 #include <QtCore>
 
 /** possible QTVR panorama types  **/
-enum PanoType { PANO_UNKNOWN, PANO_CUBIC, PANO_HORZ_CYL, PANO_VERT_CYL };
+enum PanoType { PANO_UNKNOWN, PANO_CUBIC, PANO_CYLINDRICAL };
 
 // various typedefs required by the structs copied from various places
 typedef unsigned int uint32;
@@ -76,7 +76,7 @@ public:
 // get one image (new QImage)
     QImage * getImage( int face = 0 );
 // get error message
-    std::string & getErrorDescr(){ return m_error; }
+    const char * getError(){ return m_error; }
 
 private:
         
@@ -136,7 +136,7 @@ int32       gTileSize[MAX_TILES_PER_FACE];
     bool m_currTrackIsImageTrack;
 
     std::vector<SampleToChunkEntry> m_sample2ChunkTable;
-    std::string m_error;
+    char * m_error;
 
     bool m_horizontalCyl;
     bool m_cmovZLib;

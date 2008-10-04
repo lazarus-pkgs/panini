@@ -5,7 +5,7 @@
 
 #include "pvQtView.h"
 
-#include "Qt_QTVR.h"
+#include "pvQt_QTVR.h"
 
 GLwindow::GLwindow (QWidget * parent )
 : QWidget(parent)
@@ -98,20 +98,21 @@ void GLwindow::newPicture(){
 	// test with a QTVR file
 	QTVRDecoder dec;
 	bool ok = dec.parseHeaders(
-		"/home/tommy/pvQt/test/OutsideSionHillCampus.mov"
+// linux		"/home/tommy/pvQt/test/OutsideSionHillCampus.mov"
+		"C:/users/tommy/documents/pvQt/test/OutsideSionHillCampus.mov"
 	);
-	if( !ok ) return;
+	if( !ok ){
+		qCritical("QTVR parse: %s", dec.getError());
+		return;
+	}
 
 	if( dec.getType() == PANO_CUBIC ){
-		QImage * facims[6];
-		if( dec.extractCubeImages( facims ) ){
-			pvpic->setType( pvQtPic::cub );
-			for( int i = 0; i < 6; i++ ){
-				pvpic->setFaceImage( pvQtPic::PicFace(i), facims[i] );
-			}
-		}
-		
-	}
+		pvpic->setType( pvQtPic::cub );
+		for( int i = 0; i < 6; i++ ){
+			QImage * pim = dec.getImage( i );
+			pvpic->setFaceImage( pvQtPic::PicFace(i), pim );
+		}	
+	} else qCritical("Not a cubic pano");
 #endif
 ////END TEST//// 
 	glview->showPic( pvpic );
