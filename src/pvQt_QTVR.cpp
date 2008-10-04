@@ -309,7 +309,7 @@ QTVRDecoder::~QTVRDecoder()
     /* CLOSE FILE */
     /**************/
 
-    fclose(gFile);
+    if(gFile) fclose(gFile);
 
 }
 
@@ -330,12 +330,12 @@ bool QTVRDecoder::parseHeaders(const char * theDataFilePath)
 		/*************************/
 		/* RECURSE THROUGH ATOMS */
 		/*************************/
-	do
-	{
+	m_error = 0;
+	do	{
 		atomSize = ReadMovieAtom();
-	}while(atomSize > 0);
+	} while(atomSize > 0);
 
-    if (m_error != "") {
+    if (m_error != 0) {
         return false;
     }
 
@@ -1703,7 +1703,7 @@ QImage * QTVRDecoder::getImage( int face )
 			if(pim) delete pim;
 			pim = 0;
 		}
-
+		break;
 	case PANO_CYLINDRICAL:
 		if( face != 0 ||
 		   !extractCylImage( pim ) ){

@@ -61,7 +61,57 @@ void GLwindow::resizeEvent( QResizeEvent * ev ){
 		glview->resize( size() );
 }
 
-// attach picture to display
+/* Display a (presumed) QTVR file
+*/
+bool GLwindow::QTVR_file( char * name ){
+	QTVRDecoder dec;
+	bool ok = dec.parseHeaders( name );
+	if( !ok ){
+		qCritical("Not QTVR: %s", name );
+		return false;
+	}
+
+	if( dec.getType() == PANO_CUBIC ){
+		pvpic->setType( pvQtPic::cub );
+		for( int i = 0; ok && i < 6; i++ ){
+			QImage * pim = dec.getImage( i );
+			ok = pvpic->setFaceImage( pvQtPic::PicFace(i), pim );
+		}	
+	} 
+	if( ok ) glview->showPic( pvpic );
+	else qCritical("Not cubic panorama");		
+	return ok;
+}
+
+/* Display a presumed cubic set of 6 image files
+  The file names must be in standard cube face order:
+  front, right, back, left, top, bottom
+*/
+bool GLwindow::CUBE_files( char ** names ){
+	bool ok = true;
+	pvpic->setType( pvQtPic::cub );
+	for( int i = 0; ok && i < 6; i++ ){
+		ok = pvpic->setFaceImage( pvQtPic::PicFace(i), QString(names[i]) );
+	}	
+	if( ok ) glview->showPic( pvpic );
+	else qCritical("Not cubic panorama");		
+	return ok;		
+}
+/* handle command line (before GUI shows)
+  if there is one argument try to load it as a QTVR
+  if 6, try to load them as a cube
+*/
+bool GLwindow::commandLine( int argc, char ** argv ){
+	if( argc == 2 ){  // assume it is a QTVR file name
+		return QTVR_file( argv[1] );
+	} else if( argc == 7 ){
+		return CUBE_files( argv + 1 );
+	}
+  // don't complain if it is something else
+	return true;
+}
+
+// send TEST picture to display
 void GLwindow::newPicture(){
 ////TEST//// with a cubic pano
 #ifdef WIN32
@@ -98,8 +148,9 @@ void GLwindow::newPicture(){
 	// test with a QTVR file
 	QTVRDecoder dec;
 	bool ok = dec.parseHeaders(
-// linux		"/home/tommy/pvQt/test/OutsideSionHillCampus.mov"
-		"C:/users/tommy/documents/pvQt/test/OutsideSionHillCampus.mov"
+//		"/home/tommy/pvQt/test/OutsideSionHillCampus.mov"
+		"/home/tommy/MiscProjects/freepv/testcases/good/MichelThoby_tiled_qtvr.mov"
+// windows		"C:/users/tommy/documents/pvQt/test/OutsideSionHillCampus.mov"
 	);
 	if( !ok ){
 		qCritical("QTVR parse: %s", dec.getError());

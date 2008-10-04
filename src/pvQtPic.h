@@ -191,7 +191,7 @@ private:
 	int			formats[6];	// QImage::Format, or a kcode
 	QSize		idims[6];	// source dimensions
 	void *		addrs[6];	// address if in core
-	QUrl		urls[6];	// url if external
+	QString		names[6];	// path or url
 	QString		labels[6];	// for empty images...
 	QColor		borders[6];
 	QColor		fills[6];

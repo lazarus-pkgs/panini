@@ -23,6 +23,8 @@ class MainWindow :
 	Q_OBJECT
 public:
 	MainWindow(QWidget * parent = 0);
+  // send command line to glwindow
+	bool postArgs( int argc, char **argv );
 public slots:
 	void showStatus( QString msg );
 signals:
@@ -35,6 +37,7 @@ signals:
 	void reset_view();
 	void super_fish();
 	void full_frame();
+	
 	void newPicture();
 protected:
 	void closeEvent( QCloseEvent * ev );
@@ -61,6 +64,8 @@ private slots:
 	void fullFrame();
 	
 	void loadImage();
+	
+	
 
 };
 

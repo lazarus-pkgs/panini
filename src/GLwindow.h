@@ -1,7 +1,8 @@
 /* GLwindow.h for pvQt_1
 
-  glue layer to make pvQtView work inside QMainWindow
-
+  A "glue widget", required to make pvQtView work inside QMainWindow.
+  Also provides command line and input file handling.
+ 
 */
 
 #include <QWidget>
@@ -14,6 +15,9 @@ class GLwindow : public QWidget {
 public:
 	GLwindow(QWidget * parent = 0);
 	bool isOK(){ return ok; }
+	bool commandLine( int argc, char ** argv );
+	bool QTVR_file( char * name );
+	bool CUBE_files( char ** names );
 public slots:
 	void newPicture();
 protected:

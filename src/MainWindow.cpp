@@ -37,6 +37,7 @@ MainWindow::MainWindow( QWidget * parent)
 	qInstallMsgHandler( errMsgHandler );
 	
 	setupUi( this );
+	resize( 400, 400 );
 
 bool ok = true;
 if(ok) ok =
@@ -99,6 +100,14 @@ if(ok){
 	statusBar()->showMessage(tr("Ready"));
 
 
+}
+
+/* handle command line argumnents
+  called before GUI is activated
+  if it returns false the run is aborted.
+*/
+bool MainWindow::postArgs( int argc, char **argv ){
+	return glwindow->commandLine( argc, argv );
 }
 
 void MainWindow::closeEvent( QCloseEvent * ev ){

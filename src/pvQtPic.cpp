@@ -111,7 +111,7 @@ bool pvQtPic::setType( pvQtPic::PicType t )
 		kinds[i] = 0;			// coded source type
 		idims[i] = QSize(0,0);	// source dimensions
 		addrs[i] = 0	;		// address if in-core
-		urls[i]  = QUrl();		// url if external
+		names[i]  = QString();	// path or url
 		labels[i] = FaceName( PicFace(i) );
 		borders[i] = defborders[i];
 		fills[i] = QColor(Qt::lightGray);
@@ -218,7 +218,7 @@ bool pvQtPic::setFaceImage( pvQtPic::PicFace face, QImage * img )
 		kinds[i] = 0;			// coded source type
 		idims[i] = QSize(0,0);	// source dimensions
 		addrs[i] = 0	;		// address if in-core
-		urls[i]  = QUrl();		// url if external
+		names[i]  = QString();		// url if external
 		return true;
 	}
 	
@@ -227,7 +227,7 @@ bool pvQtPic::setFaceImage( pvQtPic::PicFace face, QImage * img )
 	kinds[i] = QIMAGE_KIND;
 	addrs[i] = img;
 	formats[i] = img->format();
-	urls[i] = QUrl();
+	names[i] = QString();
 
 	return addimgsize( i, img->size() );
 }
@@ -247,7 +247,7 @@ bool pvQtPic::setFaceImage( pvQtPic::PicFace face,
 	addrs[i] = addr;
 	formats[i] = kcode(bitsPerColor,colorsPerPixel,
 					floatValues, packedPixels, alignBytes );
-	urls[i] = QUrl();
+	names[i] = QString();
 	
 	return addimgsize( i, QSize(width,height) );
 }
@@ -266,7 +266,7 @@ bool pvQtPic::setFaceImage( pvQtPic::PicFace face, QString path )
 	kinds[i] = FILE_KIND;
 	addrs[i] = 0;
 	formats[i] = 0;
-	urls[i] = QUrl("file://" + path );
+	names[i] = path;
 	
 	return addimgsize( i, ir.size() );
 
@@ -283,7 +283,7 @@ bool pvQtPic::setFaceImage( pvQtPic::PicFace face, QUrl url )
 	kinds[i] = URL_KIND;
 	addrs[i] = 0;
 	formats[i] = 0;
-	urls[i] = url;
+	names[i] = QString();
 
   /* call a virtual function to deal with this url.
      if possible it should return the image dimensions
@@ -294,7 +294,7 @@ bool pvQtPic::setFaceImage( pvQtPic::PicFace face, QUrl url )
 	if( gotURL( url, dims )) return addimgsize( i, dims );
   // reject
 	kinds[i] = 0;
-	urls[i] = QUrl();
+	names[i] = QString();
 	return false;
 	
 }
@@ -354,7 +354,7 @@ bool pvQtPic::addimgsize( int i, QSize dims )
 		kinds[i] = 0;			// coded source type
 		idims[i] = QSize(0,0);	// source dimensions
 		addrs[i] = 0	;		// address if in-core
-		urls[i]  = QUrl();		// url if external
+		names[i] = QString();
 	}
 	return ok;
 }
@@ -429,7 +429,7 @@ QImage * pvQtPic::FaceImage( PicFace face ){
 	if( type == nil ) return 0;
 	if( face < front || face >= PicFace(maxfaces) ) return 0;
 
-	QImage * pim;
+	QImage * pim = 0;
 	int i = int(face);
 	switch( kinds[i] ){
 	case QIMAGE_KIND: 
@@ -442,12 +442,11 @@ QImage * pvQtPic::FaceImage( PicFace face ){
 		pim = loadFile( i );
 		break;
 	case URL_KIND: 
-		pim =  loadURL( urls[i] );
-		break;
-	default:
-		return loadEmpty( i ); // fully formatted
+		pim =  loadURL( QUrl( names[i] ) );
 		break;
 	}
+// if no image, return the empty face
+	if( pim == 0 ) return loadEmpty( i ); 
 // convert pixel format if necessary	
 	if( pim->format() == faceformat ) return pim;
 	QImage *oim = new QImage( pim->convertToFormat(faceformat) );
@@ -481,7 +480,7 @@ QImage * pvQtPic::loadEmpty( int i )
 
 QImage * pvQtPic::loadFile( int face )
 {
-	QImageReader ir( urls[face].path() );
+	QImageReader ir( names[face] );
 	if( !ir.canRead() ) return 0;
 	ir.setScaledSize( facedims );
 	QImage *pim = new QImage( ir.read() );
