@@ -17,7 +17,12 @@ public:
 	bool isOK(){ return ok; }
 	bool commandLine( int argc, char ** argv );
 	bool QTVR_file( char * name );
-	bool CUBE_files( char ** names );
+	bool rect_file( char * name );
+	bool fish_file( char * name );
+	bool cyli_file( char * name );
+	bool equi_file( char * name );
+	bool hemi_files( char ** names );
+	bool cube_files( char ** names );
 public slots:
 	void newPicture();
 protected:
@@ -27,4 +32,7 @@ private:
 	pvQtView * glview;	// display widget
 	pvQtPic * pvpic;	// picture maker
 	bool ok;	// true if created w/o error
+	
+	int typed_files( int argc, char ** argv );
+
 };
