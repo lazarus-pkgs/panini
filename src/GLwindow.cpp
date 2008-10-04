@@ -79,7 +79,7 @@ bool GLwindow::QTVR_file( char * name ){
 		}	
 	} 
 	if( ok ) glview->showPic( pvpic );
-	else qCritical("Not cubic panorama");		
+	else qCritical("Not panorama: %s", name );		
 	return ok;
 }
 
@@ -111,60 +111,8 @@ bool GLwindow::commandLine( int argc, char ** argv ){
 	return true;
 }
 
-// send TEST picture to display
+// display empty cube
 void GLwindow::newPicture(){
-////TEST//// with a cubic pano
-#ifdef WIN32
-	QString pfx = QString("/users/tommy/documents/");
-#else
-	QString pfx = QString("/home/tommy/");
-#endif
-#if 0
-  // test with 6 cubic images
-	static int sw = 0;
 	pvpic->setType( pvQtPic::cub );
-  
-  if( sw > 0 )
-	pvpic->setFaceImage( pvQtPic::front, 
-			pfx + QString("pvQt/test/outside_000000.jpg") );
-  if( sw > 1 )
-	pvpic->setFaceImage( pvQtPic::right, 
-			pfx + QString("pvQt/test/outside_000001.jpg") );
-  if( sw > 2 )
-	pvpic->setFaceImage( pvQtPic::back, 
-			pfx + QString("pvQt/test/outside_000002.jpg") );
-  if( sw > 3 )
-	pvpic->setFaceImage( pvQtPic::left, 
-			pfx + QString("pvQt/test/outside_000003.jpg") );
-  if( sw > 4 )
-	pvpic->setFaceImage( pvQtPic::top, 
-			pfx + QString("pvQt/test/outside_000004.jpg") );
-  if( sw > 5 )
-	pvpic->setFaceImage( pvQtPic::bottom, 
-			pfx + QString("pvQt/test/outside_000005.jpg") );
-
-  sw = (sw + 1) % 7;
-#else
-	// test with a QTVR file
-	QTVRDecoder dec;
-	bool ok = dec.parseHeaders(
-//		"/home/tommy/pvQt/test/OutsideSionHillCampus.mov"
-		"/home/tommy/MiscProjects/freepv/testcases/good/MichelThoby_tiled_qtvr.mov"
-// windows		"C:/users/tommy/documents/pvQt/test/OutsideSionHillCampus.mov"
-	);
-	if( !ok ){
-		qCritical("QTVR parse: %s", dec.getError());
-		return;
-	}
-
-	if( dec.getType() == PANO_CUBIC ){
-		pvpic->setType( pvQtPic::cub );
-		for( int i = 0; i < 6; i++ ){
-			QImage * pim = dec.getImage( i );
-			pvpic->setFaceImage( pvQtPic::PicFace(i), pim );
-		}	
-	} else qCritical("Not a cubic pano");
-#endif
-////END TEST//// 
 	glview->showPic( pvpic );
 }

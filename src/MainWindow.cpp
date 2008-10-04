@@ -37,7 +37,7 @@ MainWindow::MainWindow( QWidget * parent)
 	qInstallMsgHandler( errMsgHandler );
 	
 	setupUi( this );
-	resize( 400, 400 );
+	resize( 800, 800 );
 
 bool ok = true;
 if(ok) ok =
