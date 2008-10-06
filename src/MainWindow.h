@@ -65,8 +65,6 @@ private slots:
 	
 	void loadImage();
 	
-	
-
 };
 
 #endif //ndef MAINWINDOW_H

@@ -14,3 +14,6 @@ QT += opengl
 INCLUDEPATH += c:/MinGW/include c:/MinGW/GnuWin32/include
 HEADERS += src/pvQt_QTVR.h 
 SOURCES += src/pvQt_QTVR.cpp
+FORMS += ui/picTypeDialog.ui
+HEADERS += src/picTypeDialog.h src/pictureTypes.h
+SOURCES += src/picTypeDialog.cpp src/pictureTypes.cpp
