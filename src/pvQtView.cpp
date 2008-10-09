@@ -289,65 +289,125 @@ void pvQtView::setDist( int id ){
      }
  }
 
+/* Set picture type-specific OpenGL options
+   and class variables.
+   Disables OGL options that might have been
+   set for other pic types.
+   pic type 0 clears and disables all.
+*/
+ void pvQtView::setPicType( pvQtPic::PicType pt )
+ {
+	makeCurrent();	// get OGL's attention
+	if(textgt) glDisable( textgt ); textgt = 0;
+    glDisable( GL_TEXTURE_GEN_S );
+    glDisable( GL_TEXTURE_GEN_T );
+    glDisable( GL_TEXTURE_GEN_R );
 
+	switch( pt ){
+	default:
+		pt = pvQtPic::nil;
+	case pvQtPic::nil:		// No picture
+		break;
+	case pvQtPic::rec:		// A rectilinear image up to 135 x 135 degrees
+		break;
+	case pvQtPic::sph:		// A spherical image up to 180 degrees diameter
+		break;
+	case pvQtPic::cyl:		// A cylindrical panorama up to 360 x 135 degrees
+		break;
+	case pvQtPic::eqr:		// An equirectangular panorama up to 360 x 180 degrees
+		glFrontFace( GL_CW );
+		textgt = GL_TEXTURE_2D;
+		break;
+	case pvQtPic::cub:		// A cubic panorama (1 to 6 rectilinear images 90x90 degrees)
+		glFrontFace( GL_CW );
+		textgt = GL_TEXTURE_CUBE_MAP;
+		glTexGenf( GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP );
+		glTexGenf( GL_T, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP );
+		glTexGenf( GL_R, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP );
+		glEnable( GL_TEXTURE_GEN_S );
+		glEnable( GL_TEXTURE_GEN_T );
+		glEnable( GL_TEXTURE_GEN_R );
+		break;
+	case pvQtPic::hem:		// A panorama with 1 or 2 hemispherical images
+		break;
+	}
+
+	picType = pt;
+ }
 
  void pvQtView::initializeGL()
  {
 	qglClearColor(Qt::black);
 	glShadeModel(GL_SMOOTH);
-	glEnable(GL_DEPTH_TEST);
-
+////	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
  // create 2D and cube texture objects
 	glGenTextures( 2, texIDs );
 	glBindTexture(GL_TEXTURE_2D, texIDs[0] );
 	glBindTexture(GL_TEXTURE_CUBE_MAP, texIDs[1] );
-  // set texture mapping parameters...
+  // constant texture mapping parameters...
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-	int tmode = GL_REFLECTION_MAP;
-    glTexGenf( GL_S, GL_TEXTURE_GEN_MODE, tmode );
-	glTexGenf( GL_T, GL_TEXTURE_GEN_MODE, tmode );
-	glTexGenf( GL_R, GL_TEXTURE_GEN_MODE, tmode );
-    glEnable( GL_TEXTURE_GEN_S );
-    glEnable( GL_TEXTURE_GEN_T );
-    glEnable( GL_TEXTURE_GEN_R );
-
-   // create projection screen displaylist
+  // create projection screen displaylist
 	theScreen = glGenLists(1);
 	makeSphere( theScreen );
+
+  // clear the picture type specific state
+	 setPicType( pvQtPic::nil );
    
  }
 
  void pvQtView::paintGL()
  {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	if( textgt ){
-		glEnable( textgt );
-	}
- // eye position rotates, screen does not
+	if( textgt ) glEnable( textgt );
 
+ // eye position rotates, screen does not
 	glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
 	Znear = 0.05; Zfar = 7;
 	gluPerspective( wFOV, portAR, 
 				    Znear,  Zfar);
-    gluLookAt( 0, 0, -eyeDistance,
-	           0, 0, 1,
-			   0, 1, 0 );
-	glFrontFace( GL_CW );
+/* set view according to picture type
+   rotations are Euler angles; orientation & sense set here
+*/
+	switch( picType ){
+	default:
+	case pvQtPic::nil:
+	case pvQtPic::rec:
+	case pvQtPic::sph:
+	case pvQtPic::cyl:
+	case pvQtPic::eqr:		// look +Y, X rgt, Z up
+		gluLookAt( 0, -eyeDistance, 0,
+				   0, 1, 0,
+				   0, 0, 1 );
+		glRotated( 180 - spinAngle, 0, 1, 0 );     
+		glRotated( tiltAngle, 1, 0, 0 );
+		glRotated( 180 - panAngle, 0, 0, 1 );
+		break;
+	case pvQtPic::cub:		// look +Z, X lft, Y up
+		gluLookAt( 0, 0, -eyeDistance,
+				   0, 0, 1,
+				   0, 1, 0 );
+		glRotated( 180 - spinAngle, 0, 0, 1 );     
+		glRotated( tiltAngle, 1, 0, 0 );
+		glRotated( 180 - panAngle, 0, 1, 0 );
+		break;
+	case pvQtPic::hem:		//
+		break;
+	}
 
- // rotations are Euler angles
- // note orientation & sense are set here
-	glRotated( 180 - spinAngle, 0, 0, 1 );     
-	glRotated( -tiltAngle, 1, 0, 0 );
-	glRotated( 180 - panAngle, 0, 1, 0 );
 	glMatrixMode(GL_MODELVIEW);
 
 	glCallList(theScreen);
@@ -370,7 +430,7 @@ void pvQtView::makeSphere( GLuint list )
 	GLUquadricObj *qobj = gluNewQuadric();
 	gluQuadricDrawStyle(qobj, textgt ? GLU_FILL : GLU_LINE);
 	gluQuadricNormals(qobj, GLU_SMOOTH);
-////	gluQuadricTexture(qobj, GL_TRUE );
+	if( picType == pvQtPic::eqr ) gluQuadricTexture(qobj, GL_TRUE );
 
 	glNewList(list, GL_COMPILE);
 		gluSphere(qobj, 1.0, 72, 70);
@@ -379,9 +439,11 @@ void pvQtView::makeSphere( GLuint list )
 
 
 /* set up screen and texture maps for a picture
+  pass pic == 0 to clear all picture state
 */
 void pvQtView::setupPic( pvQtPic * pic )
 {
+// texture cube faces in the order pvQtPic uses
 	static GLenum cubefaces[6] = {
 		GL_TEXTURE_CUBE_MAP_POSITIVE_Z, // front
 		GL_TEXTURE_CUBE_MAP_POSITIVE_X,	// right
@@ -390,45 +452,49 @@ void pvQtView::setupPic( pvQtPic * pic )
 		GL_TEXTURE_CUBE_MAP_POSITIVE_Y,	// top
 		GL_TEXTURE_CUBE_MAP_NEGATIVE_Y	// bottom
 	};
-
+/* Reset picture type specific vars and OpenGL options
+*/
 	thePic = pic;
-	makeCurrent();	// get OGL's attention
-  // QImage row alignment
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+	if( pic ) picType = pic->Type();
+	else picType = pvQtPic::nil;
+	setPicType( picType );
+	if( picType == pvQtPic::nil ) return;
 
-	if( pic ){
-		pvQtPic::PicType pictype = pic->Type();
-		if( pictype == pvQtPic::cub ){
-			textgt = GL_TEXTURE_CUBE_MAP;
-			theTex = texIDs[1];
-			for(int i = 0; i < 6; i++){
-				QImage * p = pic->FaceImage(pvQtPic::PicFace(i));
-				if( p ){
-					glTexImage2D( cubefaces[i], 0, GL_RGB,
-						p->width(), p->height(), 0,
-						GL_RGB, GL_UNSIGNED_BYTE,
-						p->bits() );
-					delete p;
-				}
-			}
-		} else {
-			textgt = GL_TEXTURE_2D;
-			theTex = texIDs[0];
-			QImage * p = pic->FaceImage(pvQtPic::PicFace(0));
+/* Load texture images
+*/
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);  // QImage row alignment
+
+	if( picType == pvQtPic::cub ){
+		theTex = texIDs[1];
+		for(int i = 0; i < 6; i++){
+			QImage * p = pic->FaceImage(pvQtPic::PicFace(i));
 			if( p ){
-				glTexImage2D( textgt, 0, GL_RGB,
-					p->width(), p->height(), 0, 
+				glTexImage2D( cubefaces[i], 0, GL_RGB,
+					p->width(), p->height(), 0,
 					GL_RGB, GL_UNSIGNED_BYTE,
 					p->bits() );
 				delete p;
 			}
+		}
+	} else {
+		theTex = texIDs[0];
+		QImage * p = pic->FaceImage(pvQtPic::PicFace(0));
+		if( p ){
+			glTexImage2D( textgt, 0, GL_RGB,
+				p->width(), p->height(), 0, 
+				GL_RGB, GL_UNSIGNED_BYTE,
+				p->bits() );
+			delete p;
 		}
 	}
 
   // rebuild the display list
 	makeSphere( theScreen );
 
+  // repaint the view
 	updateGL();
+
+  // display view parameters
 	showview();
 }
 

@@ -86,9 +86,11 @@ public:
      QPoint lastPos;
 
   // display support
+	 void setPicType( pvQtPic::PicType pt );
 	 void setupPic( pvQtPic * pic );
 	 void updatePic();
 	 pvQtPic  * thePic;
+	 pvQtPic::PicType	picType;
   // display lists for screens
      void makeSphere( GLuint list );
 	 GLuint theScreen;	// current screen list

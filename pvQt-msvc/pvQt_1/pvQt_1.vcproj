@@ -77,6 +77,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\pictureTypes.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\pvQt_QTVR.cpp"
 				>
 			</File>
@@ -100,6 +104,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\MainWindow.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\pictureTypes.h"
 				>
 			</File>
 			<File

@@ -106,7 +106,10 @@ bool GLwindow::cyli_file( QString name ){
 }
 
 bool GLwindow::equi_file( QString name ){
-	return false;
+	bool ok = pvpic->setType( pvQtPic::eqr );
+	if(ok) ok = pvpic->setFaceImage( pvQtPic::front, name );
+	if( ok ) glview->showPic( pvpic );
+	return ok;
 }
 
 bool GLwindow::hemi_files( QStringList names ){
@@ -119,8 +122,7 @@ bool GLwindow::hemi_files( QStringList names ){
   front, right, back, left, top, bottom
 */
 bool GLwindow::cube_files( QStringList names ){
-	bool ok = true;
-	pvpic->setType( pvQtPic::cub );
+	bool ok = pvpic->setType( pvQtPic::cub );
 	for( int i = 0; ok && i < 6; i++ ){
 		ok = pvpic->setFaceImage( pvQtPic::PicFace(i), names[i] );
 	}	
@@ -192,12 +194,14 @@ bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 	case 2:
 	case 3:
 	case 4:
-	case 5:
 	case 6:
 		qCritical("%s -- to be implemented", tnm );
 		break;
 	case 1:
 		ok = QTVR_file( fnm[0] );
+		break;
+	case 5:
+		ok = equi_file( fnm[0] );
 		break;
 	case 7:
 		ok = cube_files( fnm );
