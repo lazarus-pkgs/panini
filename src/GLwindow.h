@@ -18,10 +18,10 @@ public:
 	bool isOK(){ return ok; }
 	bool commandLine( int argc, char ** argv );
 	bool QTVR_file( QString name );
-	bool rect_file( QString name );
-	bool fish_file( QString name );
-	bool cyli_file( QString name );
-	bool equi_file( QString name );
+	bool rect_file( QStringList names );
+	bool fish_file( QStringList names );
+	bool cyli_file( QStringList names );
+	bool equi_file( QStringList names );
 	bool hemi_files( QStringList names );
 	bool cube_files( QStringList names );
 	bool choosePictureFiles( const char * picTypeName = 0 );
@@ -29,7 +29,7 @@ public:
 	const QStringList picTypeDescrs();
 	const char * askPicType( QStringList files );
 public slots:
-	void newPicture();
+	void newPicture( const char * type );
 protected:
 	void resizeEvent( QResizeEvent * ev );
 

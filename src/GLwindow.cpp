@@ -48,8 +48,8 @@ GLwindow::GLwindow (QWidget * parent )
 			 parent, SLOT(showStatus( QString )) );
 			 
   if(ok) ok = 
-	connect( parent, SIGNAL(newPicture()),	////TEST
-			 this, SLOT(newPicture()) );
+	connect( parent, SIGNAL(newPicture( const char * )),	////TEST
+			 this, SLOT(newPicture( const char * )) );
   if(!ok) {
 	  qFatal("GLwindow setup failed");
   }
@@ -61,10 +61,9 @@ void GLwindow::resizeEvent( QResizeEvent * ev ){
 		glview->resize( size() );
 }
 
-// display an empty image
-void GLwindow::newPicture(){
-	pvpic->setType( pvQtPic::cub );
-	glview->showPic( pvpic );
+// get new  picture of a specified type
+void GLwindow::newPicture( const char * type ){
+	choosePictureFiles( type );
 }
 
 /* Display a (presumed) QTVR file
@@ -93,21 +92,25 @@ bool GLwindow::QTVR_file( QString name ){
 	return ok;
 }
 
-bool GLwindow::rect_file( QString name ){
+bool GLwindow::rect_file( QStringList names ){
 	return false;
 }
 
-bool GLwindow::fish_file( QString name ){
+bool GLwindow::fish_file( QStringList names ){
 	return false;
 }
 
-bool GLwindow::cyli_file( QString name ){
+bool GLwindow::cyli_file( QStringList names ){
 	return false;
 }
 
-bool GLwindow::equi_file( QString name ){
+/* Display a presumed equirectangular file
+  show an empty image if no or too many files given
+*/
+bool GLwindow::equi_file( QStringList files ){
 	bool ok = pvpic->setType( pvQtPic::eqr );
-	if(ok) ok = pvpic->setFaceImage( pvQtPic::front, name );
+	int c = files.count();
+	if(ok && c == 1) ok = pvpic->setFaceImage( pvQtPic::front, files[0] );
 	if( ok ) glview->showPic( pvpic );
 	return ok;
 }
@@ -117,15 +120,20 @@ bool GLwindow::hemi_files( QStringList names ){
 }
 
 
-/* Display a presumed cubic set of 6 image files
-  The file names must be in standard cube face order:
-  front, right, back, left, top, bottom
+/* Display a presumed cubic set of 1 to 6 image files
+  The file names must sort in standard cube face order:
+  front, right, back, left, top, bottom.
+  Shows an empty image if no or too many files given
 */
 bool GLwindow::cube_files( QStringList names ){
 	bool ok = pvpic->setType( pvQtPic::cub );
-	for( int i = 0; ok && i < 6; i++ ){
-		ok = pvpic->setFaceImage( pvQtPic::PicFace(i), names[i] );
-	}	
+	int n = names.count();
+	if( n > 0 && n <= 6 ){
+		names.sort();
+		for( int i = 0; ok && i < n; i++ ){
+			ok = pvpic->setFaceImage( pvQtPic::PicFace(i), names[i] );
+		}	
+	}
 	if( ok ) glview->showPic( pvpic );
 	else qCritical("Not cubic panorama");		
 	return ok;		
@@ -153,16 +161,9 @@ const char * GLwindow::askPicType( QStringList files ){
 }
 
 /* handle command line (before GUI shows)
-  if the only argument is a picture type name, run
-  the file selector dialog for that type; otherwise
-  treat it as a file name.
-  a filestry to load it as a QTVR
-  if 6, try to load them as a cube.  Otherwise the
-  first argument should be a type name, followed by
-  the proper number of file names.
 */
 bool GLwindow::commandLine( int argc, char ** argv ){
-	if( argc < 2 ) return choosePictureFiles( 0 );  // no command
+	if( argc < 2 ) return true; // no command
   // see if 1st arg is a picture type name
 	int it = pictypes.picTypeIndex( argv[1] );
   // make list of file names
@@ -179,14 +180,15 @@ bool GLwindow::commandLine( int argc, char ** argv ){
 }
 
 /*  try to load a picture given type and 1 or more files
-   if type is not valid, ask user
+   if no files given, show an empty image for type other
+   thand QTVR or project
 */
 bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 	int n = pictypes.picTypeCount( tnm );
 	if( n == 0 ) return false;	// no such pic type
-	if( fnm.count() < n ) {
-		qCritical("'%s' needs %d files, %d supplied", tnm, n, fnm.count());
-		return 0;
+	int c = fnm.count();
+	if( c != n ) {
+		qWarning("'%s' wants %d files, %d supplied", tnm, n, c);
 	}
 	bool ok = false;
 	switch( pictypes.picTypeIndex( tnm ) ){
@@ -198,10 +200,10 @@ bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 		qCritical("%s -- to be implemented", tnm );
 		break;
 	case 1:
-		ok = QTVR_file( fnm[0] );
+		if( c > 0 ) ok = QTVR_file( fnm[0] );
 		break;
 	case 5:
-		ok = equi_file( fnm[0] );
+		ok = equi_file( fnm );
 		break;
 	case 7:
 		ok = cube_files( fnm );
@@ -237,6 +239,10 @@ bool GLwindow::loadPictureFiles( QStringList names ){
   any files and try to deduce the pic type, possibly
   with the help of another dialog.
 
+  Special case: if user cancels but typename is valid,
+  pass an empty image list to loadTypedFiles -- this 
+  allows displaying "empty" images
+
 */
 bool GLwindow::choosePictureFiles( const char * ptnm ){
 	QFileDialog fd( this );
@@ -258,9 +264,12 @@ bool GLwindow::choosePictureFiles( const char * ptnm ){
 		filter += ")";
 	}
 	fd.setNameFilter( filter );
-	if( fd.exec() ){
-		if( it < 0 ) ptnm = askPicType(fd.selectedFiles());
-		return loadTypedFiles( ptnm, fd.selectedFiles() );
+	QStringList files;
+	if( fd.exec()) files = fd.selectedFiles();
+	if( it < 0 && files.count() > 0 ){
+		ptnm = askPicType( files );
+	    it = pictypes.picTypeIndex( ptnm );
 	}
-	return false;
+	if( it < 0 ) return false;
+	return loadTypedFiles( ptnm, files );
 }

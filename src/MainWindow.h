@@ -5,7 +5,7 @@
   slot showStatus() puts message in status bar.
 
   NOTE GLwindow is an "insulating layer" for GLview,
-  whose only function is to connect signals.  This is
+  whose main function is to relay signals.  This is
   required by the Qt architecture.
 */
 #ifndef MAINWINDOW_H
@@ -38,7 +38,8 @@ signals:
 	void super_fish();
 	void full_frame();
 	
-	void newPicture();
+	void newPicture( const char * pictype );
+
 protected:
 	void closeEvent( QCloseEvent * ev );
 	QErrorMessage * errorMsgHandler;
@@ -63,7 +64,14 @@ private slots:
 	void superFish();
 	void fullFrame();
 	
-	void loadImage();
+	void on_actionQTVR_triggered();
+	void on_actionRectilinear_triggered();
+	void on_actionFisheye_triggered();
+	void on_actionCylindrical_triggered();
+	void on_actionEquirectangular_triggered();
+	void on_actionHemispherical_triggered();
+	void on_actionCube_faces_triggered();
+	void on_actionPT_script_triggered();
 	
 };
 

@@ -41,7 +41,7 @@ MainWindow::MainWindow( QWidget * parent)
 
 bool ok = true;
 if(ok) ok =
-	connect(action_Quit, SIGNAL(triggered()), 
+	connect(actionQuit, SIGNAL(triggered()), 
 		    qApp, SLOT( quit()) );
 if(ok) ok =
 	connect(actionPan_Left, SIGNAL(triggered()), 
@@ -85,9 +85,6 @@ if(ok) ok =
 if(ok) ok =
 	connect(actionFullFrame, SIGNAL(triggered()),
 		    this, SLOT(fullFrame()) );
-if(ok) ok =
-	connect(action_Load, SIGNAL(triggered()),  ////TEST
-		    this, SLOT(loadImage()) );
 
 if(ok){
 	glwindow = new GLwindow(this);
@@ -170,9 +167,39 @@ void MainWindow::superFish(){
 	emit super_fish();
 }
 
-void MainWindow::loadImage()
-{
-	emit newPicture();
+/** Picture Menu Handlers 
+  named so connectSlotsByName() will find them
+**/
+
+void MainWindow::on_actionQTVR_triggered(){
+	emit newPicture( "qtvr" );
 }
 
+void MainWindow::on_actionRectilinear_triggered(){
+	emit newPicture( "rect" );
+}
+
+void MainWindow::on_actionFisheye_triggered(){
+	emit newPicture( "fish" );
+}
+
+void MainWindow::on_actionCylindrical_triggered(){
+	emit newPicture( "cyli" );
+}
+
+void MainWindow::on_actionEquirectangular_triggered(){
+	emit newPicture( "equi" );
+}
+
+void MainWindow::on_actionHemispherical_triggered(){
+	emit newPicture( "hemi" );
+}
+
+void MainWindow::on_actionCube_faces_triggered(){
+	emit newPicture( "cube" );
+}
+
+void MainWindow::on_actionPT_script_triggered(){
+	emit newPicture( "proj" );
+}
 
