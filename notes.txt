@@ -48,6 +48,15 @@ Initial strategy:
     also do the 90 degree rotation of cylindrical panos -- it
     now uses a single generalized add tile to image routine
     for all cases.
-    
+
+11 Oct 2008
+	30 downloads from SF in 1st 2 days! And a lot of good feedback, 
+	from hugin builders and others.
 	
+	Harry v.d. Wolf has contributed a small patch that lets pvQt
+	build on OSX -- committed tonite.  He also noticed that he got
+	a very big patch after his change.  That's because I put the
+	ui_xxx headers in svn, but they don't belong there because
+	they are regenerated auotmatically.  So I have pulled those.
+	Also put copyright/GPL notice in all source files.
 	

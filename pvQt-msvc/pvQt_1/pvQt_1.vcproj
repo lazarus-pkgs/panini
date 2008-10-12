@@ -111,10 +111,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\pvQt_Image.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\pvQt_QTVR.h"
 				>
 			</File>
