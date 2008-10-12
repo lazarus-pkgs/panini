@@ -1,9 +1,14 @@
-/* pvQtView.cpp for freepvQt  08Sep2008 TKS
+/* pvQtView.cpp for pvQt  08Sep2008 TKS
 */
 #include "pvQtView.h"
 #include <QtOpenGL/QtOpenGL>
-#include <GL/glext.h>
-#include <GL/glut.h>
+#ifdef __APPLE__
+   #include "glext.h"
+   #include "glu.h"
+#else
+   #include <GL/glext.h>
+   #include <GL/glut.h>
+#endif 
 #include <cmath>
 
 #ifndef Pi
