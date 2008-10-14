@@ -77,8 +77,6 @@ private slots:
 	void eyeOut();
 	void homeView();
 	void resetView();
-	void superFish();
-	void fullFrame();
 	
 	void on_actionQTVR_triggered();
 	void on_actionRectilinear_triggered();

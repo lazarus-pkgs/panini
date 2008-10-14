@@ -1,14 +1,16 @@
-How to use pvQt                                             version 0.1 09 October 2008
+How to use pvQt version 0.1.0.30 13 October 2008
 
 The purpose of pvQt is viewing panoramic and wide angle pictures.  It can load all the common panoramic formats, from ordinary image files or QuickTime VR (.mov) files.  Like other viewers, it shows images in normal rectilinear perspective, but can also display extremely wide angle fisheye views, and a range of intermediate perspectives.  
 
 VIEW CONTROLS
 
-When you start pvQt without a command line, for example by double clicking an icon, it displays a wire frame model of the panosphere.  You can use the View commands to see how they change your view of the sphere.  All the view commands have keyboard shortcuts, shown in the View menu.  Zoom in is Control + =, zoom out is Control + -, as in Photoshop.  The arrow keys adjust yaw and pitch; Control + arrrows adjust roll and perspective.  Home takes you back to zero yaw, pitch and roll; End also resets perspective and zoom.  Page up and Page down set both zoom and perspective for useful very wide angle views. 
+When you start pvQt without a command line, for example by double clicking an icon, it displays a wire frame model of the panosphere.  You can use the View commands to see how they change your view of the sphere.  All the view commands have keyboard shortcuts, shown in the View menu. 
 
-Zoom controls the vertical field of view on the panosphere.  When you resize the window, the image grows or shrinks to maintain the selected vertical field.  
+The Yaw, Pitch and Roll contols let you look in different directions, and change which way is "up".  This is possible becuase pvQt projects pictures on a 3D "virtual screen".
 
-Perspective adjusts the apparent distance of the viewpoint from the center of the panosphere.  It is reported as "Dist", in units of the sphere's radius.  When Dist is zero, the viewing perspective is rectilinear, like a "normal" camera lens; as it increases, the perspective becomes more "fisheye"-like, and more of the sphere can be seen when you zoom all the way out.  Finally, at Dist = 1.1 radii, you get a circular image that can show almost 288 degrees of the sphere.
+Zoom controls magnification by changing the vertical field of view on the panosphere.  When you resize the window, the image grows or shrinks to maintain the selected vertical field.  
+
+The Perspective keys change the apparent distance of the viewpoint from the center of the panosphere (reported as "Dist", in units of the sphere's radius).  When Dist is zero, the viewing perspective is rectilinear, like a normal camera lens; as it increases, the perspective becomes more fisheye-like.  These keys also change zoom to give increasingly wide views as the eye moves out.  Finally, at Dist = 1.1 radii, you can see almost 288 degrees of the sphere.  You can zoom in to see the same level of image detail at any perspective setting.
 
 Cylindrical and some rectilinear images are displayed on a cylindrical "virtual screen" instead of a spherical one.  The view controls work much the same, with different ranges of adjustment.  The view control ranges are also apropriately limited when images with smaller angular sizes are displayed.
 
@@ -24,15 +26,19 @@ pvQt accepts a command line consisting of zero or one picture type name, followe
 	"hemi"	1 or 2 Hemispherical images
 	"cube"	1 to 6 Cube face images
 
-If you give just a type name, pvQt will pop a file selector dialog so you can choose the file(s) to be displayed.  If you cancel that dialog, and the picture type is not "qtvr" or "proj", pvQt will display an "empty" image consisting of labelled frames (just a "front" frame for most picture types; or six cube faces).  Some day you will be able to load images by dragging them into those frames.
+If you give just a type name, pvQt will pop a file selector dialog so you can choose the file(s) to be displayed.
 
-If you give just file names, pvQt will pop a dialog asking you to specify the picture type and angular image size.	 Cancelling this dialog leaves the display as it was.  On windows, dragging one or more files onto the pvQt program icon generates a files-only command line.
+[If you cancel that dialog, and the picture type is not "qtvr" or "proj", pvQt will display an "empty" image consisting of labelled frames (just a "front" frame for most picture types; or six cube faces).  Some day you will be able to load images by dragging them into those frames.]
 
-The Picture menu selects a picture type, and works just like a type-only command line.
+Even if the picture type is not yet supported, you will be askd to choose files, after which you will get the bad news.
 
-You can specify 1 to 6 image files for the "cube" picture type.  Their sorted names should fall into the conventional cube face order: front, right, back, left, top, bottom; and they must all be square images of the same size.  Emtpy frames will be displayed for any missing files.
+If you give only file names, pvQt will pop a dialog asking you to specify the picture type and angular image size.	  Note that on windows, dragging files onto the pvQt program icon generates a files-only command line.
 
-The "hemi" picture type accepts one or two images, representing the front and back halves of a spherical panorama; however it remains to be seen whether OpenGL can actually display a full sphere in "sphere map " mode.
+The Picture menu lets you select a picture type, then works just like a type-only command line.
+
+You can specify 1 to 6 image files for the "cube" picture type.  They must all be square images of the same size, and their sorted names must fall in the conventional cube face order: front, right, back, left, top, bottom.  So if you have names like foo_front.tif, foo_right.tif,..., you will have to change them to something like foo_1.tif, foo_2.tif,....  Later when drag and drop and PTscripts are implemented, you will be able to load such files without renaming them.  If you give fewer than 6 cube face images, pvQt will display empty frames for the missing ones.  This applies to nonexistent files, too, so if you wanted to show 3 images on the front, right and left faces, you could (on the command line) insert a dummy file name for the back face between the right and left ones.
+
+The "hemi" picture type will accept one or two images, representing the front and back halves of a spherical panorama; however it remains to be seen whether OpenGL can actually display a full sphere in "sphere map " mode.  This mode is also used for fisheye images in the early versions of pvQt.  Eventually I hope to add custom "screens" to correct the often considerable differences between the real projection of a fisheye lens and the ideal spherical projection.
 
 LICENSE
 

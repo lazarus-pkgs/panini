@@ -1,27 +1,49 @@
 How to Build pvQt
 
-First, you need to get and install Qt, if you don't already have it.  Most Unix and Linux distributions provide a prebuilt Qt via their package managers; failing that, you can download and install a suitable version at http://trolltech.com/downloads/opensource/appdev.  On Windows, the open source distribution requires the MinGW port of the Gnu build tools.  If you don't already have that, the easiset way to get it is to download the Trolltech package that includes MinGW.  You may want to put MinGW.dll, which is required by all apps built with MinGW, in or under C:\Windows; but if MingW\bin is on the search path that is enough for Vista or XP SP2.
+First, you need to get and install Qt version 4, if you don't already have it.  Most Unix and Linux distributions provide a prebuilt Qt4 via their package managers; failing that, you can download and install a suitable version at http://trolltech.com/downloads/opensource/appdev.  On Windows, the open source distribution requires the MinGW port of the Gnu build tools.  If you don't already have that, the easiest way to get it is to download the Trolltech package that includes MinGW.  
 
-If you know how to build software on Mac OSX or freeBSD, then you don't need my help.  Full info at Trolltech.
-
-Qt is a big package (120 MB zip, 150MB with MinGW) so you need a fast connection and plenty of disk space.  But it installs without a glitch 99% of the time.  And is very well worth having.
+Qt is a big package (120 MB zipped, 150MB with MinGW) so you need a fast connection and plenty of disk space.  But it installs without a glitch 99% of the time.  And is very well worth having.
 
 The only other required package is the zlib file compression library.  Most Unix/Linux systems will already have that, if not, their package managers will.  Or get it from the Gnu archives.  For Windows, download a prebuilt zlib from the GnuWin32 project at sourceforge.net and install it in the MinGW include and lib directories.
 
-Once Qt and the build tools are in place, you can build pvQt from a command shell (on Windows, use the one supplied with Qt).  In the pvQt directory, just type "qmake pvQt.pro" and then "make release".  The reulting executable will be in pvQt/bin and can be installed anywhere.
+Once Qt and the build tools are in place, you can build pvQt from a command shell (on Windows, use the one supplied with Qt).  In the pvQt directory, on Linux or Windows just type 
+		"qmake pvQt.pro"
+		"make release"  
+On mac OSX qmake may create an XCode project that you can open and compile.  In fact qmake can generate project files for a variety of IDEs (though MS Visual Studio is disabled in the open source version), see the Qt Assistant for details.
+  
+The resulting executable will be in pvQt/bin and can be copied anywhere.  On Windows, you might have to add the Qt4 bin directory to the "all users" search path.  This is important because that directory contains required plugin subdirectories as well as the Qt DLLs (DON'T copy Qt DLL's to Windows\System32.  Any system which requires that is too old to run pvQt).  If you have a preexisting installation of MingGW, it is OK to put the MinGW DLL in System32; but if you installed it from the Qt distribution, there will be a copy of the MinGW DLL in Qt4 bin.
 
-Run the Qt Assistant for very good documentation of qmake and the whole Qt library.
+Run Qt Assistant for very good documentation of qmake and the whole Qt framework.  Or if you have what seems to be a platform specific issue, the Trolltech website should be helpful.  Start at http://trolltech.com/developer.
 
+If you need help, or have constructive suggestions, feature requests, bug reports, etc, please use the pvQt project pages on SourceForge to communicate with me (https://sourceforge.net/projects/pvqt/).  I may not be the best one to ask about some things, but will be glad to try to help.
 
 How to Develop pvQt
 
-If you want to contribute to the public development of pvQt, you will need an SVN client to download the working source from SourceForge, and my permission to commit changes back to that archive.  On Windows I use Tortoise SVN, which has a nice, nearly fool-proof GUI, and on Linux the Unix command line version of SVN, which is not bad either.
+If you want to contribute to the public development of pvQt, you will need an SVN client to download the curent source from SourceForge.  On Windows I use Tortoise SVN, and on Linux the Unix command line version.
 
-Like Qt, pvQt is pure C++.  You might find it interesting that Qt is in part a C++ generator, in that some of its most useful features require that your code be translated, by a precompiler called moc, into the C++ source from which the app is actually built.  However this is completely transparent and worry-free in my experience.  
+You will also need my permission to put changes into the source archive.  Specifically, you must have a member account on SourceForge, and I must register you as an authorized pvQt developer (please request this on the pvQt "Open Discussion forum, https://sourceforge.net/forum/forum.php?forum_id=874270) .  Then you can commit source changes using your SF username and password.  If you are new to SVN, "committing" can feel a little scary, but don't worry: anything you do can be undone.  So commit early and often -- but please, only code that compiles withour error and more or less works.  
 
-There is a pretty good Qt-specific IDE for linux, called QDevelop, which I find less baffling than KDevelop, though not as good for debugging.  Trolltech seems to like the Eclipse IDE, with which I have no experience.   On Windows I use Microsoft Visual Studio in "makefile" mode to edit source and trigger builds, and Insight for debugging.  If you are lucky enough to own a commercial license for Qt you can of course build on Windows with the Microsoft toolchain and libraries.
+If you have an idea for developing pvQt in a whole new direction, ask me first and we can set up a "branch" of the source tree just for that.
 
-If you really need help, or have any constructive suggestions, bug reports, etc, please use the pvQt project forum and trackers on SourceForge to communicate with me.  I may not be the best one to ask about some things, but will be glad to try to help.
+	Source Code
 
-Cheers, Tom Sharpless, 09 October 2008 
+The Unix command to download the current source tree into a subdirectory called "pvQt" is 
+    svn co https://pvqt.svn.sourceforge.net/svnroot/pvqt pvqt
+On windows, you give Tortoise svn the url and specify the target directory separately.  In either case, the target directory should be empty or nonexistent; if you don't name one, your current working directory will become the root of the pvQt source tree.  You don't need a username or password for this.
+
+	Coding Standards
+
+Like Qt, pvQt is pure C++.  Qt has a comprehensive set of advanced data types (lists, dictionaries, images, etc).  Many of these overlap with the std C++ library and others, but I would prefer that you use the Qt types whenever possible.  Please don't introduce dependencies on new external libraries (Boost, for example) without consulting me first.  
+
+The most important coding standard is that you should use QString, Qt's Unicode string type, for all character strings except those few that strictly must be treated as arrays of 8 bit bytes.  To permit internationalization, use the tr("string") function to define all literal strings that might be seen by the user.  
+
+To ensure that pvQt will work with non-Latin file names, use only Qt methods with QString names to find and open files (you can then retrieve a FILE * and use stdio to manipulate the file contents, if you like).  You should be aware that modern OSs, including OSX, XP/Vista and by now most flavors of Linux, store only Unicode file names, and their command shells and file selectors work correctly with those.  But there are still ways you can get hold of non-Unicode file names, notably using the legacy C command line or reading directly from the keyboard.  When you know you have non-Unicode input, please supply an explicit conversion.  Better still, use input methods that are guaranteed to produce properly localized Unicode strings.  All platforms that support pvQt have such methods, and Qt has functions that use them.
+
+	IDEs
+
+There is a pretty good Qt-specific IDE for linux, called QDevelop, which I find less baffling than KDevelop, though not as good for debugging.  If you want to use the Eclipse IDE, you can get an integration package for it from Trolltech.   
+
+On Windows I use Microsoft Visual Studio in "makefile" mode to edit source code and trigger builds, and Insight for debugging.  Source directory MSVS-project has Visual Studio project files for this.  Of course if you are lucky enough to own a commercial license for Qt you can build and debug with the Microsoft tools.  
+
+Cheers, Tom Sharpless, 13 October 2008 
 

@@ -422,7 +422,7 @@ void pvQtView::setDist( int id ){
 				   0, 0, 1,
 				   0, 1, 0 );
 		glRotated( 180 - spinAngle, 0, 0, 1 );     
-		glRotated( tiltAngle, 1, 0, 0 );
+		glRotated( -tiltAngle, 1, 0, 0 );
 		glRotated( 180 - panAngle, 0, 1, 0 );
 		break;
 	case pvQtPic::hem:		//

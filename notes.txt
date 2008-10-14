@@ -59,4 +59,43 @@ Initial strategy:
 	ui_xxx headers in svn, but they don't belong there because
 	they are regenerated auotmatically.  So I have pulled those.
 	Also put copyright/GPL notice in all source files.
+
+13 Oct 2008
+	Revised pvQt-build.txt to clarify the procedure for becoming a 
+	registered developer, and add some coding standards I'd like such
+	developers to follow.  One of those is to allow only Unicode file 
+	names into pvQ -- 
+	now I must change the way pvQt reads its command line to conform.
+
+	The other main TODOs:
+
+done	Add MSVS-project to the source tree.
+
+done	Reverse pitch key direction in cubic.
+
+done	Make PageUp/Down do zoom, and Ctl-Pgup/dn do perspective.
+
+	Put picture type, viewed size and filename in window title.
+	
+	Probe OGL capabilities in pvQtView, and tell user about limitations.
+	In particular check OGL rev, vram and pwr-of-2 textures at startup;
+	use texture proxies to fit each picture to the available resources.
+
+done	Add angular size to the picture type dialog.
+
+	Make all missing or unreadable image files give empty frames.
+
+	Show cylindrical pictures.
+
+	Show hemispherical pictures (incl. fisheye).
+
+	Show pictures with restricted fovs.
+
+	Construct a debuggable QTVR parser, that takes only stream args (input
+	and log).  Support caching jpegs from the stream.  This will be a major
+	rewrite of the stdio-based parser.
+	
+	Design ways to build lens correction (adjustable radial projection fns) 
+	into the various display modes.
+
 	

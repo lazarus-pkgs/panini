@@ -6,17 +6,17 @@
     <x>0</x>
     <y>0</y>
     <width>346</width>
-    <height>117</height>
+    <height>245</height>
    </rect>
   </property>
   <property name="windowTitle" >
-   <string>pvQt - Choose Picture Type</string>
+   <string>pvQt - Picture Type and FOV</string>
   </property>
   <widget class="QDialogButtonBox" name="buttonBox" >
    <property name="geometry" >
     <rect>
      <x>-10</x>
-     <y>81</y>
+     <y>200</y>
      <width>341</width>
      <height>31</height>
     </rect>
@@ -32,9 +32,9 @@
    <property name="geometry" >
     <rect>
      <x>20</x>
-     <y>50</y>
+     <y>90</y>
      <width>311</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
@@ -42,7 +42,7 @@
    <property name="geometry" >
     <rect>
      <x>20</x>
-     <y>10</y>
+     <y>30</y>
      <width>311</width>
      <height>21</height>
     </rect>
@@ -56,6 +56,103 @@
    <property name="text" >
     <string>TextLabel</string>
    </property>
+  </widget>
+  <widget class="QLabel" name="label" >
+   <property name="geometry" >
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>54</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Source</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_2" >
+   <property name="geometry" >
+    <rect>
+     <x>10</x>
+     <y>60</y>
+     <width>81</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Picture type</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_3" >
+   <property name="geometry" >
+    <rect>
+     <x>10</x>
+     <y>120</y>
+     <width>141</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Angular size (degrees)</string>
+   </property>
+  </widget>
+  <widget class="QWidget" name="layoutWidget" >
+   <property name="geometry" >
+    <rect>
+     <x>20</x>
+     <y>150</y>
+     <width>307</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout" >
+    <item>
+     <widget class="QLabel" name="label_4" >
+      <property name="text" >
+       <string> Width   </string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QDoubleSpinBox" name="widBox" >
+      <property name="accelerated" >
+       <bool>true</bool>
+      </property>
+      <property name="minimum" >
+       <double>10.000000000000000</double>
+      </property>
+      <property name="maximum" >
+       <double>360.000000000000000</double>
+      </property>
+      <property name="value" >
+       <double>360.000000000000000</double>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_5" >
+      <property name="text" >
+       <string>  Height   </string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QDoubleSpinBox" name="hgtBox" >
+      <property name="accelerated" >
+       <bool>true</bool>
+      </property>
+      <property name="minimum" >
+       <double>5.000000000000000</double>
+      </property>
+      <property name="maximum" >
+       <double>180.000000000000000</double>
+      </property>
+      <property name="value" >
+       <double>180.000000000000000</double>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
  </widget>
  <resources/>

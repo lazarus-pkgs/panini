@@ -23,6 +23,7 @@
 
 #include <QWidget>
 #include "pictureTypes.h"
+#include "picTypeDialog.h"
 
 class pvQtView;
 class pvQtPic;
@@ -43,13 +44,16 @@ public:
 	bool choosePictureFiles( const char * picTypeName = 0 );
 	bool loadPictureFiles( QStringList names );
 	const QStringList picTypeDescrs();
-	const char * askPicType( QStringList files );
+	const char * askPicType( QStringList files, QSizeF & size );
 public slots:
 	void newPicture( const char * type );
+	void picTypeChanged( int t );
 protected:
 	void resizeEvent( QResizeEvent * ev );
 
 private:
+	picTypeDialog ptd;
+	QSizeF picFovs;
 	pvQtView * glview;	// display widget
 	pvQtPic * pvpic;	// picture maker
 	bool ok;	// true if created w/o error
