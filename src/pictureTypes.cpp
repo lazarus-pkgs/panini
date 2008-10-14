@@ -23,14 +23,14 @@
 
 pictureTypes::pictypnumdesc
 pictureTypes::pictypn[NpictureTypes] = {
-    { "proj", 1, QString()},
-	{ "qtvr", 1, QString()},
-	{ "rect", 1, QString()},
-	{ "fish", 1, QString()},
-	{ "cyli", 1, QString()},
-	{ "equi", 1, QString()}, 
-	{ "hemi", 2, QString()}, 
-	{ "cube", 6, QString()}
+    { "proj", 1, QString(), 0,0,0,0 },
+	{ "qtvr", 1, QString(), 0,0,0,0 },
+	{ "rect", 1, QString(), 5,5,135,135 },
+	{ "fish", 1, QString(), 50,50,200,200 },
+	{ "cyli", 1, QString(), 50,25,360,135 },
+	{ "equi", 1, QString(), 50, 25,360,180 }, 
+	{ "hemi", 2, QString(), 180,180,180,180 }, 
+	{ "cube", 6, QString(), 90,90,90,90 }
  };
 
 // need c'tor as tr() does not work outside a QObject
@@ -89,10 +89,20 @@ QString pictureTypes::picTypeDescr( int index ){
 	return pictypn[index].desc;	
 }
 
-QStringList pictureTypes::picTypeDescrs(){
+QStringList pictureTypes::picTypeDescrs( ){
 	QStringList sl;
 	for(int i = 0; i < NpictureTypes; i++ ){
 		sl.append(pictypn[i].desc);
 	}
 	return sl;
+}
+
+QSizeF pictureTypes::minFov( int index ){
+	if( index < 0 || index >= NpictureTypes ) return QSizeF();
+	return QSizeF( pictypn[index].minW, pictypn[index].minH );
+}
+
+QSizeF pictureTypes::maxFov( int index ){
+	if( index < 0 || index >= NpictureTypes ) return QSizeF();
+	return QSizeF( pictypn[index].maxW, pictypn[index].maxH );
 }

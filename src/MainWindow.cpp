@@ -95,12 +95,7 @@ if(ok) ok =
 if(ok) ok =
 	connect(actionReset, SIGNAL(triggered()),
 		    this, SLOT(resetView()) );
-if(ok) ok =
-	connect(action_SuperFish, SIGNAL(triggered()),
-		    this, SLOT(superFish()) );
-if(ok) ok =
-	connect(actionFullFrame, SIGNAL(triggered()),
-		    this, SLOT(fullFrame()) );
+
 
 if(ok){
 	glwindow = new GLwindow(this);
@@ -175,12 +170,6 @@ void MainWindow::homeView(){
 }
 void MainWindow::resetView(){
 	emit reset_view();
-}
-void MainWindow::fullFrame(){
-	emit full_frame();
-}
-void MainWindow::superFish(){
-	emit super_fish();
 }
 
 /** Picture Menu Handlers 

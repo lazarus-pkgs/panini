@@ -21,7 +21,6 @@
 */
 #include <QtCore>
 #include "GLwindow.h"
-#include "picTypeDialog.h"
 #include "pvQtView.h"
 #include "pvQt_QTVR.h"
 
@@ -60,14 +59,15 @@ GLwindow::GLwindow (QWidget * parent )
   if(ok) ok = 
 	connect( parent, SIGNAL(super_fish()),
 		     glview, SLOT(super_fish()));
-		     
   if(ok) ok = 
 	connect( glview, SIGNAL(reportView( QString )),
 			 parent, SLOT(showStatus( QString )) );
-			 
   if(ok) ok = 
 	connect( parent, SIGNAL(newPicture( const char * )),	////TEST
 			 this, SLOT(newPicture( const char * )) );
+  if(ok) ok = 
+	connect( &ptd, SIGNAL(picTypeSelected( int )),	////TEST
+			 this, SLOT(picTypeChanged( int )) );
   if(!ok) {
 	  qFatal("GLwindow setup failed");
   }
@@ -158,27 +158,43 @@ bool GLwindow::cube_files( QStringList names ){
 }
 
 
-/** Supported Picture Types
-	are designated by ASCII names
-**/
+/* ask user for the picture type and angular size
+ 	of one or more image files.  The choices for type
+ 	do not include project or qtvr, and the range
+ 	of allowed sizes depends on type (this is
+ 	implemented by slot picTypeChanged ).
 
-
-/* ask user for the picture type of a set of files
-   returns a legal type name or a null pointer.
+   returns
+   	a type name and a legal angular size,
+   	or a null pointer with size = 0,0
 */
-const char * GLwindow::askPicType( QStringList files ){
-	picTypeDialog ptd( this );
+const char * GLwindow::askPicType( QStringList files, 
+									QSizeF & size ){
 	int nf = files.count();
 	if( nf < 1 ) return 0;
 	if( nf == 1 ) ptd.setNameLabel( files[0] );
 	else ptd.setNameLabel( files[0] + ",..." );
-	ptd.setPicTypes( pictypes.picTypeDescrs() );
+	
+	QStringList desc = pictypes.picTypeDescrs();
+	desc.removeFirst();
+	desc.removeFirst();
+	ptd.setPicTypes( desc );
 
+	size = QSizeF(0,0);
 	if( !ptd.exec() ) return 0;
-	return pictypes.picTypeName( ptd.chosenType() );
+	size = ptd.getSize();
+	return pictypes.picTypeName( ptd.chosenType() + 2 );
+}
+// post FOV limits & default = max when pic type changes
+void GLwindow::picTypeChanged( int t ){
+	ptd.setMinSize( pictypes.minFov( t + 2 ) );
+	ptd.setMaxSize( pictypes.maxFov( t + 2 ) );
+	ptd.setSize( pictypes.maxFov( t + 2 ) );
 }
 
 /* handle command line (before GUI shows)
+  Always returns true, so program will continue
+  even if the command line fails.
 */
 bool GLwindow::commandLine( int argc, char ** argv ){
 	if( argc < 2 ) return true; // no command
@@ -190,16 +206,19 @@ bool GLwindow::commandLine( int argc, char ** argv ){
 		sl << QString( argv[i] );
 	}
   // dispatch
+  	bool ok;
 	if( sl.count() > 0 ){
-		if( it >= 0 ) return loadTypedFiles( argv[1], sl );
-		else return loadPictureFiles( sl );
+		if( it >= 0 ) ok = loadTypedFiles( argv[1], sl );
+		else ok = loadPictureFiles( sl );
 	}
-	return choosePictureFiles( argv[1] );
+	else ok = choosePictureFiles( argv[1] );
+	
+	return true;
 }
 
-/*  try to load a picture given type and 1 or more files
-   if no files given, show an empty image for type other
-   thand QTVR or project
+/*  load a picture given type and 0 or more file names
+	return false if type is invalid or unsupported, otherwise 
+	the result of a type-specific picture loader.
 */
 bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 	int n = pictypes.picTypeCount( tnm );
@@ -237,7 +256,10 @@ bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 */
 bool GLwindow::loadPictureFiles( QStringList names ){
 	QFileInfo fi( names[0] );
-	if( !fi.isReadable() ) return false;
+	if( !fi.isReadable() ){
+		qCritical("Unreadable image file" );
+		return false;
+	}
 	QString ext = fi.suffix();
 	if( ext == "mov" ) return QTVR_file( names[0] );
 	if( ext == "pts" || ext == "pto" || ext == "pro"
@@ -246,7 +268,7 @@ bool GLwindow::loadPictureFiles( QStringList names ){
 		return false;  // project_file( name );
 	}
   // must be image files, ask for type
-    return loadTypedFiles( askPicType( names ), names );
+    return loadTypedFiles( askPicType( names, picFovs ), names );
 }
 
 /* get a picture with a file selector dialog.
@@ -285,7 +307,7 @@ bool GLwindow::choosePictureFiles( const char * ptnm ){
 	QStringList files;
 	if( fd.exec()) files = fd.selectedFiles();
 	if( it < 0 && files.count() > 0 ){
-		ptnm = askPicType( files );
+		ptnm = askPicType( files, picFovs );
 	    it = pictypes.picTypeIndex( ptnm );
 	}
 	if( it < 0 ) return false;

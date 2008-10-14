@@ -33,8 +33,9 @@ public:
 	// picture type names, descriptions, and max file counts
 	typedef struct { 
 		const char * typ; 
-		const int nfi; 
+		const int nfi; 					// max file count
 		QString desc; 
+		double minW, minH, maxW, maxH;	// degrees
 	} pictypnumdesc;
 	pictureTypes();
 	int picTypeIndex( const char * name );
@@ -44,6 +45,8 @@ public:
 	QString picTypeDescr( const char * name );
 	QString picTypeDescr( int index );
 	QStringList picTypeDescrs();
+	QSizeF minFov( int index );
+	QSizeF maxFov( int index );
 private:
   static pictypnumdesc pictypn[NpictureTypes]; 
 
