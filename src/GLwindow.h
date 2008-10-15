@@ -34,6 +34,13 @@ public:
 	GLwindow(QWidget * parent = 0);
 	bool isOK(){ return ok; }
 	bool commandLine( int argc, char ** argv );
+public slots:
+	void newPicture( const char * type );
+	void picTypeChanged( int t );
+protected:
+	void resizeEvent( QResizeEvent * ev );
+
+private:
 	bool QTVR_file( QString name );
 	bool rect_file( QStringList names );
 	bool fish_file( QStringList names );
@@ -44,16 +51,12 @@ public:
 	bool choosePictureFiles( const char * picTypeName = 0 );
 	bool loadPictureFiles( QStringList names );
 	const QStringList picTypeDescrs();
-	const char * askPicType( QStringList files, QSizeF & size );
-public slots:
-	void newPicture( const char * type );
-	void picTypeChanged( int t );
-protected:
-	void resizeEvent( QResizeEvent * ev );
-
-private:
+	const char * askPicType( QStringList files, 
+							 QSizeF & size,
+							 const char * ptyp = 0 );
+	
 	picTypeDialog ptd;
-	QSizeF picFovs;
+	QSizeF picFov;
 	pvQtView * glview;	// display widget
 	pvQtPic * pvpic;	// picture maker
 	bool ok;	// true if created w/o error

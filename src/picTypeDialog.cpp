@@ -22,8 +22,9 @@ void picTypeDialog::setPicTypes( QStringList types ){
 	typesBox->addItems( types );
 }
 
-void picTypeDialog::selectPicType( int t ){
+void picTypeDialog::selectPicType( int t, bool lock ){
 	typesBox->setCurrentIndex( t );
+	typesBox->setEnabled( !lock );
 }
 
 int picTypeDialog::chosenType(){

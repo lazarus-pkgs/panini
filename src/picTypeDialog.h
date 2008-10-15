@@ -39,7 +39,7 @@ public:
 	picTypeDialog( QWidget * parent = 0 );
 	void setNameLabel( QString name );
 	void setPicTypes( QStringList types );
-	void selectPicType( int t );
+	void selectPicType( int t, bool lock = false );
 	int chosenType();
 	void setMinSize( QSizeF range );
 	void setMaxSize(QSizeF range );
