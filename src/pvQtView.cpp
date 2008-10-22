@@ -36,14 +36,18 @@
 /**** maximum projection angle at eye ****/ 
 #define MAXPROJFOV  137.5
 
+/**  reset error message at fuction entry  **/
 
  pvQtView::pvQtView(QWidget *parent)
      : QGLWidget(parent)
  {
+ // post unusable OGL capabilities
+ 	OGLv20 = OGLv14 = false;
+ 	 picok = false;
+ 	 errmsg = tr("no picture");
 	 thePic = 0;
 	 theScreen = 0;
 	 textgt = 0;
-
      Width = Height = 400;
      initView();
  }
@@ -53,6 +57,33 @@
      makeCurrent();
      glDeleteLists(theScreen, 1);
  }
+ 
+/*  query and post OpenGl capabilities;
+    return false if they are insufficient
+    NOTE this code fails if run in c'tor,
+    but must be run to enable display
+*/
+bool pvQtView::OpenGLOK()
+{	
+	errmsg = tr("no error");
+	QString glver((const char *)glGetString(GL_VERSION));
+	QStringList vns = glver.split(QChar('.'));
+	
+	int vn0 = vns[0].toInt();
+	OGLv20 = vn0 >= 2;
+	if( !OGLv20 && vns.count() > 1 ){
+		OGLv14 = vn0 == 1 && vns[1].toInt() >= 4;
+	} else OGLv14 = OGLv20;
+
+	QString glext((const char *)glGetString(GL_EXTENSIONS));
+	texPwr2 = glext.contains(QString("GL_ARB_texture_non_power_of_two"));
+	
+	if( !OGLv14 ){
+		picok = false;
+		errmsg = tr("OpenGL insufficient");
+	} 
+	return OGLv14;
+}
 
 /**  GUI Interactions  **/
 
@@ -166,18 +197,17 @@
  
  void pvQtView::showview(){
 	 QString s;
-	 s.sprintf("Yaw %.1f  Pitch %.1f  Roll %.1f  Dist %.1f  vFOV %.1f",
+	 s.sprintf("Yaw %.1f  Pitch %.1f  Roll %.1f  Eye %.1f  vFOV %.1f",
 		 panAngle, tiltAngle, spinAngle, eyeDistance, vFOV );
 	 emit reportView( s );
  }
 
- void pvQtView::showPic( pvQtPic * pic )
+/**  API call to display a picture  **/
+bool pvQtView::showPic( pvQtPic * pic )
  {
-	if( pic != 0 && pic->Type() == pvQtPic::nil ) {
-		qWarning("pvQtView::showPic: empty pvQtPic ignored" );
-		pic = 0;
-	}
-	setupPic( pic );
+ 	errmsg = tr("no error");
+ 	picok = setupPic( pic );
+ 	return picok;
  }
 
 void pvQtView::picChanged( )
@@ -234,21 +264,27 @@ void pvQtView::initView()
 }
 
 void pvQtView::setFOV( double newvfov ){
- /* set
+ /*   If newfov is zero or omitted, uses current vFOV.
+  sets
 	vFOV = newvfov (clipped legal) = view height as an
 		angle at the center of the unit sphere
 	wFOV = half view height as an angle at the eye point.
-  If newfov is zero or omitted, uses current vFOV.
-  Note also sets constant view clipping distances.
+    izoom = UI code, always a multiple of zoomstep.  If
+      angle was clipped, this may be a slightly illegal
+      value, if not it is iAngle( vFov ).
 */
 	if(newvfov == 0 ) newvfov = vFOV;
 	if( newvfov < minFOV ) newvfov = minFOV;
 	else if( newvfov > maxFOV) newvfov = maxFOV;
 	
 	vFOV = newvfov;
-	izoom = iAngle( vFOV );	
 	wFOV = vFOV / (eyeDistance + 1);
 
+	izoom = iAngle( vFOV );
+	int r = izoom % zoomstep;
+	if( r < 0 ) izoom -= zoomstep + r;
+	else if( r > 0 ) izoom += zoomstep - r;
+		
 }
 
 void pvQtView::setDist( int id ){
@@ -303,7 +339,6 @@ void pvQtView::setDist( int id ){
  	double a = normalizeAngle(angle, minFOV, maxFOV);
  	angle = iAngle( a );
 	if (angle != izoom) {
-         izoom = angle;
          setFOV(a);
          updateGL();
 		 showview();
@@ -323,6 +358,10 @@ void pvQtView::setDist( int id ){
     glDisable( GL_TEXTURE_GEN_S );
     glDisable( GL_TEXTURE_GEN_T );
     glDisable( GL_TEXTURE_GEN_R );
+    
+	glFrontFace( GL_CW );
+	
+	textgt = GL_TEXTURE_2D;
 
 	switch( pt ){
 	default:
@@ -330,17 +369,15 @@ void pvQtView::setDist( int id ){
 	case pvQtPic::nil:		// No picture
 		break;
 	case pvQtPic::rec:		// A rectilinear image up to 135 x 135 degrees
+		textgt = GL_TEXTURE_CUBE_MAP;
 		break;
 	case pvQtPic::sph:		// A spherical image up to 180 degrees diameter
 		break;
 	case pvQtPic::cyl:		// A cylindrical panorama up to 360 x 135 degrees
 		break;
 	case pvQtPic::eqr:		// An equirectangular panorama up to 360 x 180 degrees
-		glFrontFace( GL_CW );
-		textgt = GL_TEXTURE_2D;
 		break;
 	case pvQtPic::cub:		// A cubic panorama (1 to 6 rectilinear images 90x90 degrees)
-		glFrontFace( GL_CW );
 		textgt = GL_TEXTURE_CUBE_MAP;
 		glTexGenf( GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP );
 		glTexGenf( GL_T, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP );
@@ -349,15 +386,18 @@ void pvQtView::setDist( int id ){
 		glEnable( GL_TEXTURE_GEN_T );
 		glEnable( GL_TEXTURE_GEN_R );
 		break;
-	case pvQtPic::hem:		// A panorama with 1 or 2 hemispherical images
-		break;
 	}
 
 	picType = pt;
  }
 
+/* One-time setup of the OpenGL environment
+*/
  void pvQtView::initializeGL()
  {
+  // abort if the OpenGL version is insufficient
+ 	if( !OpenGLOK() ) return;
+
 	qglClearColor(Qt::black);
 	glShadeModel(GL_SMOOTH);
 ////	glEnable(GL_DEPTH_TEST);
@@ -382,15 +422,31 @@ void pvQtView::setDist( int id ){
 
   // create projection screen displaylist
 	theScreen = glGenLists(1);
+  // make spherical screen
 	makeSphere( theScreen );
 
   // clear the picture type specific state
 	 setPicType( pvQtPic::nil );
    
  }
+ 
+ /* check for (and reset) OpenGL errors;
+   if no error return true, else
+   post description to errmsg and return false;
+ */
+bool pvQtView::OGLok(){
+	GLenum c = glGetError();
+	if( c == GL_NO_ERROR ) return true;
+	errmsg = QString("OpenGL error: ")
+			+ QString( (const char *)gluErrorString( c ) );
+	return false;
+}
 
  void pvQtView::paintGL()
  {
+ // abort if the OpenGL version is insufficient
+	if( !OGLv14 ) return;
+ 	
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	if( textgt ) glEnable( textgt );
 
@@ -425,17 +481,20 @@ void pvQtView::setDist( int id ){
 		glRotated( -tiltAngle, 1, 0, 0 );
 		glRotated( 180 - panAngle, 0, 1, 0 );
 		break;
-	case pvQtPic::hem:		//
-		break;
 	}
 
 	glMatrixMode(GL_MODELVIEW);
 
 	glCallList(theScreen);
+	
+	picok = OGLok();	// post any OGL error
  }
 
  void pvQtView::resizeGL(int width, int height)
  {
+ // abort if the OpenGL version is insufficient
+ 	if( !OGLv14 ) return;
+
 // Viewport fills window.
 	glViewport(0, 0, width, height);
 
@@ -448,6 +507,9 @@ void pvQtView::setDist( int id ){
 
 void pvQtView::makeSphere( GLuint list )
  {
+  // abort if the OpenGL version is insufficient
+ 	if( !OGLv14 ) return;
+
 	GLUquadricObj *qobj = gluNewQuadric();
 	gluQuadricDrawStyle(qobj, textgt ? GLU_FILL : GLU_LINE);
 	gluQuadricNormals(qobj, GLU_SMOOTH);
@@ -460,9 +522,12 @@ void pvQtView::makeSphere( GLuint list )
 
 
 /* set up screen and texture maps for a picture
-  pass pic == 0 to clear all picture state
+  pass pic == 0 to just clear all picture state
+  
+  fails if it can't negotiate a feasible texture size
+  and format with the pvQtPic
 */
-void pvQtView::setupPic( pvQtPic * pic )
+bool pvQtView::setupPic( pvQtPic * pic )
 {
 // texture cube faces in the order pvQtPic uses
 	static GLenum cubefaces[6] = {
@@ -473,20 +538,78 @@ void pvQtView::setupPic( pvQtPic * pic )
 		GL_TEXTURE_CUBE_MAP_POSITIVE_Y,	// top
 		GL_TEXTURE_CUBE_MAP_NEGATIVE_Y	// bottom
 	};
-/* Reset picture type specific vars and OpenGL options
-*/
+/* Reset picture type specific state
+*/	
 	thePic = pic;
 	if( pic ) picType = pic->Type();
 	else picType = pvQtPic::nil;
+	if( picType == pvQtPic::nil ){
+		errmsg = tr("s/w error: empty pvQtPic");
+		return false;
+	}
+	
+ // abort if the OpenGL version is insufficient
+ 	if( !OGLv14 ){
+ 		errmsg = tr("Insufficient OpenGL version");
+		return false;
+	}
+/*  Choose a display strategy based on image type and FOV,
+	set the texture image FOV, then set a feasible size.
+	
+  The strategies for variable fov pictures are
+	rec: embed in front cube face (90x90 deg)
+	sph: embed in front hemisphere face (180x180)
+	cyl: embed in full cylinder (360 x vfov)
+	eqr: embed in full equi (360 x 180)
+*/  
+	switch( picType ){
+	case pvQtPic::rec:
+		pic->setFaceFOV(QSizeF( 90, 90 ));
+		break;
+	case pvQtPic::sph:
+		pic->setFaceFOV(QSizeF( 180, 180 ));
+		break;
+	case pvQtPic::cyl:
+		pic->setFaceFOV(QSizeF( 360, 135 ));
+		break;
+	case pvQtPic::eqr:
+		pic->setFaceFOV(QSizeF( 360, 180 ));
+		break;
+	case pvQtPic::cub:
+		pic->setFaceFOV(QSizeF( 90, 90 ));
+		break;
+	}
+  // set up OGL for the picture type
 	setPicType( picType );
-	if( picType == pvQtPic::nil ) return;
 
+  // find a feasible texture size
+	QSize ts = pic->FaceSize();
+	double ks = 0.7071;
+	bool ok = false;
+	GLenum proxy = textgt == GL_TEXTURE_2D ? 
+			GL_PROXY_TEXTURE_2D : GL_PROXY_TEXTURE_CUBE_MAP; 
+	do{
+		int v;
+		glTexImage2D( proxy, 0, GL_RGB,
+			ts.width(), ts.height(), 0, 
+			GL_RGB, GL_UNSIGNED_BYTE, 0 );
+		glGetTexLevelParameteriv( proxy, 0, GL_TEXTURE_WIDTH, &v );
+		if( v == 0 ){
+			if( !pic->changeFaceSize( ks ) ){
+				errmsg = tr("no feasible picture size!");
+				return false;
+			}
+			ts = pic->FaceSize();
+		} else ok = true;
+	} while( !ok );
+
+	
 /* Load texture images
+  skip any whose sizes differ from the negotiated size
 */
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);  // QImage row alignment
 
 	if( picType == pvQtPic::cub ){
-		theTex = texIDs[1];
 		for(int i = 0; i < 6; i++){
 			QImage * p = pic->FaceImage(pvQtPic::PicFace(i));
 			if( p ){
@@ -498,7 +621,6 @@ void pvQtView::setupPic( pvQtPic * pic )
 			}
 		}
 	} else {
-		theTex = texIDs[0];
 		QImage * p = pic->FaceImage(pvQtPic::PicFace(0));
 		if( p ){
 			glTexImage2D( textgt, 0, GL_RGB,
@@ -511,12 +633,16 @@ void pvQtView::setupPic( pvQtPic * pic )
 
   // rebuild the display list
 	makeSphere( theScreen );
+	
+  // show user the view parameters
+	showview();
 
   // repaint the view
 	updateGL();
+	
+// check for OpenGL error
+	return OGLok();
 
-  // display view parameters
-	showview();
 }
 
 void pvQtView::updatePic()

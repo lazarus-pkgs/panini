@@ -20,6 +20,9 @@
  a 3D spherical or cylindrical screen.
 
  This class is the only one in pvQt that issues OpenGL calls.
+ 
+ App should call OpenGLOK() before using this widget, and terminate 
+ with error if it returns false (as nothing can be displayed).
 
 */
 #ifndef PVQTVIEW_H
@@ -37,7 +40,34 @@ public:
 
      QSize minimumSizeHint() const;
      QSize sizeHint() const;
+     
+/**  OpenGL attributes  **/
 
+	bool OpenGLOK();	// false if OGL version too low
+	
+	QString OpenGLVersion(){
+		return QString( (const char *)glGetString(GL_VERSION) );
+	}
+	QString OpenGLVendor(){
+		return QString( (const char *)glGetString(GL_VENDOR) );
+	}
+	QString OpenGLHardware(){
+		return QString( (const char *)glGetString(GL_RENDERER) );
+	}
+
+  /* Display a picture
+	pic = 0 resets to base screen display.  Otherwise
+	*pic must be valid and undisturbed until showPic is next 
+	called (caller can then delete pic if appropriate).
+	returns sucess or failure, with errmsg updated.
+  */
+	 bool showPic( pvQtPic * pic );
+  // check whether picture dislayed OK
+	 bool picOK( QString & errMsg ){
+	 	 errMsg = errmsg; 
+	 	 return picok;
+	 }
+	 
  public slots:
 /* Angles passed from/to GUI are integers in 16ths of a degree,
    so they can be reliably checked for equality.  The zoom angle 
@@ -59,14 +89,7 @@ public:
 	 void home_view();	// zero view angles
 	 void full_frame();	// stereographic, min zoom
 	 void super_fish();	// circular superwide
-	 
 
-  /* set the picture to be displayed
-	pic = 0 resets to base screen display.  Otherwise
-	*pic must be valid until after showPic is next called
-	(caller can then delete pic if appropriate).
-  */
-	 void showPic( pvQtPic * pic );
   // update display of current picture
 	 void picChanged();
 
@@ -108,7 +131,7 @@ public:
 
   // display support
 	 void setPicType( pvQtPic::PicType pt );
-	 void setupPic( pvQtPic * pic );
+	 bool setupPic( pvQtPic * pic );
 	 void updatePic();
 	 pvQtPic  * thePic;
 	 pvQtPic::PicType	picType;
@@ -119,7 +142,14 @@ public:
 	 GLenum textgt;	// current target (2D or cube)
 	 GLuint texIDs[2];	// 0: 2D, 1: cube object
 	 GLuint theTex;	// current object
-
+  // OpenGL capabilities
+	bool OGLv14;	// is at least version 1.4
+	bool OGLv20;	// is at least version 2.0
+	bool texPwr2;	// needs power-of-2 texture dimensions
+  // status 
+  	bool picok;		// current pic displayed ok
+  	QString errmsg;	// reason why not
+  	bool OGLok();	// check for OGL errors
 
 };
 

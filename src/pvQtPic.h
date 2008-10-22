@@ -19,20 +19,22 @@
   pvQt is a panoramic image viewer built on the Qt4 framework and OpenGL.
       
   Class pvQtPic holds the specifications and data for a picture.  It 
-  can be built with data already in memory, or subclassed to get the
-  necessary information from other sources.  
+  can be built with data already in memory, or local files, and can
+  be subclassed to get the necessary information from other sources.  
 
   Passing a pvQtPic to pvQtView::showPic() starts a picture display
   session, in which the view object is the active partner.  It
   gets information it needs by calling pvQtPic methods, and may 
   also modify the pvQtPic.  
   
-  The images passed to view are always QImages, in the size and 
-  projection required by the picture type, so probably resized or 
-  otherwise transformed from the source images.  Source images are 
-  normally read when called for, but may be cached.  
+  The images passed to view are always QImages, in a size and 
+  format negotiated by view, which knows the OpenGL capabilities,
+  and pic, which knows the picture format. So texture imagea are
+  often resized or otherwise transformed from the source images.  
+  Source images are normally read form an external mediunm when 
+  called for, but may be cached.  
   
-  Source image files may be in any format readable by QImageReader.
+  Source image files can be in any format readable by QImageReader.
   Their locations can be specified by path name or url.  The base
   implementation will read local files specified by url (as passed
   by drag-n-drop, for example) but is not necessarily able to load 
@@ -46,6 +48,19 @@
   The base class is a subclass of QObject, but does not define any 
   signals or slots.
   
+  The basic cycle of operation is:
+  App calls
+    setType() -- clear state & post fixed rqt's of new type
+    setImageFOV() -- post the source image angular size
+    setFaceImage() -- identify & verify the source image(s)
+    [setLabel,setBorder(),setFill() -- set a nondefault style
+      for empty frames, if desired]
+  then passes pic to GLview::showPic().
+  PvQtView calls
+    getFaceSize() -- to get the size calculated here
+    setFaceSize() -- to adjust size based on OGL limits
+    FaceImage() -- to get the final texture image(s)
+
  */
 
 #ifndef __PVQTPIC_H__
@@ -64,11 +79,10 @@ public:
 typedef enum {
   nil = 0,		// No picture
   rec = 1,		// A rectilinear image up to 135 x 135 degrees
-  sph = 2,		// A spherical image up to 180 degrees diameter
+  sph = 2,		// A spherical image up to 360 degrees diameter
   cyl = 3,		// A cylindrical panorama up to 360 x 135 degrees
   eqr = 4,		// An equirectangular panorama up to 360 x 180 degrees
   cub = 5,		// A cubic panorama (1 to 6 rectilinear images 90x90 degrees)
-  hem = 6		// A panorama with 1 or 2 hemispherical images
  } PicType;
  
 /* cube face IDs
@@ -96,14 +110,27 @@ enum{
 
  pvQtPic( PicType type = nil );
  
+/* utility functions to interconvert pixels and angles
+	proj indicates the projection function:
+		0: rectilinear, 1: equal-angle
+	The next 2 arguments calibrate the relationship;
+	4th arg is the quantity to be converted.
+  fovs are in degrees.  They represent the full width or height 
+  of an image, so the calibration actually is fov/2 <=> pix/2.
+*/
+int 	scalepix( int proj, int pix, double fov, double tofov );
+
 /* Functions that return displayable images or info about them
 */
  PicType Type();		// nil => cannot display
  int 	 NumFaces();	// max for type, 0 for nil
  int 	 NumImages();	// number of faces that have source images
- QSize   FaceSize();	// pixels w, h (all faces)
- QSizeF  FaceFOV();		// degrees w, h (all faces)
- QImage * FaceImage( PicFace face = front );  // face image
+// overall size of texture image(s)
+ QSize   FaceSize(){ return facedims; }
+// size of image as read
+ QSize   ImageSize(){ return imagedims; } // may be < source dims
+ QSizeF  ImageFOV(){ return imagefovs; }
+ 
  QString FaceName( PicFace face = front );	// display name
 /* info about the default "empty image" for a face
    isEmpty( any ) is false if any face has a source image.
@@ -115,19 +142,15 @@ enum{
  QColor		getBorder( PicFace face = front );
  QColor		getFill( PicFace face = front );
  
-    
-/* functions for programmed setup return true: success, false: failure.
+// normally called only from pvQtVew:
+ QImage * FaceImage( PicFace face = front );  // get face image
+
+/* programmed setup fns return true: success, false: failure.
   
   A pvQtPic with type nil cannot be displayed or accept any setup
   calls but setType().  
   
   setType() sets internal state to a legal default for the new type.
-  
-  All faces are the same size.  The default dimensions are small
-  enough to be feasible in any OpenGL implementation.  There 
-  is no explicit upper limit on what you can set, however the
-  view will probably reduce infeasibly large face sizes. 
-  
   The default angular sizes are also the largest ones allowed for 
   the type; for some types this is the only legal value.
   
@@ -135,11 +158,14 @@ enum{
   legal for the type. 
   
 */
- bool setType( PicType pt ); 		// clears, sets all defaults
- bool setFaceSize( QSize dims );
+
+// to be called only from pvQtView:
+ bool changeFaceSize( double factor );	// texture image
  bool setFaceFOV( QSizeF fovs );
  
- // assign source images to display faces
+// to be called only from app:
+ bool setType( PicType pt ); 		// clears, sets all defaults
+ bool setImageFOV( QSizeF angles );	// before setFaceImage, if needed
  bool setFaceImage( PicFace face, QImage * img );
  bool setFaceImage( PicFace face, int width, int height, void * addr,
  				int bitsPerColor, int colorsPerPixel, 
@@ -148,23 +174,10 @@ enum{
  			    int alignBytes = 0 );
  bool setFaceImage( PicFace face, QString path );
  bool setFaceImage( PicFace face, QUrl url );
- 
- // limits on display image size (default: none)
- void set_maxVideoRAM( double Bytes ){
- 	 maxVideoRAM = Bytes;
- }
- 
- void set_maxFaceDims( QSize dims ){
- 	maxFaceDims = dims;
- }
- 
- void set_pwrOfTwoFaceDims( bool yes ){
- 	pwrOfTwoFaceDims = yes;
- }
- 
  /* Set "empty image" styles
    face = any sets all faces; label = "*" uses face names
    label color is black or white according to fill color 
+   NOTE setType() restores the default styles
  */
  bool	setLabel( PicFace face = any, QString label = QString("*") );
  bool	setBorder( PicFace face = any, QColor color = QColor() );
@@ -176,17 +189,16 @@ private:
 	int maxfaces;	// 1, 2, or 6
 	int numimgs;	// no. of faces with source images
 	int numsizes;	// no. of faces with valid source sizes
-  // display face size limits
-    double 		maxVideoRAM;	//  Bytes
-    QSize		maxFaceDims;	// pixels
-    bool		pwrOfTwoFaceDims;	// ancient OpenGL
-  // display face properties
+  // display image and face properties
   	QImage::Format faceformat;
-	QSize		facedims;	// pixels
-	QSizeF		facefovs;	// degrees
-	QSizeF		maxfovs, minfovs;	// limits
+	QSize		imagedims;	// pixels -- as read
+	QSizeF		imagefovs;	// degrees  -- as read
+	QSize		facedims;	// pixels -- as displayed
+	QSizeF		facefovs;	// degrees  -- as displayed
+	QSizeF		maxfovs, minfovs;	// face limits
 	bool 		lockfovs;	// true => fixed fov & aspect ratio
   // arrays indexed by face id, 0:maxfaces-1
+	bool		accept[6];	// usable image
 	int		 	kinds[6];	// coded source type
 	int			formats[6];	// QImage::Format, or a kcode
 	QSize		idims[6];	// source dimensions
@@ -197,6 +209,8 @@ private:
 	QColor		fills[6];
 // common logic for assigning an image to a face
 	bool	addimgsize( int iface, QSize dims );
+// pixels <=> fov angle
+	int 	xproj, yproj;	// axis projection types
 // load local images for a face
 	QImage * loadEmpty( int face );
 	QImage * loadFile( int face );

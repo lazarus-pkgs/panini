@@ -24,7 +24,7 @@
 
 #include <QtCore>
 
-#define NpictureTypes 8
+#define NpictureTypes 7
 
 class pictureTypes :
 	public QObject

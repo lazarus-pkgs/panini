@@ -79,7 +79,7 @@ done	Make PageUp/Down do zoom, and Ctl-Pgup/dn do perspective.
 
 done	Put a helpful title on image file selector window.
 	
-	Probe OGL capabilities in pvQtView, and tell user about limitations.
+test	Probe OGL capabilities in pvQtView, and tell user about limitations.
 	In particular check OGL rev, vram and pwr-of-2 textures at startup;
 	use texture proxies to fit each picture to the available resources.
 
@@ -87,9 +87,11 @@ done	Add angular size (fov) to the picture type dialog.
 
 done	Get FOV from user if not determined by picture type.
 
-	Show pictures with restricted fovs.
+part	Show pictures with restricted fovs.
 
 cube	Make sure missing or unreadable image files give empty frames.
+
+done	Show rectilinear pictures (up to 90 deg)
 
 	Show cylindrical pictures.
 
@@ -101,5 +103,31 @@ cube	Make sure missing or unreadable image files give empty frames.
 	
 	Design ways to build lens correction (adjustable radial projection fns) 
 	into the various display modes.
+
+17 Oct 2008
+
+	Now have a feasible scheme for adjusting frame FOVs and size: given
+	image dims and fovs, set required frame fovs, then set frame dims by 
+	scaling image dims via fov ratios.
+	
+	BUT image FOVs must be set correctly: only one FOV is free, the other
+	is then fixed by the dimensions.  The type/fov dialog must show dims,
+	and automatically set 2nd fov when one is entered (and both when type
+	changes -- use HFOV as primary).  Probably shd just take HFOV.
+
+	If the image fovs agree with dims, then the same should be true for
+	the frame.  But we may have to polish a little.
+
+19 Oct 2008
+
+	Can only set one FOV in the pictype dialog (the longer one) -- must
+	set the other in Pic according to dimensions etc.
+	Have modified the dialog, now must fix Pic
+
+	There can be no hemi pictype; but fish == mirrorball, r/f = sin(a/2),
+	can go to 360 deg diameter; this is the OGL "sphere map".
+	Must remove hemi.  Then only cube can have >1 file.
+	Must implement sphere map display.  Then can show all but cyli and
+	big recti.
 
 	

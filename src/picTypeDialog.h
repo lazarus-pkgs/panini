@@ -18,12 +18,16 @@
 
 The user is shown a "source" name (filename or url)
 and asked to choose the appropriate picture type and
-angular sizes.  Type is just the index of the selected
-line in a combobox, which you must load with meaningful
-strings.  Sizes are limited to a settable range
-that defaults to [10:360] wide x [10:180] high.  The
-type index and sizes should be preset but if not, default
-to 0 and upper limits.
+the angular size of the longer image axis.  Type 
+is just the index of the selected line in a combobox, 
+which you must load with meaningful strings.
+
+FOVs are passed and returned as QSizeF objects, so there are
+lower and upper limits for both axes.  However only the fov
+of the longer (or 1st) axis is changed (the other is returned
+as zero).  You must set valid image dimensions before running 
+the dialog, and calculate the "short" fov afterward.
+
 */
 #ifndef PICTYPEDIALOG_H
 #define PICTYPEDIALOG_H
@@ -40,20 +44,22 @@ public:
 	void setNameLabel( QString name );
 	void setPicTypes( QStringList types );
 	void selectPicType( int t, bool lock = false );
+	void setDims( QSize wh );
+	void setMinFOV( QSizeF fovs );
+	void setMaxFOV( QSizeF fovs );
+	void setFOV( QSizeF fovs );
+	
 	int chosenType();
-	void setMinSize( QSizeF range );
-	void setMaxSize(QSizeF range );
-	void setSize( QSizeF angles );
-	QSizeF getSize( );
+	QSizeF getFOV();
+	
 signals:
 	void picTypeSelected( int t );
-	
-private:
-	QSizeF  minwh, maxwh, widhgt;
-	QDoubleValidator * widvd, * hgtvd;
 private slots:
-	void on_widBox_valueChanged( double w );
-	void on_hgtBox_valueChanged( double h );
+	void on_fovBox_valueChanged( double w );
+private:
+	QSize	dims;
+	QSizeF  minfov, maxfov, thefov;
+	bool ylong;	// true if height > width
 	
 };
 

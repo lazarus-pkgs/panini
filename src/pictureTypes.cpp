@@ -26,10 +26,9 @@ pictureTypes::pictypn[NpictureTypes] = {
     { "proj", 1, QString(), 0,0,0,0 },
 	{ "qtvr", 1, QString(), 0,0,0,0 },
 	{ "rect", 1, QString(), 5,5,135,135 },
-	{ "fish", 1, QString(), 50,50,200,200 },
+	{ "fish", 1, QString(), 50,50,360,360 },
 	{ "cyli", 1, QString(), 50,25,360,135 },
 	{ "equi", 1, QString(), 50, 25,360,180 }, 
-	{ "hemi", 2, QString(), 180,180,180,180 }, 
 	{ "cube", 6, QString(), 90,90,90,90 }
  };
 
@@ -37,12 +36,11 @@ pictureTypes::pictypn[NpictureTypes] = {
 pictureTypes::pictureTypes(){
     pictypn[0].desc = tr("PanoTools script or project");
 	pictypn[1].desc = tr("QuickTime VR panorama");
-	pictypn[2].desc = tr("Normal lens photo");
-	pictypn[3].desc = tr("Fisheye lens photo");
+	pictypn[2].desc = tr("Rectilinear image");
+	pictypn[3].desc = tr("Fisheye or sphere image");
 	pictypn[4].desc = tr("Cylindrical panorama");
 	pictypn[5].desc = tr("Equirectangular panorama"); 
-	pictypn[6].desc = tr("1 or 2 Hemispherical images"); 
-	pictypn[7].desc = tr("1 to 6 Cube face images");
+	pictypn[6].desc = tr("1 to 6 Cube face images");
 }
 
 // return index of a pic type name, -1 if none
