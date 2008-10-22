@@ -34,20 +34,16 @@ public:
 	GLwindow(QWidget * parent = 0);
 	bool isOK(){ return ok; }
 	bool commandLine( int argc, char ** argv );
+
 public slots:
 	void newPicture( const char * type );
 	void picTypeChanged( int t );
+	
 protected:
 	void resizeEvent( QResizeEvent * ev );
 
 private:
 	bool QTVR_file( QString name );
-	bool rect_file( QStringList names );
-	bool fish_file( QStringList names );
-	bool cyli_file( QStringList names );
-	bool equi_file( QStringList names );
-	bool hemi_files( QStringList names );
-	bool cube_files( QStringList names );
 	bool choosePictureFiles( const char * picTypeName = 0 );
 	bool loadPictureFiles( QStringList names );
 	const QStringList picTypeDescrs();

@@ -84,8 +84,69 @@ void GLwindow::newPicture( const char * type ){
 	choosePictureFiles( type );
 }
 
-/* Display a (presumed) QTVR file
+/**  Picture Display Routines
+	load a new picture into pvQtPic then pass it to pvQtView
+	If the type has a variable fov, send picFov before image(s)
+**/
+
+/*  load a picture given type and 0 or more file names
+	return false if type is invalid or unsupported, otherwise 
+	the result of trying to display the files.
+	All image file types are loaded here; project and qtvr
+	files are handled by subroutines.
 */
+bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
+	int n = pictypes.picTypeCount( tnm );
+	if( n == 0 ) return false;	// no such pic type
+	int c = fnm.count();
+	bool ok = false;
+	switch( pictypes.picTypeIndex( tnm ) ){
+	case 0:	// proj
+	case 3:	// fish
+	case 4:	// cyli
+		qCritical("%s -- to be implemented", tnm );
+		return false;
+		break;
+	case 1:	// qtvr
+		if( c == 1 ) return QTVR_file( fnm[0] );
+		break;
+	case 2:	// rect	-- Display as front cube face
+		ok = pvpic->setType( pvQtPic::cub );
+	// set all black empty frames except front
+		pvpic->setLabel( pvQtPic::any, QString() );
+		pvpic->setLabel( pvQtPic::front );
+		pvpic->setBorder( pvQtPic::any, Qt::black );
+		pvpic->setBorder( pvQtPic::front );
+		pvpic->setFill( pvQtPic::any, Qt::black );
+		pvpic->setFill( pvQtPic::front ); 
+		break;
+	case 5:	// equi
+		ok = pvpic->setType( pvQtPic::eqr );;
+		break;
+	case 6:	// cube
+		ok = pvpic->setType( pvQtPic::cub );
+		break;
+	}
+  // load and show image file types
+	if( c > 1 ) fnm.sort();
+	if( ok ){
+		if( pvpic->setImageFOV( picFov ) ){
+			int nok = 0;
+			for(int i = 0; i < c; i++ ){
+				if( pvpic->setFaceImage( pvQtPic::PicFace(i), fnm[i] ) ) ++nok;
+			}
+			ok = glview->showPic( pvpic );
+		} else ok = false;
+		if( !ok ){
+			QString vmsg;
+			ok = glview->picOK( vmsg );
+			qCritical( (const char *)vmsg.toUtf8() );
+		}
+	}
+	return ok;
+}
+
+// Display a QTVR file
 bool GLwindow::QTVR_file( QString name ){
 	QTVRDecoder dec;
 	bool ok = dec.parseHeaders( name.toUtf8().data() );
@@ -110,63 +171,17 @@ bool GLwindow::QTVR_file( QString name ){
 	return ok;
 }
 
-bool GLwindow::rect_file( QStringList names ){
-	return false;
-}
-
-bool GLwindow::fish_file( QStringList names ){
-	return false;
-}
-
-bool GLwindow::cyli_file( QStringList names ){
-	return false;
-}
-
-/* Display a presumed equirectangular file
-  show an empty image if no or too many files given
-*/
-bool GLwindow::equi_file( QStringList files ){
-	bool ok = pvpic->setType( pvQtPic::eqr );
-	int c = files.count();
-	if(ok && c == 1) ok = pvpic->setFaceImage( pvQtPic::front, files[0] );
-	if( ok ) glview->showPic( pvpic );
-	return ok;
-}
-
-bool GLwindow::hemi_files( QStringList names ){
-	return false;
-}
-
-
-/* Display a presumed cubic set of 1 to 6 image files
-  The file names must sort in standard cube face order:
-  front, right, back, left, top, bottom.
-  Displays an image no matter what.  It will have empty
-  faces for missing, unreadable or wrong-size files;
-  extra files ignored.
-*/
-bool GLwindow::cube_files( QStringList names ){
-	pvpic->setType( pvQtPic::cub );
-	int n = names.count();
-	if( n > 6 ) n = 6;
-	if( n > 0 ){
-		names.sort();
-		for( int i = 0; i < n; i++ ){
-			pvpic->setFaceImage( pvQtPic::PicFace(i), names[i] );
-		}	
-	}
-	glview->showPic( pvpic );
-	return ok;		
-}
-
-
 /* ask user for the picture type and/or angular size
  	of one or more image files. 
  	 
 	The choices for type don't include project or
-	qtvr, and the range of allowed fov sizes depends 
+	qtvr, and the range of allowed fovs depends 
 	on currently selected type (implemented by slot 
 	picTypeChanged ).
+	
+	Note the dialog sets the larger of the 2 axial fovs. 
+	The other fov is computed from the image dimensions
+	and picture type.
 	
 	If ptype points to a valid type name, then that
 	type is locked in the selector and only the FOV
@@ -177,37 +192,47 @@ bool GLwindow::cube_files( QStringList names ){
 	or a null pointer with size = 0,0
 */
 const char * GLwindow::askPicType(  QStringList files, 
-									QSizeF & size,
+									QSizeF & thefov,
 									const char * ptype ){
-	size = QSizeF(0,0); // failure size
+	thefov = QSizeF(0,0); // failure size
 	int nf = files.count();
 	if( nf < 1 ) return 0;
+// fail if not a readable image file
+	QImageReader ir( files[0] );
+	if( !ir.canRead() ){
+		qCritical("Can't read image: %s", (const char *)files[0].toUtf8());
+		return 0;
+	}
+// get and show image size
+	QSize dims = ir.size();
+	ptd.setDims( dims );
+// show file name
 	if( nf == 1 ) ptd.setNameLabel( files[0] );
 	else ptd.setNameLabel( files[0] + ",..." );
-  // get localized picture type descriptions
+// get localized picture type descriptions
 	QStringList desc = pictypes.picTypeDescrs();
   // remove the project and qtvr picture types
 	desc.removeFirst();
 	desc.removeFirst();
   // post the rest to the type selector box
 	ptd.setPicTypes( desc );
-  // lock type selection if ptype is valid
+// lock type selection if ptype is valid
   	if( ptype ){
   		int it = pictypes.picTypeIndex( ptype );
   		if( it < 2 ) return 0;
   		ptd.selectPicType( it - 2, true );
  	}
-  // run the dialog
+// run the dialog
 	if( !ptd.exec() ) return 0;
-  // return chosen size and type name
- 	size = ptd.getSize();
+// return chosen fov and type name
+ 	thefov = ptd.getFOV();
 	return pictypes.picTypeName( ptd.chosenType() + 2 );
 }
 // Slot: post FOV limits & default = max when pic type changes
 void GLwindow::picTypeChanged( int t ){
-	ptd.setMinSize( pictypes.minFov( t + 2 ) );
-	ptd.setMaxSize( pictypes.maxFov( t + 2 ) );
-	ptd.setSize( pictypes.maxFov( t + 2 ) );
+	ptd.setMinFOV( pictypes.minFov( t + 2 ) );
+	ptd.setMaxFOV( pictypes.maxFov( t + 2 ) );
+	ptd.setFOV( pictypes.maxFov( t + 2 ) );
 }
 
 /* handle command line (before GUI shows)
@@ -224,6 +249,12 @@ void GLwindow::picTypeChanged( int t ){
    internationalized pvQt. 
 */
 bool GLwindow::commandLine( int argc, char ** argv ){
+	
+	if( !glview->OpenGLOK() ){
+//		qCritical("Your video card does not support pvQt");
+		qCritical("OpenGL version: %s", (const char *)glGetString(GL_VERSION));
+	}
+
 	if( argc < 2 ) return true; // no command
   // see if 1st arg is a picture type name
 	int it = pictypes.picTypeIndex( argv[1] );
@@ -243,45 +274,14 @@ bool GLwindow::commandLine( int argc, char ** argv ){
 	return true;
 }
 
-/*  load a picture given type and 0 or more file names
-	return false if type is invalid or unsupported, otherwise 
-	the result of a type-specific picture loader.
-*/
-bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
-	int n = pictypes.picTypeCount( tnm );
-	if( n == 0 ) return false;	// no such pic type
-	int c = fnm.count();
-	if( c != n ) {
-		qWarning("'%s' expects %d files, %d supplied", tnm, n, c);
-	}
-	bool ok = false;
-	switch( pictypes.picTypeIndex( tnm ) ){
-	case 0:
-	case 2:
-	case 3:
-	case 4:
-	case 6:
-		qCritical("%s -- to be implemented", tnm );
-		break;
-	case 1:
-		if( c > 0 ) ok = QTVR_file( fnm[0] );
-		break;
-	case 5:
-		ok = equi_file( fnm );
-		break;
-	case 7:
-		ok = cube_files( fnm );
-		break;
-	}
-	return ok;
-}
-
 /* try to load picture from a set of files.
   Try to guess pic type from file name and size;
   ask user to confirm pic type of plain image file.
   return true if a pic was loaded, else false.
 */
 bool GLwindow::loadPictureFiles( QStringList names ){
+	int n = names.count();
+	if( n < 1 ) return false;
 	QFileInfo fi( names[0] );
 	QString ext = fi.suffix();
   // extensions that imply picture type...
@@ -291,7 +291,12 @@ bool GLwindow::loadPictureFiles( QStringList names ){
 		qCritical("PTscript -- to be implemented");
 		return false;  // project_file( name );
 	}
-  // must be image files, ask for picture type
+  // if more thatn one file, assume cube faces
+	if( names.count() > 1 ){
+		picFov = QSizeF( 90, 0 );
+		return loadTypedFiles( "cube", names );
+	}
+  // must be an image file, ask for picture type and fov
     return loadTypedFiles( askPicType( names, picFov ), names );
 }
 
@@ -341,8 +346,14 @@ bool GLwindow::choosePictureFiles( const char * ptnm ){
   // if there are files...
 	if( files.count() > 0 ){
 		if( it < 0 ){  
-		// no type, ask user for type and FOV
-			ptnm = askPicType( files, picFov );
+		// assume cubic if more than one file
+			if( files.count() > 1 ){
+				picFov = QSizeF(90,0);
+				ptnm = "cube";
+			} else {
+			// no type, ask user for type and FOV
+				ptnm = askPicType( files, picFov );
+			}
 		    it = pictypes.picTypeIndex( ptnm );
 	    } else {
 		// post default (= max) angular size for this pic type

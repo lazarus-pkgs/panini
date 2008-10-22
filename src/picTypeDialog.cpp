@@ -6,9 +6,10 @@ picTypeDialog::picTypeDialog( QWidget * parent)
 : QDialog( parent )
 {
 	setupUi( this );
-	setMinSize( QSizeF( 5, 5 ));
-	setMaxSize( QSizeF( 360, 180 ));
-	setSize( QSizeF( 360, 180 ));
+	setDims( QSize(0,0) );
+	setMinFOV( QSizeF( 5, 5 ));
+	setMaxFOV( QSizeF( 360, 180 ));
+	setFOV( QSizeF( 360, 180 ));
 	
 	connect( typesBox, SIGNAL(currentIndexChanged( int )),
 			this, SIGNAL( picTypeSelected( int )) );
@@ -31,37 +32,49 @@ int picTypeDialog::chosenType(){
 	return typesBox->currentIndex();
 }
 
-void picTypeDialog::setMinSize( QSizeF range ){
-	minwh = range;
-	widBox->setMinimum( minwh.width() );
-	hgtBox->setMinimum( minwh.height());
-	setSize( widhgt );
+void picTypeDialog::setMinFOV( QSizeF fovs ){
+	minfov = fovs;
+	fovBox->setMinimum(  ylong ? minfov.height() : minfov.width() );
+	setFOV( thefov );
 }
 
-void picTypeDialog::setMaxSize(QSizeF range ){
-	maxwh = range;
-	widBox->setMaximum( maxwh.width() );
-	hgtBox->setMaximum( maxwh.height() );
-	setSize( widhgt );
+void picTypeDialog::setMaxFOV( QSizeF fovs ){
+	maxfov = fovs;
+	fovBox->setMaximum(  ylong ? maxfov.height() : maxfov.width() );
+	setFOV( thefov );
 }
 
-void picTypeDialog::setSize( QSizeF angles ){
-	widhgt = angles.expandedTo( minwh ).boundedTo( maxwh );
-	QString txt;
-	widBox->setValue( widhgt.width() );	
-	hgtBox->setValue( widhgt.height() );	
+void picTypeDialog::setFOV( QSizeF fovs ){
+	thefov = fovs.expandedTo(minfov).boundedTo(maxfov);
+	fovBox->setValue( ylong ? thefov.height() : thefov.width() );	
 }
 
-QSizeF picTypeDialog::getSize( ){
-	return widhgt;
+/** Slot: record size changes **/
+void picTypeDialog::on_fovBox_valueChanged( double w ){
+	if( ylong ){
+		if( w == thefov.height() ) return;
+		thefov.setHeight( w );
+	} else {
+		if( w == thefov.width() ) return;
+		thefov.setWidth( w );
+	}
 }
 
-/** record size changes **/
-void picTypeDialog::on_widBox_valueChanged( double w ){
-	widhgt.setWidth( w );
+void picTypeDialog::setDims( QSize wh ){
+	dims = wh;
+	widPixels->setText( QString::number( wh.width()));
+	hgtPixels->setText( QString::number( wh.height()));
+	ylong = wh.height() > wh.width();
 }
 
-void picTypeDialog::on_hgtBox_valueChanged( double h ){
-	widhgt.setHeight( h );
+QSizeF picTypeDialog::getFOV(){
+	if( ylong ){
+		thefov.setWidth( 0 );
+	}  else {
+		thefov.setHeight( 0 );
+	}
+	return thefov;
 }
+
+
 

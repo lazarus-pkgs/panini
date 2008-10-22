@@ -48,7 +48,6 @@
     <addaction name="actionFisheye" />
     <addaction name="actionCylindrical" />
     <addaction name="actionEquirectangular" />
-    <addaction name="actionHemispherical" />
     <addaction name="actionCube_faces" />
     <addaction name="actionPT_script" />
     <addaction name="separator" />
@@ -177,7 +176,7 @@
   </action>
   <action name="actionFisheye" >
    <property name="text" >
-    <string>fisheye</string>
+    <string>fisheye, sphere</string>
    </property>
   </action>
   <action name="actionCylindrical" >
