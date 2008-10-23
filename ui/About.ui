@@ -26,7 +26,7 @@
    </property>
    <property name="font" >
     <font>
-     <family>Arial Narrow</family>
+     <family>Times</family>
      <pointsize>10</pointsize>
      <weight>75</weight>
      <bold>true</bold>
@@ -69,7 +69,7 @@ Info...</string>
    </property>
    <property name="font" >
     <font>
-     <family>Arial Narrow</family>
+     <family>Times</family>
      <pointsize>10</pointsize>
      <weight>75</weight>
      <bold>true</bold>
@@ -87,8 +87,8 @@ Info...</string>
     <rect>
      <x>20</x>
      <y>10</y>
-     <width>350</width>
-     <height>26</height>
+     <width>363</width>
+     <height>28</height>
     </rect>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout" >
@@ -96,7 +96,7 @@ Info...</string>
      <widget class="QLabel" name="label" >
       <property name="font" >
        <font>
-        <family>Arial Narrow</family>
+        <family>Times</family>
         <pointsize>12</pointsize>
         <weight>75</weight>
         <bold>true</bold>
@@ -111,14 +111,14 @@ Info...</string>
      <widget class="QLabel" name="VersionLabel" >
       <property name="font" >
        <font>
-        <family>Arial Narrow</family>
+        <family>Times</family>
         <pointsize>12</pointsize>
         <weight>75</weight>
         <bold>true</bold>
        </font>
       </property>
       <property name="text" >
-       <string>0.1.31</string>
+       <string>0.2.31:32</string>
       </property>
      </widget>
     </item>
@@ -126,7 +126,7 @@ Info...</string>
      <widget class="QLabel" name="label_2" >
       <property name="font" >
        <font>
-        <family>Arial Narrow</family>
+        <family>Times</family>
         <pointsize>12</pointsize>
         <weight>75</weight>
         <bold>true</bold>

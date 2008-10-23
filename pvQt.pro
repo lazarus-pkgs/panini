@@ -1,5 +1,11 @@
 TEMPLATE = app
-CONFIG += qt debug warn_on
+CONFIG += debug_and_release
+CONFIG(debug, debug|release) {
+     TARGET = pvQtd
+} else {
+     TARGET = pvQt
+}
+
 # capture SVN revision number in a file
 !svn {
   system(svnversion -n > SVNversion.h ):CONFIG += svn
@@ -14,9 +20,9 @@ CONFIG += qt debug warn_on
 }
 # build pvQtVersion.h NOTE major.minor rev are in version0.h
 win32 {
-  system(wbin\cat version0.h SVNversion.h version1.h > build\PvQtVersion.h)
+  system(wbin\cat Version0.h SVNversion.h Version1.h > build\PvQtVersion.h)
 } else {
-  system(cat version0.h SVNversion.h version1.h  > build/pvQtVersion.h)
+  system(cat Version0.h SVNversion.h Version1.h  > build/pvQtVersion.h)
 }
 HEADERS += version0.h SVNnoVersion.h version1.h
 QT = gui core

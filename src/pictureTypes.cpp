@@ -25,7 +25,7 @@ pictureTypes::pictypnumdesc
 pictureTypes::pictypn[NpictureTypes] = {
     { "proj", 1, QString(), 0,0,0,0 },
 	{ "qtvr", 1, QString(), 0,0,0,0 },
-	{ "rect", 1, QString(), 5,5,135,135 },
+	{ "rect", 1, QString(), 5,5,90,90 }, // temp, show as cube
 	{ "fish", 1, QString(), 50,50,360,360 },
 	{ "cyli", 1, QString(), 50,25,360,135 },
 	{ "equi", 1, QString(), 50, 25,360,180 }, 
