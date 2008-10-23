@@ -131,3 +131,16 @@ done	Show rectilinear pictures (up to 90 deg)
 	big recti.
 
 	
+23 Oct 2008
+
+  PROGRESS!
+	face FOV adjustment and picture packing are working in all cases 
+	no source file gives empty image (at max FOV) ditto
+	all pic types but cyli and fish are displayed (no more 'hemi' type).
+	title bar and about box are showing useful info including SVN rev
+
+	Will now make release 0.2:	
+	  Source tarball
+	  Binary Win32 self installer
+	  
+	Then implement fish/sphere (shd be a piece of cake :->)

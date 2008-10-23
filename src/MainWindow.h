@@ -43,6 +43,7 @@ public:
 	bool postArgs( int argc, char **argv );
 public slots:
 	void showStatus( QString msg );
+	void showTitle( QString msg );
 signals:
 	void step_pan( int d );
 	void step_tilt( int d );
@@ -55,6 +56,8 @@ signals:
 	void full_frame();
 	
 	void newPicture( const char * pictype );
+
+	void about_pvQt();
 
 protected:
 	void closeEvent( QCloseEvent * ev );
@@ -83,10 +86,10 @@ private slots:
 	void on_actionFisheye_triggered();
 	void on_actionCylindrical_triggered();
 	void on_actionEquirectangular_triggered();
-	void on_actionHemispherical_triggered();
 	void on_actionCube_faces_triggered();
 	void on_actionPT_script_triggered();
-	
+
+	void on_actionAbout_pvQt_triggered();	
 };
 
 #endif //ndef MAINWINDOW_H

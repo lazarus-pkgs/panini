@@ -130,6 +130,13 @@ void MainWindow::verify( int i ){
 	showStatus( s.sprintf("verify: %d", i) );
 }
 
+void MainWindow::showTitle( QString msg ){
+	setWindowTitle( msg );
+}
+
+/* View menu handlers
+*/
+
 void MainWindow::panLft(){
 	emit step_pan(-1);
 }
@@ -196,10 +203,6 @@ void MainWindow::on_actionEquirectangular_triggered(){
 	emit newPicture( "equi" );
 }
 
-void MainWindow::on_actionHemispherical_triggered(){
-	emit newPicture( "hemi" );
-}
-
 void MainWindow::on_actionCube_faces_triggered(){
 	emit newPicture( "cube" );
 }
@@ -208,3 +211,8 @@ void MainWindow::on_actionPT_script_triggered(){
 	emit newPicture( "proj" );
 }
 
+/* Help menu handlers
+*/
+void MainWindow::on_actionAbout_pvQt_triggered(){
+	emit about_pvQt();
+}

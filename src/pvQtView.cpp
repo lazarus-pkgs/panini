@@ -588,7 +588,7 @@ bool pvQtView::setupPic( pvQtPic * pic )
 	bool ok = false;
 	GLenum proxy = textgt == GL_TEXTURE_2D ? 
 			GL_PROXY_TEXTURE_2D : GL_PROXY_TEXTURE_CUBE_MAP; 
-	do{
+	if( !ts.isEmpty() ) do{
 		int v;
 		glTexImage2D( proxy, 0, GL_RGB,
 			ts.width(), ts.height(), 0, 

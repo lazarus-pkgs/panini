@@ -81,6 +81,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\picTypeDialog.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\pvQt_QTVR.cpp"
 				>
 			</File>
@@ -99,6 +103,10 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath="..\..\src\About.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\GLwindow.h"
 				>
 			</File>
@@ -111,6 +119,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\picTypeDialog.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\pvQt_QTVR.h"
 				>
 			</File>
@@ -119,7 +131,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\build\PvQtVersion.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\pvQtView.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\SVNnoVersion.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\build\ui_About.h"
 				>
 			</File>
 			<File
@@ -130,12 +154,24 @@
 				RelativePath="..\..\build\ui_picTypeDialog.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\Version0.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Version1.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
+			<File
+				RelativePath="..\..\ui\About.ui"
+				>
+			</File>
 			<File
 				RelativePath="..\..\ui\mainwindow.ui"
 				>
@@ -147,6 +183,14 @@
 		</Filter>
 		<File
 			RelativePath="..\..\notes.txt"
+			>
+		</File>
+		<File
+			RelativePath="..\..\pvQt-build.txt"
+			>
+		</File>
+		<File
+			RelativePath="..\..\pvQt-usage.txt"
 			>
 		</File>
 		<File

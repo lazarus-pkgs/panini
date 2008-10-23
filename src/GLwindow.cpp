@@ -66,12 +66,28 @@ GLwindow::GLwindow (QWidget * parent )
 	connect( parent, SIGNAL(newPicture( const char * )),
 			 this, SLOT(newPicture( const char * )) );
   if(ok) ok = 
+	connect( parent, SIGNAL(about_pvQt()),
+			 this, SLOT(about_pvQt()) );
+  if(ok) ok = 
+	connect( this, SIGNAL(showTitle(QString)),
+			 parent, SLOT(showTitle(QString)) );
+  if(ok) ok = 
 	connect( &ptd, SIGNAL(picTypeSelected( int )),
 			 this, SLOT(picTypeChanged( int )) );
   if(!ok) {
 	  qFatal("GLwindow setup failed");
   }
 
+}
+
+// pop the About box
+void GLwindow::about_pvQt(){
+	QString msg = tr("About your OpenGL implentation:\n");
+	msg += tr("Version: ") + glview->OpenGLVersion() + QString("\n");
+	msg += tr("Vendor: ") + glview->OpenGLVendor() + QString("\n");
+	msg += tr("Video: ") + glview->OpenGLHardware() + QString("\n");
+	aboutbox.setInfo( msg );
+	aboutbox.show();
 }
 
 // relay window resize to the GL widget
@@ -99,7 +115,7 @@ bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 	int n = pictypes.picTypeCount( tnm );
 	if( n == 0 ) return false;	// no such pic type
 	int c = fnm.count();
-	bool ok = false;
+	bool ok = false, shown = false;
 	switch( pictypes.picTypeIndex( tnm ) ){
 	case 0:	// proj
 	case 3:	// fish
@@ -108,7 +124,7 @@ bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 		return false;
 		break;
 	case 1:	// qtvr
-		if( c == 1 ) return QTVR_file( fnm[0] );
+		if( c == 1 ) shown = ok = QTVR_file( fnm[0] );
 		break;
 	case 2:	// rect	-- Display as front cube face
 		ok = pvpic->setType( pvQtPic::cub );
@@ -127,22 +143,37 @@ bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 		ok = pvpic->setType( pvQtPic::cub );
 		break;
 	}
-  // load and show image file types
-	if( c > 1 ) fnm.sort();
-	if( ok ){
+	if( ok && !shown ){	  // load and show image file types
+		if( c > 1 ) fnm.sort();
 		if( pvpic->setImageFOV( picFov ) ){
 			int nok = 0;
 			for(int i = 0; i < c; i++ ){
 				if( pvpic->setFaceImage( pvQtPic::PicFace(i), fnm[i] ) ) ++nok;
 			}
-			ok = glview->showPic( pvpic );
+			ok = shown = glview->showPic( pvpic );
 		} else ok = false;
-		if( !ok ){
-			QString vmsg;
-			ok = glview->picOK( vmsg );
-			qCritical( (const char *)vmsg.toUtf8() );
-		}
 	}
+  // put image info in window title
+	if( ok ){
+		QString msg = "  pvQt  ";
+		if( c > 0 ){
+			msg += QFileInfo(fnm[0]).fileName();
+		} else 	msg += tr("(no image file)");
+
+		msg += QString("  ") + QString(tnm) + QString(" at ");
+		QSize pd = pvpic->ImageSize();
+		double m = pvpic->NumImages();
+		m *= pd.width(); m *= pd.height(); m *= 1.0e-6;
+		msg += QString().setNum( m, 'f', 2 ) + QString(" Mpixels");
+		emit showTitle( msg );
+	} else {
+		QString vmsg;
+		glview->picOK( vmsg ); 
+		QString msg = "  pvQt  ERROR: " + vmsg;
+		emit showTitle( msg );
+		
+	}
+
 	return ok;
 }
 
