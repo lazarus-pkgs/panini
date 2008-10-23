@@ -6,11 +6,15 @@ SYSTEM REQUIREMENTS
 
 pvQt requires at least an OpenGL version 1.4 implementation, and is fully functional only with OpenGL version 2.0 and above.  As a practical matter this means you need either a "gaming" video card, or a recent "multimedia" one.  Ultimate gaming performance is not required: cards that will upgrade most desktop PCs to fully support pvQt now cost from $50 to $100.
 
+The "about" dialog shows your machine's OpenGL level as well as the version of pvQT you are running.
+
 The program places no special demands on CPU speed or memory; if you can stitch panoramas, you will have no trouble viewing them.
 
 RELEASE INFORMATION
 
-Some of the functions described here may not work in early versions of pvQt.  Please consult the Release Notes for further information.  And please check the project site (https://sourceforge.net/projects/pvqt/) to see if you have the latest version.  Releases come as a free-standing Win32 executable package, and as source code buildable on any platform that supports Qt version 4.
+The version number shown in the "about" dialog has the form: major.minor.rev.  Major.minor is the "release number", set somewhat arbitrarily by me; rev is the SVN revision of the source from which it was built.  The SVN rev increases at every source archive update, and does not reset when I change the release number.  It may be "???" if the program was built from an unknown source code revision.
+
+Some of the functions described here may not work in all versions of pvQt.  Please consult the Release Notes for further information.  And please check the project site (https://sourceforge.net/projects/pvqt/) to see if you have the latest version.  Releases come as a free-standing Win32 executable package, and as source code buildable on any platform that supports Qt version 4.
 
 VIEW CONTROLS
 
@@ -48,6 +52,8 @@ The Picture menu lets you select a picture type, then works just like a type-onl
 The "fish" picture type uses the mirror sphere projection, a classical panoramic format that is reasonably close to the projections of most modern "fisheye" lenses.  So you can use it for mirror sphere photos and computed panoramas up to 360 degrees in diameter.
 
 You can load 1 to 6 image files for the "cube" picture type.  They must be square images of the same size, and their sorted names must fall in the conventional cube face order: front, right, back, left, top, bottom.  So if you have names like foo_front.tif, foo_right.tif,..., you will have to change them to something like foo_1.tif, foo_2.tif,....  Later when drag and drop and PT scripts are implemented, you will be able to load such files without renaming them.  If you give fewer than 6 cube face files, pvQt will display empty frames for the missing ones.  This applies to nonexistent or unreadable files, too, so if you wanted to show 3 images on the left, front, and right cube faces, you could (on the command line) insert a dummy file name for the back face between the right and left ones, or make an empty file with that name and select it along with the real image files.
+
+When a picture is loaded, the pvQt window's title bar shows the file name, picture type and displayed size in megapixels, which will be smaller than the filed image size if there is not enough OpenGL texture memory to hold the full image.  In case loading an picture fails, the title bar will show an error message instead.
 
 LICENSE
 

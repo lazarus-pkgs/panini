@@ -4,13 +4,15 @@ First, you need to get and install Qt version 4, if you don't already have it.  
 
 Qt is a big package (120 MB zipped, 150MB with MinGW) so you need a fast connection and plenty of disk space.  But it installs without a glitch 99% of the time.  And is very well worth having.
 
+You should have the svn commandline client installed (even if you use Tortoise svn on Windows) or at least the svnversion command, so that qmake can build a version number with the SVN revision as the third ("patch") field.  You can build without this; the patch number will be "???".  Note that on Windows the qmake script uses the Gnu cat command (distributed with this code as wbin/cat.exe), because MS copy is defective.
+
 The only other required package is the zlib file compression library.  Most Unix/Linux systems will already have that, if not, their package managers will.  Or get it from the Gnu archives.  For Windows, download a prebuilt zlib from the GnuWin32 project at sourceforge.net and install it in the MinGW include and lib directories.
 
 Once Qt and the build tools are in place, you can build pvQt from a command shell (on Windows, use the one supplied with Qt).  In the pvQt directory, on Linux or Windows just type 
 		"qmake pvQt.pro"
 		"make release"  
 On mac OSX qmake may create an XCode project that you can open and compile.  In fact qmake can generate project files for a variety of IDEs (though MS Visual Studio is disabled in the open source version), see the Qt Assistant for details.
-  
+ 
 The resulting executable will be in pvQt/bin and can be copied anywhere.  On Windows, you might have to add the Qt4 bin directory to the "all users" search path.  This is important because that directory contains required plugin subdirectories as well as the Qt DLLs (DON'T copy Qt DLL's to Windows\System32.  Any system which requires that is too old to run pvQt).  If you have a preexisting installation of MingGW, it is OK to put the MinGW DLL in System32; but if you installed it from the Qt distribution, there will be a copy of the MinGW DLL in Qt4 bin.
 
 Run Qt Assistant for very good documentation of qmake and the whole Qt framework.  Or if you have what seems to be a platform specific issue, the Trolltech website should be helpful.  Start at http://trolltech.com/developer.
@@ -41,9 +43,11 @@ To ensure that pvQt will work with non-Latin file names, use only Qt methods wit
 
 	IDEs
 
-There is a pretty good Qt-specific IDE for linux, called QDevelop, which I find less baffling than KDevelop, though not as good for debugging.  If you want to use the Eclipse IDE, you can get an integration package for it from Trolltech.   
+There is a pretty good Qt-specific IDE for linux, called QDevelop, which I find less baffling than KDevelop, but it does crash oftener.  If you like to use the Eclipse IDE, you can get an integration package for it from Trolltech.   
 
-On Windows I use Microsoft Visual Studio in "makefile" mode to edit source code and trigger builds, and Insight for debugging.  Source directory MSVS-project has Visual Studio project files for this.  Of course if you are lucky enough to own a commercial license for Qt you can build and debug with the Microsoft tools.  
+On Windows I use Microsoft Visual Studio in "makefile" mode to edit source code and trigger builds.  Source directory MSVS-project has Visual Studio project files set up for this.  Of course if you are lucky enough to own a commercial license for Qt you can build and debug with the Microsoft tools. 
+
+I use the Insight/gdb package for debugging on both platforms.  It is available on SourceForge.
 
 Cheers, Tom Sharpless, 13 October 2008 
 

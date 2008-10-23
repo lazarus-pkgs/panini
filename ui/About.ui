@@ -1,0 +1,145 @@
+<ui version="4.0" >
+ <class>AboutDialog</class>
+ <widget class="QDialog" name="AboutDialog" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>196</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>About pvQt</string>
+  </property>
+  <property name="autoFillBackground" >
+   <bool>true</bool>
+  </property>
+  <widget class="QLabel" name="InfoLabel" >
+   <property name="geometry" >
+    <rect>
+     <x>20</x>
+     <y>70</y>
+     <width>351</width>
+     <height>101</height>
+    </rect>
+   </property>
+   <property name="font" >
+    <font>
+     <family>Arial Narrow</family>
+     <pointsize>10</pointsize>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
+   <property name="frameShape" >
+    <enum>QFrame::Box</enum>
+   </property>
+   <property name="frameShadow" >
+    <enum>QFrame::Sunken</enum>
+   </property>
+   <property name="text" >
+    <string>Your
+System's
+OpenGL
+Implementation
+Info...</string>
+   </property>
+   <property name="alignment" >
+    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+   </property>
+   <property name="wordWrap" >
+    <bool>true</bool>
+   </property>
+   <property name="margin" >
+    <number>5</number>
+   </property>
+   <property name="indent" >
+    <number>0</number>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_3" >
+   <property name="geometry" >
+    <rect>
+     <x>20</x>
+     <y>40</y>
+     <width>351</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="font" >
+    <font>
+     <family>Arial Narrow</family>
+     <pointsize>10</pointsize>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
+   <property name="text" >
+    <string>Open source multiplatform panorama viewer using OpenGL &amp; Qt</string>
+   </property>
+   <property name="alignment" >
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+  <widget class="QWidget" name="layoutWidget" >
+   <property name="geometry" >
+    <rect>
+     <x>20</x>
+     <y>10</y>
+     <width>350</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout" >
+    <item>
+     <widget class="QLabel" name="label" >
+      <property name="font" >
+       <font>
+        <family>Arial Narrow</family>
+        <pointsize>12</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text" >
+       <string>pvQt version</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="VersionLabel" >
+      <property name="font" >
+       <font>
+        <family>Arial Narrow</family>
+        <pointsize>12</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text" >
+       <string>0.1.31</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_2" >
+      <property name="font" >
+       <font>
+        <family>Arial Narrow</family>
+        <pointsize>12</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text" >
+       <string>(c) copyright 2008 TKSharpless</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

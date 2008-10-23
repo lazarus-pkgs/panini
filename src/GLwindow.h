@@ -24,6 +24,7 @@
 #include <QWidget>
 #include "pictureTypes.h"
 #include "picTypeDialog.h"
+#include "About.h"
 
 class pvQtView;
 class pvQtPic;
@@ -34,10 +35,13 @@ public:
 	GLwindow(QWidget * parent = 0);
 	bool isOK(){ return ok; }
 	bool commandLine( int argc, char ** argv );
+signals:
+	void showTitle( QString msg );
 
 public slots:
 	void newPicture( const char * type );
 	void picTypeChanged( int t );
+	void about_pvQt();
 	
 protected:
 	void resizeEvent( QResizeEvent * ev );
@@ -50,7 +54,8 @@ private:
 	const char * askPicType( QStringList files, 
 							 QSizeF & size,
 							 const char * ptyp = 0 );
-	
+	pvQtAbout aboutbox;
+
 	picTypeDialog ptd;
 	QSizeF picFov;
 	pvQtView * glview;	// display widget
