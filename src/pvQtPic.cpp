@@ -54,12 +54,13 @@ static QColor deffill = QColor(Qt::lightGray);
 
 /** utility functions, not exported  **/
 
-static void scaleSize( QSize s, double f ){
+static void scaleSize( QSize & s, double f ){
 	int & w = s.rwidth();
 	int & h = s.rheight();
 	w = int( 0.5 + f * w );
 	h = int( 0.5 + f * h );
 }
+
 // radius from (full) field of view
 static double fov2rad( int proj, double fov ){
 	double a = DEG2RAD(0.5 * fov);
@@ -95,6 +96,7 @@ int pvQtPic::scalepix( int proj, int pix, double fov, double tofov ){
 	double s = fov2rad( proj, tofov ) / d ;
 	return int(0.5 + s * pix );
 }
+
 
  pvQtPic::pvQtPic( pvQtPic::PicType t )
 {
@@ -210,8 +212,10 @@ bool pvQtPic::changeFaceSize( double factor )
 {
 	if( type == nil || facedims.isEmpty() ) return false;
 	if( factor < 0.05 || factor > 20 ) return false;
-	scaleSize( facedims, factor );
-	scaleSize( imagedims, factor);
+	facedims.setWidth( int(0.5 + factor * facedims.width()) );
+	facedims.setHeight( int(0.5 + factor * facedims.height()) );
+	imagedims.setWidth( int(0.5 + factor * imagedims.width()) );
+	imagedims.setHeight( int(0.5 + factor * imagedims.height()) );
 	return facedims.width() > 0 && facedims.height() > 0;
 
 }
