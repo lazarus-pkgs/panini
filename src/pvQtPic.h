@@ -127,9 +127,11 @@ int 	scalepix( int proj, int pix, double fov, double tofov );
  int 	 NumImages();	// number of faces that have source images
 // overall size of texture image(s)
  QSize   FaceSize(){ return facedims; }
-// size of image as read
+// size of image
  QSize   ImageSize(){ return imagedims; } // may be < source dims
- QSizeF  ImageFOV(){ return imagefovs; }
+ QSizeF  ImageFOV(){ return imagefovs; }  // as read
+// angular range of displayed image
+ QSizeF  PictureFOV();
  
  QString FaceName( PicFace face = front );	// display name
 /* info about the default "empty image" for a face

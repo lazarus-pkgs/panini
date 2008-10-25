@@ -105,7 +105,7 @@ public:
 
  private:
  // GUI support
-     double normalizeAngle(int &iangle, double lwr, double upr);
+     double normalizeAngle(int &iangle, int istep, double lwr, double upr);
 	 int iAngle( double angle );	// real to integer coded angle
 	 void showview();
 	 void setFOV( double fov = 0 );
@@ -121,6 +121,7 @@ public:
 	 double portAR;			// width/height
 	 double Znear, Zfar;	// clipping plane distances from eye
 	 double panAngle, tiltAngle, spinAngle; // degrees
+	 double minpan, maxpan, mintilt,maxtilt;  //image limits
 
      int ipan, panstep;
      int itilt, tiltstep;
@@ -135,6 +136,8 @@ public:
 	 void updatePic();
 	 pvQtPic  * thePic;
 	 pvQtPic::PicType	picType;
+  // initial view matrix (rgt or left hand)
+	 GLdouble viewmatrix[16];
   // display lists for screens
      void makeSphere( GLuint list );
 	 GLuint theScreen;	// current screen list

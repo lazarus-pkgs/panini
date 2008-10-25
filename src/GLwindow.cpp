@@ -57,7 +57,7 @@ GLwindow::GLwindow (QWidget * parent )
 	connect( parent, SIGNAL(full_frame()),
 		     glview, SLOT(full_frame()));
   if(ok) ok = 
-	connect( parent, SIGNAL(super_fish()),
+	connect( parent, SIGNAL(super_wide()),
 		     glview, SLOT(super_fish()));
   if(ok) ok = 
 	connect( glview, SIGNAL(reportView( QString )),
@@ -118,7 +118,6 @@ bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 	bool ok = false, shown = false;
 	switch( pictypes.picTypeIndex( tnm ) ){
 	case 0:	// proj
-	case 3:	// fish
 	case 4:	// cyli
 		qCritical("%s -- to be implemented", tnm );
 		return false;
@@ -126,15 +125,11 @@ bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 	case 1:	// qtvr
 		if( c == 1 ) shown = ok = QTVR_file( fnm[0] );
 		break;
-	case 2:	// rect	-- Display as front cube face
-		ok = pvpic->setType( pvQtPic::cub );
-	// set all black empty frames except front
-		pvpic->setLabel( pvQtPic::any, QString() );
-		pvpic->setLabel( pvQtPic::front );
-		pvpic->setBorder( pvQtPic::any, Qt::black );
-		pvpic->setBorder( pvQtPic::front );
-		pvpic->setFill( pvQtPic::any, Qt::black );
-		pvpic->setFill( pvQtPic::front ); 
+	case 2:	// rect
+		ok = pvpic->setType( pvQtPic::rec );
+		break;
+	case 3:	// fish
+		ok = pvpic->setType( pvQtPic::sph );;
 		break;
 	case 5:	// equi
 		ok = pvpic->setType( pvQtPic::eqr );;

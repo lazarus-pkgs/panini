@@ -126,7 +126,7 @@ bool pvQtPic::setType( pvQtPic::PicType t )
   	case rec:	// A rectilinear image up to 135 x 135 degrees
   		maxfaces = 1;
   		facedims = QSize(256,256);
-  		facefovs = QSizeF(135,135);
+  		facefovs = QSizeF(90,90);		//// TEMP LIMIT ////
   		break;
   	case sph:	// A spherical image up to 180 degrees diameter
   		maxfaces = 1;
@@ -308,10 +308,10 @@ bool pvQtPic::setFill( pvQtPic::PicFace face, QColor color )
 	however you can remove any assigned image by passing a null
 	pointer to the 'QImage *' version of setFaceImage.
 	
-	All source images for a hemispherical or cubic picture must
-	be the same size, and square, and will be adjusted to the same 
-	display size.  It is not required to assign a full set of these
-	images as there is a default "empty" image for every face.
+	All source images for a cubic picture must	be the same size, 
+	and square, and will be adjusted to the same display size.  
+	It is not required to assign a full set of these images as 
+	there is a default "empty" image for every face.
 
 **/
 bool pvQtPic::setFaceImage( pvQtPic::PicFace face, QImage * img )
@@ -480,6 +480,12 @@ int 	pvQtPic::NumImages()
 	return numimgs;
 }
 
+QSizeF  pvQtPic::PictureFOV(){
+  if( maxfaces > 1 ) return QSizeF(360,180);
+  if( imagefovs.isEmpty()) return facefovs;
+  return facefovs.boundedTo( imagefovs ); 
+}
+
 bool	pvQtPic::isEmpty( PicFace face )
 {
 	if(face == any) return numimgs != 0;
@@ -522,10 +528,11 @@ QColor	pvQtPic::getFill( PicFace face )
 
 QImage * pvQtPic::FaceImage( PicFace face ){
 	if( type == nil ) return 0;
-	if( face < front || face >= PicFace(maxfaces) ) return 0;
+	int i = type == rec ? 6 : maxfaces;
+	if( face < front || face >= PicFace(i) ) return 0;
 
 	QImage * pim = 0;
-	int i = int(face);
+	i = int(face);
 	switch( kinds[i] ){
 	case QIMAGE_KIND: 
 		pim = loadQImage( i );
@@ -548,7 +555,7 @@ QImage * pvQtPic::FaceImage( PicFace face ){
 		delete pim;
 		pim = oim;
 	}
-// pack image into face if necessary
+// pack image into face if necessary		TODO: 90 degree rotations
 	if( !imagedims.isEmpty()  
 	    && imagedims != facedims ){
 		QSize cropdims = imagedims.boundedTo( facedims );
@@ -583,10 +590,15 @@ QImage * pvQtPic::loadEmpty( int i )
 {
   // make the empty image for face i
 	QImage * pim = new QImage( facedims, faceformat );
-  // fill
 	QPainter qp( pim );
-	QBrush brush( fills[i] );
+  // fill
 	QRect box( pim->rect() );
+	if( type == rec && i > 0 ){	//// TEMP KLUGE ////
+		QBrush brush( Qt::black );
+		qp.fillRect( box, brush );
+		return pim;
+	}
+	QBrush brush( fills[i] );
 	qp.fillRect( box, brush );
   // draw border
 	QPen pen( borders[i], 10 );

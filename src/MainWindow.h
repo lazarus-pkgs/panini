@@ -52,7 +52,7 @@ signals:
 	void step_dist( int d );
 	void home_view();
 	void reset_view();
-	void super_fish();
+	void super_wide();
 	void full_frame();
 	
 	void newPicture( const char * pictype );
@@ -80,6 +80,8 @@ private slots:
 	void eyeOut();
 	void homeView();
 	void resetView();
+	void on_actionFull_frame_triggered();
+	void on_actionSuper_wide_triggered();
 	
 	void on_actionQTVR_triggered();
 	void on_actionRectilinear_triggered();
