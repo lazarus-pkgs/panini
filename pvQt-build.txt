@@ -9,7 +9,7 @@ You should have the svn commandline client installed (even if you use Tortoise s
 The only other required package is the zlib file compression library.  Most Unix/Linux systems will already have that, if not, their package managers will.  Or get it from the Gnu archives.  For Windows, download a prebuilt zlib from the GnuWin32 project at sourceforge.net and install it in the MinGW include and lib directories.
 
 Once Qt and the build tools are in place, you can build pvQt from a command shell (on Windows, use the one supplied with Qt).  In the pvQt directory, on Linux or Windows just type 
-		"qmake pvQt.pro"
+		"qmake pvQt.pro"  (repeat this command if you get messages about nonexistent directories)
 		"make release"  
 On mac OSX qmake may create an XCode project that you can open and compile.  In fact qmake can generate project files for a variety of IDEs (though MS Visual Studio is disabled in the open source version), see the Qt Assistant for details.
  
