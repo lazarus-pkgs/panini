@@ -144,3 +144,19 @@ done	Show rectilinear pictures (up to 90 deg)
 	  Binary Win32 self installer
 	  
 	Then implement fish/sphere (shd be a piece of cake :->)
+
+24 Oct 2008
+	Or maybe fish then release.
+	
+	Fixed some problems on linux (illegible font in about box)
+	also a bug that made adaptive image reduction fail.
+	Still have erratic behavior on cancel file load: often the
+	correct empty frame; sometimes black screen; sometimes the
+	old image stays up with "ERROR: no error" in window title.
+	
+	QDevelop stopped working after I installed a security update 
+	allegedly related to printing.  Now it segfaults at start.
+	So it's back to Vista.  Guess I should get Eclipse...
+	
+	
+	 

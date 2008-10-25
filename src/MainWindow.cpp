@@ -179,6 +179,14 @@ void MainWindow::resetView(){
 	emit reset_view();
 }
 
+void MainWindow::on_actionFull_frame_triggered(){
+	emit full_frame();
+}
+
+void MainWindow::on_actionSuper_wide_triggered(){
+	emit super_wide();
+}
+
 /** Picture Menu Handlers 
   named so connectSlotsByName() will find them
 **/

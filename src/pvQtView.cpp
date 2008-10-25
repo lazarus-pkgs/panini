@@ -36,8 +36,6 @@
 /**** maximum projection angle at eye ****/ 
 #define MAXPROJFOV  137.5
 
-/**  reset error message at fuction entry  **/
-
  pvQtView::pvQtView(QWidget *parent)
      : QGLWidget(parent)
  {
@@ -48,7 +46,16 @@
 	 thePic = 0;
 	 theScreen = 0;
 	 textgt = 0;
+ // set viewmatrix to rgt handed identity
+	 for(int i = 0; i < 16; i++ ){
+		 viewmatrix[i] = 0.0;
+	 }
+	 viewmatrix[0] = viewmatrix[5] = 1.0;
+	 viewmatrix[10] = viewmatrix[15] = 1.0;
+
      Width = Height = 400;
+	 minpan = -180; maxpan = 180;
+	 mintilt = -90; maxtilt = 90;
      initView();
  }
 
@@ -111,12 +118,13 @@ bool pvQtView::OpenGLOK()
      lastPos = event->pos();
  }
 
- double pvQtView::normalizeAngle(int &iangle, double lwr, double upr)
+ double pvQtView::normalizeAngle(int &iangle, int istep, double lwr, double upr)
  {
  /* iangle is in degrees * 16.  Return value in degrees.
     Reduces angle to a principal value in (-180:180] or [0:360) depending 
-    on sign of lwr, then clips this to the limits [lwr:upr]
-    The result is placed in iangle and returned as a double.
+    on sign of lwr, then clips this to the limits [lwr:upr].  Sets
+    iangle to the nearest whole multiple of istep, so that the step points
+	will not shift due to clipping
  */
  	if( lwr >= upr){
  		iangle = 0;
@@ -130,15 +138,17 @@ bool pvQtView::OpenGLOK()
  		while ( a < 0.0 ) a += 360.0;
 		while ( a >= 360.0 ) a -= 360.0;		
 	}
+// clip a legal
 	if( a < lwr ) a = lwr;
 	else if( a > upr ) a = upr;
+// post 'detented' iangle
 	iangle = (int)( 16 * a );
+	int r = iangle % istep;
+	if( r < 0 ) iangle -= istep + r;
+	else if( r > 0 ) iangle += istep - r;
+
 	return a;
 
- }
-
- int pvQtView::iAngle( double deg ){
-	 return int(16 * deg);
  }
 
  void pvQtView::step_pan( int dp ){
@@ -181,14 +191,14 @@ bool pvQtView::OpenGLOK()
  
  void pvQtView::full_frame(){
 	setDist( 100 );
-	setFOV( maxFOV );
+	setZoom( int(16 * maxFOV) );
 	updateGL();
 	showview();
  }
  
  void pvQtView::super_fish(){
 	setDist( 110 );
-	setFOV( maxFOV );
+	setZoom( int(16 * maxFOV) );	// maximize FOV
 	updateGL();
 	showview();
  }
@@ -238,7 +248,7 @@ void pvQtView::picChanged( )
 	those changes.
 
 	As a practical matter the maximum view angle at the eye is
-	limited to 135 degrees, so that is the largest vFOV allowed
+	limited to MAXPROJFOV, so that is the largest vFOV allowed
 	when the eye is at sphere center (distance 0). As the eye
 	moves out, more of the sphere becomes visible, up to a maximum
 	of about 315 degrees at distance 1.08.  Beyond that point the
@@ -255,9 +265,10 @@ void pvQtView::initView()
 	 minDist = 0.0; maxDist = 1.1;	// fixed limits
 	 idist = 0; diststep = 10;	// % of radius
 
-     minFOV = 5.0;  maxFOV = MAXPROJFOV;
-     zoomstep = 5 * 16;	// 5 degrees in FOV
-     setFOV( 90.0 );
+     minFOV = 10.0;  maxFOV = MAXPROJFOV;
+     zoomstep = 40;	// 2.5 degrees in FOV
+	 izoom = 90 * 16;
+	 setFOV(90);
 
      panstep = tiltstep = spinstep = 32;	// 2 degrees
 	 home_view();	// zero rotation
@@ -269,22 +280,13 @@ void pvQtView::setFOV( double newvfov ){
 	vFOV = newvfov (clipped legal) = view height as an
 		angle at the center of the unit sphere
 	wFOV = half view height as an angle at the eye point.
-    izoom = UI code, always a multiple of zoomstep.  If
-      angle was clipped, this may be a slightly illegal
-      value, if not it is iAngle( vFov ).
 */
 	if(newvfov == 0 ) newvfov = vFOV;
 	if( newvfov < minFOV ) newvfov = minFOV;
 	else if( newvfov > maxFOV) newvfov = maxFOV;
 	
 	vFOV = newvfov;
-	wFOV = vFOV / (eyeDistance + 1);
-
-	izoom = iAngle( vFOV );
-	int r = izoom % zoomstep;
-	if( r < 0 ) izoom -= zoomstep + r;
-	else if( r > 0 ) izoom += zoomstep - r;
-		
+	wFOV = vFOV / (eyeDistance + 1);		
 }
 
 void pvQtView::setDist( int id ){
@@ -306,7 +308,7 @@ void pvQtView::setDist( int id ){
 
  void pvQtView::setPan(int angle)
  {
-     panAngle = normalizeAngle(angle, -180, 180);
+     panAngle = normalizeAngle(angle, panstep, minpan, maxpan);
      if (angle != ipan) {
          ipan = angle;
          updateGL();
@@ -316,7 +318,7 @@ void pvQtView::setDist( int id ){
 
  void pvQtView::setTilt(int angle)
  {
-     tiltAngle = normalizeAngle(angle, -180, 180);
+     tiltAngle = normalizeAngle(angle, tiltstep, mintilt, maxtilt);
      if (angle != itilt) {
          itilt = angle;
          updateGL();
@@ -326,7 +328,7 @@ void pvQtView::setDist( int id ){
 
  void pvQtView::setSpin(int angle)
  {
-     spinAngle = normalizeAngle(angle, -180, 180);
+     spinAngle = normalizeAngle(angle, spinstep, -180, 180);
      if (angle != ispin) {
          ispin = angle;
          updateGL();
@@ -336,12 +338,12 @@ void pvQtView::setDist( int id ){
 
  void pvQtView::setZoom(int angle)
  {
- 	double a = normalizeAngle(angle, minFOV, maxFOV);
- 	angle = iAngle( a );
+ 	double a = normalizeAngle(angle, zoomstep, minFOV, maxFOV);
 	if (angle != izoom) {
-         setFOV(a);
-         updateGL();
-		 showview();
+		izoom = angle;
+        setFOV(a);
+        updateGL();
+		showview();
      }
  }
 
@@ -359,24 +361,28 @@ void pvQtView::setDist( int id ){
     glDisable( GL_TEXTURE_GEN_T );
     glDisable( GL_TEXTURE_GEN_R );
     
-	glFrontFace( GL_CW );
 	
 	textgt = GL_TEXTURE_2D;
-
+	viewmatrix[0] = 1.0;	// right handed...
+	glFrontFace( GL_CW );
 	switch( pt ){
 	default:
 		pt = pvQtPic::nil;
 	case pvQtPic::nil:		// No picture
 		break;
-	case pvQtPic::rec:		// A rectilinear image up to 135 x 135 degrees
-		textgt = GL_TEXTURE_CUBE_MAP;
-		break;
 	case pvQtPic::sph:		// A spherical image up to 180 degrees diameter
+		viewmatrix[0] = -1.0;	// left handed...
+		glFrontFace( GL_CCW );
+		glTexGeni( GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP );
+		glTexGeni( GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP );
+		glEnable( GL_TEXTURE_GEN_S );
+		glEnable( GL_TEXTURE_GEN_T );
 		break;
 	case pvQtPic::cyl:		// A cylindrical panorama up to 360 x 135 degrees
 		break;
 	case pvQtPic::eqr:		// An equirectangular panorama up to 360 x 180 degrees
 		break;
+	case pvQtPic::rec:		// A rectilinear image up to 90x90 degrees
 	case pvQtPic::cub:		// A cubic panorama (1 to 6 rectilinear images 90x90 degrees)
 		textgt = GL_TEXTURE_CUBE_MAP;
 		glTexGenf( GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP );
@@ -452,7 +458,7 @@ bool pvQtView::OGLok(){
 
  // eye position rotates, screen does not
 	glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
+    glLoadMatrixd( viewmatrix );
 	Znear = 0.05; Zfar = 7;
 	gluPerspective( wFOV, portAR, 
 				    Znear,  Zfar);
@@ -462,8 +468,6 @@ bool pvQtView::OGLok(){
 	switch( picType ){
 	default:
 	case pvQtPic::nil:
-	case pvQtPic::rec:
-	case pvQtPic::sph:
 	case pvQtPic::cyl:
 	case pvQtPic::eqr:		// look +Y, X rgt, Z up
 		gluLookAt( 0, -eyeDistance, 0,
@@ -473,6 +477,15 @@ bool pvQtView::OGLok(){
 		glRotated( tiltAngle, 1, 0, 0 );
 		glRotated( 180 - panAngle, 0, 0, 1 );
 		break;
+	case pvQtPic::sph:
+		gluLookAt( 0, 0, -eyeDistance,
+				   0, 0, 1,
+				   0, -1, 0 );
+		glRotated( 180 + spinAngle, 0, 0, 1 );     
+		glRotated( tiltAngle, 1, 0, 0 );
+		glRotated( 180 - panAngle, 0, 1, 0 );
+		break;
+	case pvQtPic::rec:
 	case pvQtPic::cub:		// look +Z, X lft, Y up
 		gluLookAt( 0, 0, -eyeDistance,
 				   0, 0, 1,
@@ -603,13 +616,19 @@ bool pvQtView::setupPic( pvQtPic * pic )
 		} else ok = true;
 	} while( !ok );
 
-	
-/* Load texture images
-  skip any whose sizes differ from the negotiated size
-*/
+  // set pan and tilt limits according to picture fov
+	QSizeF pv = pic->PictureFOV();
+	double d = 0.5 * pv.width();
+	minpan = -d; maxpan = d;
+	d = 0.5 * pv.height();
+	mintilt = -d; maxtilt = d;
+
+/* Load texture images */
+
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);  // QImage row alignment
 
-	if( picType == pvQtPic::cub ){
+	if( picType == pvQtPic::cub 
+	 || picType == pvQtPic::rec ){
 		for(int i = 0; i < 6; i++){
 			QImage * p = pic->FaceImage(pvQtPic::PicFace(i));
 			if( p ){
