@@ -82,7 +82,7 @@ GLwindow::GLwindow (QWidget * parent )
 
 // pop the About box
 void GLwindow::about_pvQt(){
-	QString msg = tr("About your OpenGL implentation:\n");
+	QString msg = tr("About your OpenGL implementation:\n");
 	msg += tr("Version: ") + glview->OpenGLVersion() + QString("\n");
 	msg += tr("Vendor: ") + glview->OpenGLVendor() + QString("\n");
 	msg += tr("Video: ") + glview->OpenGLHardware() + QString("\n");
@@ -156,7 +156,7 @@ bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 		} else 	msg += tr("(no image file)");
 
 		msg += QString("  ") + QString(tnm) + QString(" at ");
-		QSize pd = pvpic->ImageSize();
+		QSize pd = pvpic->PictureSize();
 		double m = pvpic->NumImages();
 		m *= pd.width(); m *= pd.height(); m *= 1.0e-6;
 		msg += QString().setNum( m, 'f', 2 ) + QString(" Mpixels");

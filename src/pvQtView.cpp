@@ -36,6 +36,7 @@
 /**** maximum projection angle at eye ****/ 
 #define MAXPROJFOV  137.5
 
+
  pvQtView::pvQtView(QWidget *parent)
      : QGLWidget(parent)
  {
@@ -83,7 +84,7 @@ bool pvQtView::OpenGLOK()
 	} else OGLv14 = OGLv20;
 
 	QString glext((const char *)glGetString(GL_EXTENSIONS));
-	texPwr2 = glext.contains(QString("GL_ARB_texture_non_power_of_two"));
+	texPwr2 = !glext.contains(QString("GL_ARB_texture_non_power_of_two"));
 	
 	if( !OGLv14 ){
 		picok = false;
@@ -556,10 +557,6 @@ bool pvQtView::setupPic( pvQtPic * pic )
 	thePic = pic;
 	if( pic ) picType = pic->Type();
 	else picType = pvQtPic::nil;
-	if( picType == pvQtPic::nil ){
-		errmsg = tr("s/w error: empty pvQtPic");
-		return false;
-	}
 	
  // abort if the OpenGL version is insufficient
  	if( !OGLv14 ){
@@ -574,47 +571,85 @@ bool pvQtView::setupPic( pvQtPic * pic )
 	sph: embed in front hemisphere face (180x180)
 	cyl: embed in full cylinder (360 x vfov)
 	eqr: embed in full equi (360 x 180)
+  NOTE With proper texture coordinates, there would be
+  no need to use padded texture images.
+
+  The max feasible face size is found by probing OGL
+  with a proxy texture image whose aspect ratio is fixed
+  by the face fovs.  If OGL requires power-of-2 textures,
+  the test face dims are powers of 2.
+
 */  
+	int tw, th;
 	switch( picType ){
+	case pvQtPic::nil:
+		errmsg = tr("s/w error: empty pvQtPic");
+		return false;
+		break;
 	case pvQtPic::rec:
 		pic->setFaceFOV(QSizeF( 90, 90 ));
+		tw = th = 256;
 		break;
 	case pvQtPic::sph:
-		pic->setFaceFOV(QSizeF( 180, 180 ));
+		pic->setFaceFOV(QSizeF( 360, 360 ));
+		tw = th = 512;
 		break;
 	case pvQtPic::cyl:
 		pic->setFaceFOV(QSizeF( 360, 135 ));
+		tw = 512; th = 256;
 		break;
 	case pvQtPic::eqr:
 		pic->setFaceFOV(QSizeF( 360, 180 ));
+		tw = 512; th = 256;
 		break;
 	case pvQtPic::cub:
 		pic->setFaceFOV(QSizeF( 90, 90 ));
+		tw = th = 256;
 		break;
 	}
   // set up OGL for the picture type
 	setPicType( picType );
 
-  // find a feasible texture size
-	QSize ts = pic->FaceSize();
-	double ks = 0.7071;
-	bool ok = false;
+  /* find max feasible texture size 
+    starting with tw,th, increase proportionally until infeasible, 
+	or both picture dimensions would be > source image dimensions;
+	then back off one step.
+  */
 	GLenum proxy = textgt == GL_TEXTURE_2D ? 
-			GL_PROXY_TEXTURE_2D : GL_PROXY_TEXTURE_CUBE_MAP; 
-	if( !ts.isEmpty() ) do{
-		int v;
-		glTexImage2D( proxy, 0, GL_RGB,
-			ts.width(), ts.height(), 0, 
+			GL_PROXY_TEXTURE_2D : GL_PROXY_TEXTURE_CUBE_MAP;
+	int tww = 0, thw = 0;	// last feasible size
+	for(;;){
+		GLint v;
+		glTexImage2D( proxy, 0, GL_RGB, tw, th, 0, 
 			GL_RGB, GL_UNSIGNED_BYTE, 0 );
 		glGetTexLevelParameteriv( proxy, 0, GL_TEXTURE_WIDTH, &v );
-		if( v == 0 ){
-			if( !pic->changeFaceSize( ks ) ){
+		if( v == 0 ){	// infeasible size...
+			if( tww == 0 || thw == 0 ){
 				errmsg = tr("no feasible picture size!");
 				return false;
 			}
-			ts = pic->FaceSize();
-		} else ok = true;
-	} while( !ok );
+			tw = tww; th = thw;	// use last feasible size
+			pic->setFaceSize( QSize( tw, th ) );
+			break;
+		} else {		// feasible size...
+		  // post face size, check picture size
+			pic->setFaceSize( QSize( tw, th ));
+			QSize pdd = pic->PictureSize() - pic->ImageSize();
+			if( !pdd.isEmpty() ){
+			  // picture >= image: fit face to image if possible
+				if( !texPwr2 ) pic->fitFaceToImage();
+				break;
+			}
+		  // increase size and try again
+			tww = tw; 	thw = th;	// post last feasible size
+			if( texPwr2 ){
+				tw += tw; th += th;
+			} else {
+				tw = int( tw * 1.2599 ); // (cube root of 2)
+				th = int( th * 1.2599 );
+			}
+		}
+	}
 
   // set pan and tilt limits according to picture fov
 	QSizeF pv = pic->PictureFOV();
@@ -659,8 +694,8 @@ bool pvQtView::setupPic( pvQtPic * pic )
   // repaint the view
 	updateGL();
 	
-// check for OpenGL error
-	return OGLok();
+// check for (?asychronous?) OpenGL error
+	return picok;
 
 }
 

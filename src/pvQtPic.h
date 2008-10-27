@@ -57,9 +57,10 @@
       for empty frames, if desired]
   then passes pic to GLview::showPic().
   PvQtView calls
-    getFaceSize() -- to get the size calculated here
-    setFaceSize() -- to adjust size based on OGL limits
+    setFaceFOV() -- sets image cropping/padding ratios
+	setFaceSize() -- sets final face image size
     FaceImage() -- to get the final texture image(s)
+	PictureFOV() -- to get pan and tilt limits
 
  */
 
@@ -127,10 +128,11 @@ int 	scalepix( int proj, int pix, double fov, double tofov );
  int 	 NumImages();	// number of faces that have source images
 // overall size of texture image(s)
  QSize   FaceSize(){ return facedims; }
-// size of image
- QSize   ImageSize(){ return imagedims; } // may be < source dims
- QSizeF  ImageFOV(){ return imagefovs; }  // as read
-// angular range of displayed image
+// size of source image
+ QSize   ImageSize(){ return imagedims; }
+ QSizeF  ImageFOV(){ return imagefovs; }
+// size of displayed image
+ QSize	 PictureSize(){ return picdims; }
  QSizeF  PictureFOV();
  
  QString FaceName( PicFace face = front );	// display name
@@ -161,9 +163,10 @@ int 	scalepix( int proj, int pix, double fov, double tofov );
   
 */
 
-// to be called only from pvQtView:
- bool changeFaceSize( double factor );	// texture image
- bool setFaceFOV( QSizeF fovs );
+// to be called only from pvQtView, to set picture size...
+ bool setFaceFOV( QSizeF fovs );	// FOV must be set first 
+ bool setFaceSize( QSize dims );	// arbitrary dimensions
+ bool fitFaceToImage();				// size from FOVs & source dims
  
 // to be called only from app:
  bool setType( PicType pt ); 		// clears, sets all defaults
@@ -176,7 +179,7 @@ int 	scalepix( int proj, int pix, double fov, double tofov );
  			    int alignBytes = 0 );
  bool setFaceImage( PicFace face, QString path );
  bool setFaceImage( PicFace face, QUrl url );
- /* Set "empty image" styles
+ /* Set empty frame styles
    face = any sets all faces; label = "*" uses face names
    label color is black or white according to fill color 
    NOTE setType() restores the default styles
@@ -193,10 +196,11 @@ private:
 	int numsizes;	// no. of faces with valid source sizes
   // display image and face properties
   	QImage::Format faceformat;
-	QSize		imagedims;	// pixels -- as read
-	QSizeF		imagefovs;	// degrees  -- as read
-	QSize		facedims;	// pixels -- as displayed
-	QSizeF		facefovs;	// degrees  -- as displayed
+	QSize		imagedims;	// source image
+	QSizeF		imagefovs;	// degrees
+	QSize		picdims;	// image as displayed
+	QSize		facedims;	// as displayed
+	QSizeF		facefovs;	// degrees
 	QSizeF		maxfovs, minfovs;	// face limits
 	bool 		lockfovs;	// true => fixed fov & aspect ratio
   // arrays indexed by face id, 0:maxfaces-1

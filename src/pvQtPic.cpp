@@ -54,13 +54,6 @@ static QColor deffill = QColor(Qt::lightGray);
 
 /** utility functions, not exported  **/
 
-static void scaleSize( QSize & s, double f ){
-	int & w = s.rwidth();
-	int & h = s.rheight();
-	w = int( 0.5 + f * w );
-	h = int( 0.5 + f * h );
-}
-
 // radius from (full) field of view
 static double fov2rad( int proj, double fov ){
 	double a = DEG2RAD(0.5 * fov);
@@ -198,39 +191,45 @@ QString pvQtPic::FaceName( PicFace face )
  	return tr("no such face");
 }
 
-/* change the working face image size
-  To be called by View to negotiate a feasible
-  texture image size.
-  Returns false if there is no picture or the
-  factor is absurd;
-  Else true with face, image, and crop sizes
-  adjusted.
-  This function never changes cropping factors,
-  as those depend on fovs only.
+/* set display face size just large enough to hold
+  the source image at 1:1 pixel magnification.
+  sets
+	facedims = imagedims scaled by fov ratios
+	picdims = imagedims
 */
-bool pvQtPic::changeFaceSize( double factor )
-{
-	if( type == nil || facedims.isEmpty() ) return false;
-	if( factor < 0.05 || factor > 20 ) return false;
-	facedims.setWidth( int(0.5 + factor * facedims.width()) );
-	facedims.setHeight( int(0.5 + factor * facedims.height()) );
-	imagedims.setWidth( int(0.5 + factor * imagedims.width()) );
-	imagedims.setHeight( int(0.5 + factor * imagedims.height()) );
-	return facedims.width() > 0 && facedims.height() > 0;
-
+bool pvQtPic::fitFaceToImage(){
+	if( type == nil ) return false;	// no picture
+	if(imagedims.isEmpty() ) return false;  // no image
+	picdims = imagedims;
+	facedims.setWidth( scalepix( xproj, imagedims.width(),
+			 imagefovs.width(), facefovs.width()));
+	facedims.setHeight( scalepix( yproj, imagedims.height(),
+			 imagefovs.height(), facefovs.height()));
+	return !facedims.isEmpty();
 }
 
-/* set face FOV and size to accomodate image
-  If there is no valid image just sets facefovs; otherwise
-  also sets facedims by scaling imagedims.
+/* Set working face dimensions (called from pcQtView only)
+  Sets working picture size to face size, scaled by the ratios
+  of face to image FOVs.  Picture will be cropped to the face 
+  size when image fov is larger, and will be padded to face
+  size when image fov is smaller.
   
+*/
+bool pvQtPic::setFaceSize( QSize dims ){
+	if( type == nil ) return false;	// no picture
+	if(dims.isEmpty() ) return false;  // bad dimensions
+	facedims = dims;
+	picdims.setWidth( scalepix( xproj, facedims.width(),
+			 facefovs.width(), imagefovs.width()));
+	picdims.setHeight( scalepix( yproj, facedims.height(),
+			 facefovs.height(), imagefovs.height()));
+	return !picdims.isEmpty();
+}
+
+/* set face FOV 
+  Called from pvQtView; must be called before setFaceSize.
   The passed fovs must be within the limits for the type,
   but need not agree with the image FOVs.
-  
-  Sets face size to image size, scaled by the ratios
-  of face to image FOVs.  So image will be cropped to 
-  the face size when image fov is larger, and will be 
-  smaller than face when image fov is smaller.
   
 */
 bool pvQtPic::setFaceFOV( QSizeF fovs ){
@@ -238,11 +237,6 @@ bool pvQtPic::setFaceFOV( QSizeF fovs ){
 	if(fovs != fovs.boundedTo(maxfovs).expandedTo(minfovs))
 		return false;	// illegal fovs
 	facefovs = fovs;
-	if( imagedims.isEmpty() ) return true;
-	facedims.setWidth( scalepix( xproj, imagedims.width(),
-			 imagefovs.width(), facefovs.width()));
-	facedims.setHeight( scalepix( yproj, imagedims.height(),
-			 imagefovs.height(), facefovs.height()));
 	return true;
 }
 
@@ -450,8 +444,6 @@ bool pvQtPic::addimgsize( int i, QSize dims )
 		  		double r = (double)imagedims.height() / (double)imagedims.width();
 	  			imagefovs.setHeight(rad2fov( yproj, r * fov2rad( xproj, imagefovs.width())));
   			}
-		  // set face size using legal fovs closest to image fovs
-			setFaceFOV( imagefovs.expandedTo(minfovs).boundedTo(maxfovs) );
 		} else {
 			ok = dims == imagedims;
 		}
@@ -556,9 +548,9 @@ QImage * pvQtPic::FaceImage( PicFace face ){
 		pim = oim;
 	}
 // pack image into face if necessary		TODO: 90 degree rotations
-	if( !imagedims.isEmpty()  
-	    && imagedims != facedims ){
-		QSize cropdims = imagedims.boundedTo( facedims );
+	if( !picdims.isEmpty()  
+	    && picdims != facedims ){
+		QSize cropdims = picdims.boundedTo( facedims );
 		QImage * oim = new QImage( facedims, faceformat );
 		oim->fill( Qt::black );
 		int jit = (pim->height() - cropdims.height() + 1) / 2;
@@ -619,7 +611,7 @@ QImage * pvQtPic::loadFile( int face )
 {
 	QImageReader ir( names[face] );
 	if( !ir.canRead() ) return 0;
-	ir.setScaledSize( imagedims );
+	ir.setScaledSize( picdims );
 	QImage *pim = new QImage( ir.read() );
 	return pim;
 }
@@ -628,7 +620,7 @@ QImage * pvQtPic::loadQImage( int face )
 {
 	QImage * iim = (QImage *)(addrs[face]);
 	QImage * pim = new QImage(
-		iim->scaledToHeight( imagedims.height())
+		iim->scaledToHeight( picdims.height())
 	);
 	return pim;
 }

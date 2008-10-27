@@ -6,25 +6,6 @@ CONFIG(debug, debug|release) {
      TARGET = pvQt
 }
 
-# capture SVN revision number in a file
-!svn {
-  system(svnversion -n > SVNversion.h ):CONFIG += svn
-}
-!svn {  # no SVN version available, use default
-  message(could not run svnversion -- is it installed?)
-  win32 {
-    system(copy SVNnoVersion.h SVNversion.h)
-  } else {
-    system(cp SVNnoVersion.h SVNversion.h)
-  }
-}
-# build pvQtVersion.h NOTE major.minor rev are in version0.h
-win32 {
-  system(wbin\cat Version0.h SVNversion.h Version1.h > build\PvQtVersion.h)
-} else {
-  system(cat Version0.h SVNversion.h Version1.h  > build/pvQtVersion.h)
-}
-HEADERS += version0.h SVNnoVersion.h version1.h
 QT = gui core
 DESTDIR = bin
 OBJECTS_DIR = build
@@ -47,3 +28,22 @@ SOURCES += src/picTypeDialog.cpp src/pictureTypes.cpp
 FORMS += ui/About.ui
 HEADERS += src/About.h
 SOURCES += src/About.cpp
+# capture SVN revision number in a file
+!svn {
+  system(svnversion -n > SVNversion.h ):CONFIG += svn
+}
+!svn {  # no SVN version available, use default
+  message(could not run svnversion -- is it installed?)
+  win32 {
+    system(copy SVNnoVersion.h SVNversion.h)
+  } else {
+    system(cp SVNnoVersion.h SVNversion.h)
+  }
+}
+# build pvQtVersion.h NOTE major.minor rev are in version0.h
+win32 {
+  system(wbin\cat Version0.h SVNversion.h Version1.h > build\PvQtVersion.h)
+} else {
+  system(cat Version0.h SVNversion.h Version1.h  > build/pvQtVersion.h)
+}
+HEADERS += version0.h SVNnoVersion.h version1.h
