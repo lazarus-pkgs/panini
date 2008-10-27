@@ -12,7 +12,7 @@
   <property name="windowTitle" >
    <string>pvQt - Picture Type and FOV</string>
   </property>
-  <widget class="QWidget" name="" >
+  <widget class="QWidget" name="layoutWidget" >
    <property name="geometry" >
     <rect>
      <x>10</x>
@@ -65,7 +65,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="hgtPixels" >
+       <widget class="QLabel" name="widPixels" >
         <property name="frameShape" >
          <enum>QFrame::Box</enum>
         </property>
@@ -81,7 +81,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="widPixels" >
+       <widget class="QLabel" name="hgtPixels" >
         <property name="frameShape" >
          <enum>QFrame::Box</enum>
         </property>

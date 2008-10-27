@@ -24,7 +24,7 @@
 			<Tool
 				Name="VCNMakeTool"
 				BuildCommandLine="cd ..\.. &#x0D;&#x0A;make debug"
-				ReBuildCommandLine="cd ..\.. &#x0D;&#x0A;make clean &#x0D;&#x0A;make debug &#x0D;&#x0A;&#x0D;&#x0A;"
+				ReBuildCommandLine="cd ..\.. &#x0D;&#x0A;qmake pvQt.pro &#x0D;&#x0A;make clean &#x0D;&#x0A;make debug &#x0D;&#x0A;&#x0D;&#x0A;"
 				CleanCommandLine="cd ..\.. &#x0D;&#x0A;make clean"
 				Output="pvQt_1.exe"
 				PreprocessorDefinitions="WIN32;_DEBUG"
@@ -44,7 +44,7 @@
 			<Tool
 				Name="VCNMakeTool"
 				BuildCommandLine="cd ..\.. &#x0D;&#x0A;make release"
-				ReBuildCommandLine="cd ..\.. &#x0D;&#x0A;make clean &#x0D;&#x0A;make release &#x0D;&#x0A;"
+				ReBuildCommandLine="cd ..\.. &#x0D;&#x0A;qmake pvQt.pro &#x0D;&#x0A;make clean &#x0D;&#x0A;make release &#x0D;&#x0A;"
 				CleanCommandLine="cd ..\.. &#x0D;&#x0A;make clean"
 				Output="pvQt_1.exe"
 				PreprocessorDefinitions="WIN32;NDEBUG"

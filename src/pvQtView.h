@@ -46,7 +46,11 @@ public:
 	bool OpenGLOK();	// false if OGL version too low
 	
 	QString OpenGLVersion(){
-		return QString( (const char *)glGetString(GL_VERSION) );
+		QString msg( (const char *)glGetString(GL_VERSION) );
+		if( texPwr2 ) {
+			msg += QString(" (texPwr2)");
+		} 
+		return msg;
 	}
 	QString OpenGLVendor(){
 		return QString( (const char *)glGetString(GL_VENDOR) );

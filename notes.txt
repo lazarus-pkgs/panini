@@ -158,5 +158,23 @@ done	Show rectilinear pictures (up to 90 deg)
 	allegedly related to printing.  Now it segfaults at start.
 	So it's back to Vista.  Guess I should get Eclipse...
 	
+27 Oct 2008
+
+	Fisheye/spherical only a little trouble.  OGL sphere map 
+	has opposite hand to cube and 2D, so had to add a custom
+	initial view matrix to compensate.
+	
+	But I released 0.2.35 a bit prematurely.  Mainly it had bad
+	code for adapting pictures size, so would not work on OGL
+	systems requiring pwr-of-2 texture dimensions, and worked poorly
+	on others.  That is fixed, along with several minor bugs:
+	-- pvQt.pro: no longer fails when build directory doesn't exist
+	-- About box shows "texPwr2" when appropriate, and no longer 
+	  clips the 2nd line
+	-- Type/fov dialog shows width & height in correct order
+	-- pvQtView.cpp shd not give compile error when GLint != int
+	
+	Committing and releasing this as 0.2.36
+	
 	
 	 
