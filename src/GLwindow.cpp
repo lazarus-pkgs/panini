@@ -177,7 +177,8 @@ bool GLwindow::QTVR_file( QString name ){
 	QTVRDecoder dec;
 	bool ok = dec.parseHeaders( name.toUtf8().data() );
 	if( !ok ){
-		qCritical("Not QTVR: %s", name.toUtf8().data() );
+		qCritical("QTVR parse: %s", dec.getError() );
+//		qCritical("Not QTVR: %s", name.toUtf8().data() );
 		return false;
 	}
 	if( dec.getType() == PANO_CUBIC ){

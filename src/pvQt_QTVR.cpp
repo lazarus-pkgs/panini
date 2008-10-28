@@ -326,14 +326,21 @@ bool QTVRDecoder::parseHeaders(const char * theDataFilePath)
 	}
     m_mainFile = gFile;
 
+  // get file size for EOF test
+	size_t filepos = ftell( gFile );
+	fseek( gFile, 0, SEEK_END );
+	size_t filesize = ftell( gFile );
+	fseek( gFile, filepos, SEEK_SET );
 
 		/*************************/
 		/* RECURSE THROUGH ATOMS */
 		/*************************/
+
 	m_error = 0;
 	do	{
 		atomSize = ReadMovieAtom();
-	} while(atomSize > 0);
+	} while(atomSize > 0
+		&& ftell( gFile ) < filesize );
 
     if (m_error != 0) {
         return false;
@@ -369,7 +376,7 @@ long QTVRDecoder::ReadQTMovieAtom(void)
     size_t sz = fread(&atomSize, 1, 4, gFile);      
     if (ferror(gFile) || sz != 4)
     {
-        m_error = "ReadMovieAtom:  fread() failed!";
+        m_error = "ReadQTMovieAtom:  fread() failed!";
         return(-1);
     }   
 
@@ -378,7 +385,7 @@ long QTVRDecoder::ReadQTMovieAtom(void)
     sz = fread(&atomType, 1, 4, gFile);     
     if (ferror(gFile) || sz != 4)
     {
-        m_error = "ReadMovieAtom:  fread() failed!";
+        m_error = "ReadQTMovieAtom:  fread() failed!";
         return(-1);
     }
 
@@ -388,7 +395,7 @@ long QTVRDecoder::ReadQTMovieAtom(void)
     sz = fread(&childCount, 1, 2, gFile);     
     if (ferror(gFile) || sz != 2)
     {
-        m_error = "ReadMovieAtom:  fread() failed!";
+        m_error = "ReadQTMovieAtom:  fread() failed!";
         return(-1);
     }
 
@@ -403,7 +410,7 @@ long QTVRDecoder::ReadQTMovieAtom(void)
 
     if (atomSize == 1)                                  // if atom size == 1 then there's extended data in the header
     {
-        m_error = "ReadMovieAtom: Extended size isn't supported";
+        m_error = "ReadQTMovieAtom: Extended size isn't supported";
         return(-1); 
     }
 
