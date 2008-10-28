@@ -176,5 +176,14 @@ done	Show rectilinear pictures (up to 90 deg)
 	
 	Committing and releasing this as 0.2.36
 	
+28 Oct 2008
+
+	Preparing to debug the qtvr parser.
+	1) split it from the image reader as a Qt-independent class
+	2) (re)insert debug print statements to trace the parse.
+	  These should be generic, printf-like statements.
+	I think it would be a mistake to try to make this parser 
+	handle a stream instead of a stdio file.  Let's assume we can
+	always dowenload remote qtvr's to local files.
 	
 	 

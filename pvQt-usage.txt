@@ -55,6 +55,8 @@ Note that on Windows, dragging files onto the pvQt program icon generates a file
 
 The Picture menu lets you select a picture type, then works just like a type-only command line.
 
+The "rect" picture type can be used to display any image much as an ordinary image processing program would.  Just accept the default fov. 
+
 The "fish" picture type uses the mirror sphere projection, a classical panoramic format that is reasonably close to the projections of most modern "fisheye" lenses.  So you can use it for mirror sphere photos and computed panoramas up to 360 degrees in diameter.
 
 You can load 1 to 6 image files for the "cube" picture type.  They must be square images of the same size, and their sorted names must fall in the conventional cube face order: front, right, back, left, top, bottom.  So if you have names like foo_front.tif, foo_right.tif,..., you will have to change them to something like foo_1.tif, foo_2.tif,....  Later when drag and drop and PT scripts are implemented, you will be able to load such files without renaming them.  If you give fewer than 6 cube face files, pvQt will display empty frames for the missing ones.  This applies to nonexistent or unreadable files, too, so if you wanted to show 3 images on the left, front, and right cube faces, you could (on the command line) insert a dummy file name for the back face between the right and left ones, or make an empty file with that name and select it along with the real image files.
