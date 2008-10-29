@@ -223,3 +223,12 @@ done	Show rectilinear pictures (up to 90 deg)
 	Note need only check the all-extensions string if version < 2, 
 	and shd look for both GL_ARB_xxx and GL_EXT_xxx.
 	
+	Well, second then.  Just couldn't resist trying texture matrix,
+	so now we have picture rotation with respect to the panosphere
+	(whose vertical axis stays vertical on screen) and 90 degree
+	orientations controlled by keys.  Committed SVN 37. 
+	
+	Try to run if OGL version >= 1.1 and cube mapping is available.
+	Report probed OGL features in last line of About.  SVN38.
+	
+	

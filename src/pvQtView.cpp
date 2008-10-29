@@ -41,7 +41,7 @@
      : QGLWidget(parent)
  {
  // post unusable OGL capabilities
- 	OGLv20 = OGLv14 = false;
+ 	OGLv20 = OGLisOK = false;
  	 picok = false;
  	 errmsg = tr("no picture");
 	 thePic = 0;
@@ -74,24 +74,41 @@
 */
 bool pvQtView::OpenGLOK()
 {	
+  // assume the worst
+	texPwr2 = true;
+	cubeMap = false;
+
 	errmsg = tr("no error");
 	QString glver((const char *)glGetString(GL_VERSION));
 	QStringList vns = glver.split(QChar('.'));
-	
+  // check version.  Assume hopeless if < 1.1
 	int vn0 = vns[0].toInt();
 	OGLv20 = vn0 >= 2;
 	if( !OGLv20 && vns.count() > 1 ){
-		OGLv14 = vn0 == 1 && vns[1].toInt() >= 4;
-	} else OGLv14 = OGLv20;
+		OGLisOK = vn0 == 1 && vns[1].toInt() >= 1;
+	} else OGLisOK = OGLv20;
+  // check features
+	if( OGLv20 ){
+		texPwr2 = false;
+		cubeMap = true;
+	} else if( OGLisOK ){
+		QString glext((const char *)glGetString(GL_EXTENSIONS));
+		texPwr2 = ! (
+				glext.contains(QString("GL_ARB_texture_non_power_of_two"))
+			 || glext.contains(QString("GL_EXT_texture_non_power_of_two"))
+			);
+		cubeMap = (
+				glext.contains(QString("GL_ARB_texture_cube_map"))
+			);
+	}
+	OGLisOK = cubeMap;
 
-	QString glext((const char *)glGetString(GL_EXTENSIONS));
-	texPwr2 = !glext.contains(QString("GL_ARB_texture_non_power_of_two"));
-	
-	if( !OGLv14 ){
+	if( !OGLisOK ){
 		picok = false;
 		errmsg = tr("OpenGL insufficient");
 	} 
-	return OGLv14;
+
+	return OGLisOK;
 }
 
 /**  GUI Interactions  **/
@@ -494,7 +511,7 @@ bool pvQtView::OGLok(){
  void pvQtView::paintGL()
  {
  // abort if the OpenGL version is insufficient
-	if( !OGLv14 ) return;
+	if( !OGLisOK ) return;
  	
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	if( textgt ) glEnable( textgt );
@@ -571,7 +588,7 @@ bool pvQtView::OGLok(){
  void pvQtView::resizeGL(int width, int height)
  {
  // abort if the OpenGL version is insufficient
- 	if( !OGLv14 ) return;
+ 	if( !OGLisOK ) return;
 
 // Viewport fills window.
 	glViewport(0, 0, width, height);
@@ -586,7 +603,7 @@ bool pvQtView::OGLok(){
 void pvQtView::makeSphere( GLuint list )
  {
   // abort if the OpenGL version is insufficient
- 	if( !OGLv14 ) return;
+ 	if( !OGLisOK ) return;
 
 	GLUquadricObj *qobj = gluNewQuadric();
 	gluQuadricDrawStyle(qobj, textgt ? GLU_FILL : GLU_LINE);
@@ -623,8 +640,8 @@ bool pvQtView::setupPic( pvQtPic * pic )
 	else picType = pvQtPic::nil;
 	
  // abort if the OpenGL version is insufficient
- 	if( !OGLv14 ){
- 		errmsg = tr("Insufficient OpenGL version");
+ 	if( !OGLisOK ){
+ 		errmsg = tr("Insufficient OpenGL facilities");
 		return false;
 	}
 /*  Choose a display strategy based on image type and FOV,

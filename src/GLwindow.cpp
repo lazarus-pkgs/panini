@@ -89,6 +89,7 @@ void GLwindow::about_pvQt(){
 	msg += tr("Version: ") + glview->OpenGLVersion() + QString("\n");
 	msg += tr("Vendor: ") + glview->OpenGLVendor() + QString("\n");
 	msg += tr("Video: ") + glview->OpenGLHardware() + QString("\n");
+	msg += tr("Features: ") + glview->OpenGLFeatures();
 	aboutbox.setInfo( msg );
 	aboutbox.show();
 }
