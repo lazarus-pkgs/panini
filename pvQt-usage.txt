@@ -4,7 +4,7 @@ The purpose of pvQt is to view panoramic and wide angle pictures.  It can load a
 
 SYSTEM REQUIREMENTS
 
-pvQt requires at least an OpenGL version 1.4 implementation, and is fully functional only with OpenGL version 2.0 and above.  As a practical matter this means you should have either a "gaming" video card, or a recent "multimedia" one.  But ultimate gaming performance is not needed: cards that will upgrade most desktop PCs to fully support pvQt now cost from $50 to $100.  Note that OpenGL is tightly integrated with the system's video drivers and cannot be installed as a separate piece of software.
+pvQt depends on OpenGL features that became standard at version 1.5.  Some implementations of earlier versions contain these features as nonstandard extensions, others do not.  You will get best results with OpenGL version 2.0 and above.  As a practical matter that means you should have either a "gaming" video card, or a recent "multimedia" one.  But ultimate gaming performance is not needed: cards that will upgrade most desktop PCs to OpenGL 2.0 now cost from $50 to $100.  Note that OpenGL is tightly integrated with the system's video drivers and cannot be installed as a separate piece of software.
 
 On Ubuntu Linux you will probably need to install the manufacturer's video drivers (both nVidia and ATI now supply those) which Ubuntu does not install by default because they are not open-source.
 
@@ -16,7 +16,9 @@ The program places no special demands on CPU speed or memory; if you can stitch 
 
 RELEASE INFORMATION
 
-The version number shown in the "about" dialog has the form: major.minor.rev.  Major.minor is the "release number", set somewhat arbitrarily by me; rev is the SVN revision of the source from which it was built.  The SVN rev increases at every source archive update, and does not reset when I change the release number.  It may be "???" if the program was built from an unknown source code revision, or have an "M" at the end if it was built from a modified local copy of an SVN revision.
+The version number shown in the "about" dialog has the form: major.minor.rev.  Major.minor is the "release number", set somewhat arbitrarily by me; rev is the SVN revision of the source from which it was built.  The SVN rev increases at every source archive update, and does not reset when I change the release number.  
+
+Rev will have two revision numbers separated by a colon (:) if the program was built from a mixture of SVN revisions, and an "M" at the end if it was built from a modified local copy of the SVN archive.
 
 Some of the functions described here may not work in all versions of pvQt.  Please consult the Release Notes for further information.  And please check the project site (https://sourceforge.net/projects/pvqt/) to see if you have the latest version.  Releases come as a self installing Win32 executable package, and as source code buildable on any platform that supports Qt version 4.
 
@@ -24,13 +26,17 @@ VIEW CONTROLS
 
 When you start pvQt without a command line, for example by double clicking an icon, it displays a wire frame model of the panosphere.  You can use the View commands to see how they change your view of the sphere.  All the view commands have keyboard shortcuts, shown in the View menu. 
 
-The Yaw, Pitch and Roll contols let you look in different directions, and change which way is "up".  The ranges of Yaw and Pitch are limited according to the angular size of the picture.
+The "L" and "R" keys set the basic orientation of the picture in multiples of 90 degrees.  
+
+The Yaw and Pitch contols let you look in different directions.  Their ranges are limited to the angular size of the picture.  You can control Yaw and Pitch with the mouse by holding down the button and moving the pointer in the direction you wish to look.
+
+The Turn controls let you adjust which way is up.  They rotate the picture with respect to the panosphere, so have no visible effect on the wireframe model.
 
 Zoom controls magnification by changing the vertical field of view on the panosphere.  When you resize the window, the displayed image grows or shrinks to maintain the selected vertical field.  
 
-"Eye in" and "Eye out" change perspective by moving the point of view toward or away from the center of the panosphere.  Eye position is reported as "Eye", in units of the sphere's radius.  When Eye is zero, the viewing perspective is rectilinear, like a normal camera lens; as it increases, the perspective becomes more fisheye-like.  As the eye point moves out, you can zoom farther out to see wider views.  But you can zoom in to the same level of image detail at any perspective setting.
+"Eye in" and "Eye out" change perspective by moving the point of view toward or away from the center of the panosphere.  Eye position is reported in units of the sphere's radius.  When Eye is zero, the viewing perspective is rectilinear, like a normal camera lens; as it increases, the perspective becomes more fisheye-like.  As the eye point moves out, you can zoom farther out to see wider views.  But you can zoom in to the same level of image detail at any perspective setting.
 
-Several preset views are available via single keystrokes.  "Home" resets the yaw, pitch and roll angles to zero; "End" also resets zoom and eye position.  "F" gives the widest possible full frame view (a stereographic projection of the sphere, 275 degrees high) and "S" gives a "super wide" view, a circular image showing about 310 degrees of the sphere (note: in super wide mode the displayed vFOV is not correct).
+Several preset views are available via single keystrokes.  "Home" resets the yaw, pitch and turn angles to zero; "End" also resets zoom and eye position.  "F" gives the widest possible full frame view (a stereographic projection of the sphere, 275 degrees high) and "S" gives a "super wide" view, a circular image showing about 310 degrees of the sphere (note: in super wide mode the displayed vFOV is not correct).
 
 COMMAND LINE and Picture MENU
 
@@ -43,7 +49,7 @@ pvQt accepts a command line consisting of an optional picture type name, followe
 	"equi"	Equirectangular panorama
 	"cube"	1 to 6 Cube face images
 
-If you give just a type name, pvQt will pop a file selector dialog so you can choose the file(s) to be displayed.  If the picture type is rect, fish, cyli or equi it will then ask you to specify the angular image size (field of view on the longer image axis).  The fov is determined automatically for the other types.
+If you give just a type name, pvQt will pop a file selector dialog so you can choose the file(s) to be displayed.  If the picture type is rect, fish, cyli or equi it will then ask you to specify the angular size of the image, as field of view on the longer image axis.  The fov on the other axis is determined from the image shape.
 
 Even if the picture type is not yet supported, you will be asked to choose files and set the fov, after which you will get the bad news.
 
@@ -61,7 +67,7 @@ The "fish" picture type uses the mirror sphere projection, a classical panoramic
 
 You can load 1 to 6 image files for the "cube" picture type.  They must be square images of the same size, and their sorted names must fall in the conventional cube face order: front, right, back, left, top, bottom.  So if you have names like foo_front.tif, foo_right.tif,..., you will have to change them to something like foo_1.tif, foo_2.tif,....  Later when drag and drop and PT scripts are implemented, you will be able to load such files without renaming them.  If you give fewer than 6 cube face files, pvQt will display empty frames for the missing ones.  This applies to nonexistent or unreadable files, too, so if you wanted to show 3 images on the left, front, and right cube faces, you could (on the command line) insert a dummy file name for the back face between the right and left ones, or make an empty file with that name and select it along with the real image files.
 
-When a picture is loaded, the pvQt window's title bar shows the file name, picture type and displayed size in megapixels, which will be smaller than the filed image size if there is not enough OpenGL texture memory to hold the full image.  In case loading a picture fails, the title bar will show an error message instead.
+When a picture is loaded, the pvQt window's title bar shows the file name, picture type and displayed size in megapixels, which will be smaller than the source image size if there is not enough OpenGL texture memory to hold the full image.  In case loading a picture fails, the title bar will show an error message instead.
 
 LICENSE
 

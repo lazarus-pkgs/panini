@@ -124,7 +124,7 @@ bool pvQtPic::setType( pvQtPic::PicType t )
   	case sph:	// A spherical image up to 180 degrees diameter
   		maxfaces = 1;
   		facedims = QSize(256,256);
-  		facefovs = QSizeF(180,180);
+  		facefovs = QSizeF(360,360);
   		xproj = yproj = 2;	// ideal fisheye
   		break;
   	case cyl:	// A cylindrical panorama up to 360 x 135 degrees

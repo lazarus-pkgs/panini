@@ -54,6 +54,7 @@ signals:
 	void reset_view();
 	void super_wide();
 	void full_frame();
+	void turn90( int d );
 	
 	void newPicture( const char * pictype );
 
@@ -82,6 +83,8 @@ private slots:
 	void resetView();
 	void on_actionFull_frame_triggered();
 	void on_actionSuper_wide_triggered();
+	void on_action90_deg_CW_triggered();
+	void on_action90_deg_CCW_triggered();
 	
 	void on_actionQTVR_triggered();
 	void on_actionRectilinear_triggered();

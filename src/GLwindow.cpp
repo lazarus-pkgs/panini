@@ -60,6 +60,9 @@ GLwindow::GLwindow (QWidget * parent )
 	connect( parent, SIGNAL(super_wide()),
 		     glview, SLOT(super_fish()));
   if(ok) ok = 
+	connect( parent, SIGNAL(turn90( int )),
+		     glview, SLOT(turn90( int )));
+  if(ok) ok = 
 	connect( glview, SIGNAL(reportView( QString )),
 			 parent, SLOT(showStatus( QString )) );
   if(ok) ok = 
@@ -99,6 +102,7 @@ void GLwindow::resizeEvent( QResizeEvent * ev ){
 void GLwindow::newPicture( const char * type ){
 	choosePictureFiles( type );
 }
+
 
 /**  Picture Display Routines
 	load a new picture into pvQtPic then pass it to pvQtView
