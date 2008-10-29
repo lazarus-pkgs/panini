@@ -82,18 +82,21 @@ public:
      void setSpin(int iangle);
      void setZoom( int iangle );
 	 void setDist( int idist );  // unit = 1% of radius
-  // dp should normally be +/- 1
+  // keypress steps -- dp should normally be +/- 1
 	 void step_pan( int dp );
 	 void step_tilt( int dp );
 	 void step_zoom( int dp );
 	 void step_roll( int dp );
 	 void step_dist( int dp );
+  // mini steps -- units of 1/16 degree
+	 void add_pan( int s );
+	 void add_tilt( int s );
   // preset views
   	 void reset_view();	// reinit all params
 	 void home_view();	// zero view angles
 	 void full_frame();	// stereographic, min zoom
 	 void super_fish();	// circular superwide
-
+	 void turn90( int d) ;	// turn picture
   // update display of current picture
 	 void picChanged();
 
@@ -104,9 +107,10 @@ public:
      void initializeGL();
      void paintGL();
      void resizeGL(int width, int height);
-     void mousePressEvent(QMouseEvent *event);
-     void mouseMoveEvent(QMouseEvent *event);
-
+     void mousePressEvent(QMouseEvent *pme );
+     void mouseMoveEvent(QMouseEvent *pme );
+	 void mouseReleaseEvent( QMouseEvent *pme );
+	 void timerEvent( QTimerEvent * pte );
  private:
  // GUI support
      double normalizeAngle(int &iangle, int istep, double lwr, double upr);
@@ -126,13 +130,17 @@ public:
 	 double Znear, Zfar;	// clipping plane distances from eye
 	 double panAngle, tiltAngle, spinAngle; // degrees
 	 double minpan, maxpan, mintilt,maxtilt;  //image limits
+	 double turnAngle;		// 90 deg picture rotation
 
      int ipan, panstep;
      int itilt, tiltstep;
      int ispin, spinstep;
      int izoom, zoomstep;
 	 int idist, diststep;
-     QPoint lastPos;
+
+	int mx0, my0, mx1, my1;	// mouse coordinates
+	int timid;	// mouse timer ID
+
 
   // display support
 	 void setPicType( pvQtPic::PicType pt );

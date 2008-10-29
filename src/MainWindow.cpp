@@ -187,6 +187,14 @@ void MainWindow::on_actionSuper_wide_triggered(){
 	emit super_wide();
 }
 
+void MainWindow::on_action90_deg_CW_triggered(){
+	emit turn90( 1 );
+}
+
+void MainWindow::on_action90_deg_CCW_triggered(){
+	emit turn90( -1 );
+}
+
 /** Picture Menu Handlers 
   named so connectSlotsByName() will find them
 **/

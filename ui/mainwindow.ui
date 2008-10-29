@@ -35,7 +35,9 @@
     <addaction name="actionTilt_Up" />
     <addaction name="actionTilt_Down" />
     <addaction name="actionRoll_Left" />
+    <addaction name="action90_deg_CW" />
     <addaction name="actionRoll_Right" />
+    <addaction name="action90_deg_CCW" />
     <addaction name="separator" />
     <addaction name="actionFull_frame" />
     <addaction name="actionSuper_wide" />
@@ -125,7 +127,7 @@
   </action>
   <action name="actionRoll_Left" >
    <property name="text" >
-    <string>Roll CCW</string>
+    <string>Turn CW</string>
    </property>
    <property name="shortcut" >
     <string>Ctrl+Left</string>
@@ -133,7 +135,7 @@
   </action>
   <action name="actionRoll_Right" >
    <property name="text" >
-    <string>Roll CW</string>
+    <string>Turn CCW</string>
    </property>
    <property name="shortcut" >
     <string>Ctrl+Right</string>
@@ -238,6 +240,22 @@
    </property>
    <property name="shortcut" >
     <string>S</string>
+   </property>
+  </action>
+  <action name="action90_deg_CW" >
+   <property name="text" >
+    <string>90 deg CW</string>
+   </property>
+   <property name="shortcut" >
+    <string>R</string>
+   </property>
+  </action>
+  <action name="action90_deg_CCW" >
+   <property name="text" >
+    <string>90 deg CCW</string>
+   </property>
+   <property name="shortcut" >
+    <string>L</string>
    </property>
   </action>
  </widget>

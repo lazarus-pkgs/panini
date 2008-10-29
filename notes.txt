@@ -184,6 +184,42 @@ done	Show rectilinear pictures (up to 90 deg)
 	  These should be generic, printf-like statements.
 	I think it would be a mistake to try to make this parser 
 	handle a stream instead of a stdio file.  Let's assume we can
-	always dowenload remote qtvr's to local files.
+	always download remote qtvr's to local files.
 	
-	 
+	Found an elementary bug in the parser, trying to read past 
+	EOF.  Fixing that makes many more QTVR's readable. (This 
+	without any structural change to the parser).
+	
+	Now might as well put in mouse panning and release 0.3 :)
+	
+	That was pretty easy, once I figured out that my "detent" on
+	the Y and P angles was responsible for bad mouse response.
+	Now Y and P move in 16ths of a degree under mouse control, and 
+	fall back into the detents after 2 keyboard steps.
+	
+	The final polish on 0.3 shd be to probe OGL explicitly for cube
+	map and proxy textures; and deal with their absence.
+	
+	The next big thing will be to a smoother sphere with texture
+	coordinates matched to the picture's projection and FOV 
+	(necessary / desirable for all 2d textures; not cube).
+	I like the idea of a recursive tesselation starting from the
+	tetrahedron.  Should put that in a compiled-in array as the 
+	vertices never change.  Texture coords should be scaled to 
+	the actual image fov and clamped to black outside.  Use a
+	radial table[r^2] to speed t.c. calculation. 
+	
+29 October 2008
+
+	Continuing that thought -- may be able to use precomputed tex
+	coords, just scale picture FOV <=> [0:1] with texture matrix.
+	Also, can we rotate picture with respect to screen coords by
+	using the texture matrix?  Worth a try for 0.3.
+	
+	But first, try to make face size adapatation robust enough to
+	work on Harry's mac!  It does not appear that proxy texture can
+	be probed for; but it shd be present if OGL version >= 1.1.  He
+	says cube map worked in 0.1, but I'm gonna check for it anyhow.
+	Note need only check the all-extensions string if version < 2, 
+	and shd look for both GL_ARB_xxx and GL_EXT_xxx.
+	

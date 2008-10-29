@@ -57,6 +57,7 @@
      Width = Height = 400;
 	 minpan = -180; maxpan = 180;
 	 mintilt = -90; maxtilt = 90;
+	 turnAngle = 0;
      initView();
  }
 
@@ -105,19 +106,33 @@ bool pvQtView::OpenGLOK()
      return QSize(400, 400);
  }
  
- void pvQtView::mousePressEvent(QMouseEvent *event)
- {
-     lastPos = event->pos();
- }
+ /** Mouse controlled panning  **/
 
- void pvQtView::mouseMoveEvent(QMouseEvent *event)
- {
-     int dx = event->x() - lastPos.x();
-     int dy = event->y() - lastPos.y();
+void pvQtView::mousePressEvent( QMouseEvent * pme ){
+	mx1 = mx0 = pme->x();
+	my1 = my0 = pme->y();
+	timid = startTimer( 50 );
+}
 
+void pvQtView::mouseMoveEvent( QMouseEvent * pme ){
+	mx1 = pme->x();
+	my1 = pme->y();
+}
 
-     lastPos = event->pos();
- }
+void pvQtView::mouseReleaseEvent( QMouseEvent * pme ){
+	mx1 = mx0 = pme->x();
+	my1 = my0 = pme->y();
+	if( timid ) killTimer(timid);
+	timid = 0;
+}
+
+void pvQtView::timerEvent( QTimerEvent * pte ){
+	int dx = (mx1 - mx0) / 3,
+		dy = (my0 - my1) / 3;	
+	if( dx ) add_pan( dx );
+	if( dy ) add_tilt( dy );
+}
+
 
  double pvQtView::normalizeAngle(int &iangle, int istep, double lwr, double upr)
  {
@@ -151,6 +166,23 @@ bool pvQtView::OpenGLOK()
 	return a;
 
  }
+
+ // "non-detented" mouse driven view controls
+ void pvQtView::add_pan( int dp ){
+	 ipan += dp ;
+     panAngle = normalizeAngle( ipan, 1, minpan, maxpan );
+     updateGL();
+	 showview();
+ }
+
+ void pvQtView::add_tilt( int dp ){
+	 itilt += dp;
+     tiltAngle = normalizeAngle( itilt, 1, mintilt, maxtilt );
+	 updateGL();
+	 showview();
+ }
+
+ // "detented" keybaord driven view controls
 
  void pvQtView::step_pan( int dp ){
 	 setPan( ipan + dp * panstep  );
@@ -202,6 +234,16 @@ bool pvQtView::OpenGLOK()
 	setZoom( int(16 * maxFOV) );	// maximize FOV
 	updateGL();
 	showview();
+ }
+
+ void pvQtView::turn90( int d ){
+  // add the step and normalize
+	 turnAngle += d * 90.0;
+	 while( turnAngle > 180 ) turnAngle -= 360;
+	 while( turnAngle < -180 ) turnAngle += 360;
+   // post 
+	 updateGL();
+	 showview();
  }
 
  /** report current view **/
@@ -272,7 +314,7 @@ void pvQtView::initView()
 	 setFOV(90);
 
      panstep = tiltstep = spinstep = 32;	// 2 degrees
-	 home_view();	// zero rotation
+	 home_view();	// zero rotations
 }
 
 void pvQtView::setFOV( double newvfov ){
@@ -416,9 +458,9 @@ void pvQtView::setDist( int id ){
 	glBindTexture(GL_TEXTURE_CUBE_MAP, texIDs[1] );
   // constant texture mapping parameters...
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
@@ -457,13 +499,35 @@ bool pvQtView::OGLok(){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	if( textgt ) glEnable( textgt );
 
+// set texture rotation 
+	glMatrixMode(GL_TEXTURE);
+	glLoadIdentity();
+	switch( picType ){
+	default:
+	case pvQtPic::nil:
+	case pvQtPic::cyl:
+	case pvQtPic::eqr:
+	case pvQtPic::sph:
+  // 2D textures rotate around pic center
+		glTranslated( 0.5, 0.5, 0 );
+		glRotated( turnAngle - spinAngle, 0, 0, 1 );
+		glTranslated( -0.5, -0.5, 0 );
+		break;
+	case pvQtPic::rec:
+	case pvQtPic::cub:
+  // cube texture rotates around origin
+		glRotated( turnAngle + spinAngle, 0, 0, 1 );
+		break;
+	}
+
+
  // eye position rotates, screen does not
 	glMatrixMode(GL_PROJECTION);
     glLoadMatrixd( viewmatrix );
 	Znear = 0.05; Zfar = 7;
 	gluPerspective( wFOV, portAR, 
 				    Znear,  Zfar);
-/* set view according to picture type
+/* set view, yaw and pitch according to picture type
    rotations are Euler angles; orientation & sense set here
 */
 	switch( picType ){
@@ -474,7 +538,7 @@ bool pvQtView::OGLok(){
 		gluLookAt( 0, -eyeDistance, 0,
 				   0, 1, 0,
 				   0, 0, 1 );
-		glRotated( 180 - spinAngle, 0, 1, 0 );     
+		glRotated( 180, 0, 1, 0 );     
 		glRotated( tiltAngle, 1, 0, 0 );
 		glRotated( 180 - panAngle, 0, 0, 1 );
 		break;
@@ -482,16 +546,16 @@ bool pvQtView::OGLok(){
 		gluLookAt( 0, 0, -eyeDistance,
 				   0, 0, 1,
 				   0, -1, 0 );
-		glRotated( 180 + spinAngle, 0, 0, 1 );     
-		glRotated( tiltAngle, 1, 0, 0 );
-		glRotated( 180 - panAngle, 0, 1, 0 );
+//		glRotated( 180, 0, 1, 0 );     
+		glRotated( 180 + tiltAngle, 1, 0, 0 );
+		glRotated( - panAngle, 0, 1, 0 );
 		break;
 	case pvQtPic::rec:
 	case pvQtPic::cub:		// look +Z, X lft, Y up
 		gluLookAt( 0, 0, -eyeDistance,
 				   0, 0, 1,
 				   0, 1, 0 );
-		glRotated( 180 - spinAngle, 0, 0, 1 );     
+		glRotated( 180, 0, 0, 1 );     
 		glRotated( -tiltAngle, 1, 0, 0 );
 		glRotated( 180 - panAngle, 0, 1, 0 );
 		break;
@@ -632,6 +696,8 @@ bool pvQtView::setupPic( pvQtPic * pic )
 			pic->setFaceSize( QSize( tw, th ) );
 			break;
 		} else {		// feasible size...
+		  // if no source pictures, use minimum size
+			if( pic->NumImages() == 0 ) break;
 		  // post face size, check picture size
 			pic->setFaceSize( QSize( tw, th ));
 			QSize pdd = pic->PictureSize() - pic->ImageSize();
