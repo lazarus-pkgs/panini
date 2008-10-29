@@ -46,17 +46,17 @@ public:
 	bool OpenGLOK();	// false if OGL version too low
 	
 	QString OpenGLVersion(){
-		QString msg( (const char *)glGetString(GL_VERSION) );
-		if( texPwr2 ) {
-			msg += QString(" (texPwr2)");
-		} 
-		return msg;
+		return QString( (const char *)glGetString(GL_VERSION) );
 	}
 	QString OpenGLVendor(){
 		return QString( (const char *)glGetString(GL_VENDOR) );
 	}
 	QString OpenGLHardware(){
 		return QString( (const char *)glGetString(GL_RENDERER) );
+	}
+	QString OpenGLFeatures(){
+		return QString("texPwr2 %1, cubeMap %2")
+			.arg(texPwr2).arg(cubeMap);
 	}
 
   /* Display a picture
@@ -158,9 +158,10 @@ public:
 	 GLuint texIDs[2];	// 0: 2D, 1: cube object
 	 GLuint theTex;	// current object
   // OpenGL capabilities
-	bool OGLv14;	// is at least version 1.4
+	bool OGLisOK;	// is at least version 1.4
 	bool OGLv20;	// is at least version 2.0
 	bool texPwr2;	// needs power-of-2 texture dimensions
+	bool cubeMap;	// has cube mapping (rq'd)
   // status 
   	bool picok;		// current pic displayed ok
   	QString errmsg;	// reason why not
