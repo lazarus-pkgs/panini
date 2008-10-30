@@ -231,4 +231,11 @@ done	Show rectilinear pictures (up to 90 deg)
 	Try to run if OGL version >= 1.1 and cube mapping is available.
 	Report probed OGL features in last line of About.  SVN38.
 	
+30 Oct 2008
+
+	For mac, try just assuming OGL version 2.
+	
+	Improved commandline in several ways and updated usage doc.
+	The main ones are: can specify fov as 2nd arg after image types;
+	get empty frames right away if command is just type.
 	

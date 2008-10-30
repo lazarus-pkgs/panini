@@ -433,9 +433,16 @@ bool pvQtPic::addimgsize( int i, QSize dims )
 			ok = true;	// first size wins
 			imagedims = dims;
 		  /* make sure image fovs are set:
+			To support commandline, if only imagefovs width is nonzero, 
+			assign it to the longer image axis.
 		    if both 0, use the posted face fovs (strictly a fallback)
 		    if one is 0, compute it from the other and image dimensions
 		  */ 
+			if( imagefovs.height() == 0 
+				&& imagedims.width() < imagedims.height()
+			  ){
+				imagefovs.transpose();
+			}
 		  	if( imagefovs.isNull() ) imagefovs = facefovs;
 		  	else if( imagefovs.width() == 0 ){
 		  		double r = (double)imagedims.width() / (double)imagedims.height();
