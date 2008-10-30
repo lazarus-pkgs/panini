@@ -26,8 +26,8 @@
    </property>
    <property name="font" >
     <font>
-     <family>Lucida Sans Unicode</family>
-     <pointsize>8</pointsize>
+     <family>Helvetica</family>
+     <pointsize>10</pointsize>
      <weight>75</weight>
      <bold>true</bold>
     </font>
@@ -69,8 +69,8 @@ Info...</string>
    </property>
    <property name="font" >
     <font>
-     <family>Lucida Sans Unicode</family>
-     <pointsize>8</pointsize>
+     <family>Helvetica</family>
+     <pointsize>10</pointsize>
      <weight>75</weight>
      <bold>true</bold>
     </font>
@@ -96,8 +96,8 @@ Info...</string>
      <widget class="QLabel" name="label" >
       <property name="font" >
        <font>
-        <family>Lucida Sans Unicode</family>
-        <pointsize>10</pointsize>
+        <family>Helvetica</family>
+        <pointsize>12</pointsize>
         <weight>75</weight>
         <bold>true</bold>
        </font>
@@ -111,8 +111,8 @@ Info...</string>
      <widget class="QLabel" name="VersionLabel" >
       <property name="font" >
        <font>
-        <family>Lucida Sans Unicode</family>
-        <pointsize>10</pointsize>
+        <family>Helvetica</family>
+        <pointsize>12</pointsize>
         <weight>75</weight>
         <bold>true</bold>
        </font>
@@ -126,8 +126,8 @@ Info...</string>
      <widget class="QLabel" name="label_2" >
       <property name="font" >
        <font>
-        <family>Lucida Sans Unicode</family>
-        <pointsize>10</pointsize>
+        <family>Helvetica</family>
+        <pointsize>12</pointsize>
         <weight>75</weight>
         <bold>true</bold>
        </font>
