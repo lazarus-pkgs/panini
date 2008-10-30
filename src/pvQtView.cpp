@@ -84,6 +84,12 @@ bool pvQtView::OpenGLOK()
   // check version.  Assume hopeless if < 1.1
 	int vn0 = vns[0].toInt();
 	OGLv20 = vn0 >= 2;
+
+// TEMP KLUGE: assume mac OSX has all we need
+#ifdef __APPLE__
+	OGLv20 = true;
+#endif
+
 	if( !OGLv20 && vns.count() > 1 ){
 		OGLisOK = vn0 == 1 && vns[1].toInt() >= 1;
 	} else OGLisOK = OGLv20;

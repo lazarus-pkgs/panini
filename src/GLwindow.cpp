@@ -101,6 +101,7 @@ void GLwindow::resizeEvent( QResizeEvent * ev ){
 
 // get new  picture of a specified type
 void GLwindow::newPicture( const char * type ){
+	picFov = QSizeF(0,0);
 	choosePictureFiles( type );
 }
 
@@ -288,11 +289,25 @@ bool GLwindow::commandLine( int argc, char ** argv ){
 	}
 
 	if( argc < 2 ) return true; // no command
+
+	QStringList sl;			// empty file name list
+	picFov = QSizeF(0,0);	// null fov
+
   // see if 1st arg is a picture type name
 	int it = pictypes.picTypeIndex( argv[1] );
-  // make list of file names
-	QStringList sl;	// file name list
-	for( int i = (it < 0 ? 1 : 2); i < argc; i++ ){
+	int ifile = (it == 0 ? 1 : 2 );
+  // if it is an image type, see if 2nd is FOV
+  // display empty frame if there is no 2nd arg
+	if( it > 1 ){
+		if( argc < 3 ) return loadTypedFiles( argv[1], sl );
+		double f = atof( argv[2] );
+		if( f > 5 && f <= 360 ){
+			++ifile;
+			picFov = QSizeF( f, 0 );
+		}
+	}
+  // list the file names (convert to Unicode)
+	for( int i = ifile; i < argc; i++ ){
 		sl << QString::fromLocal8Bit( argv[i] );
 	}
   // dispatch
@@ -340,7 +355,8 @@ bool GLwindow::loadPictureFiles( QStringList names ){
   the user (unless the filename implies pic type).
   
   If the passed type is valid, but allows a variable 
-  FOV, we have to ask the user for the FOV anyhow.
+  FOV, and no valid picFov has ben posted, we have to 
+  ask the user for the FOV anyhow.
 
   Special case: if user cancels and typename is valid,
   pass an empty image list to loadTypedFiles -- this 
@@ -387,9 +403,9 @@ bool GLwindow::choosePictureFiles( const char * ptnm ){
 				ptnm = askPicType( files, picFov );
 			}
 		    it = pictypes.picTypeIndex( ptnm );
-	    } else {
+	    } else if( picFov.isNull() ){
 		// post default (= max) angular size for this pic type
-			picFov = pictypes.maxFov( it );
+			 picFov = pictypes.maxFov( it );
 		// if variable, ask user for FOV only
 	  		if( pictypes.minFov( it ) != picFov ){
 	  			askPicType( files, picFov, ptnm );  			
