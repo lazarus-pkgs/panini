@@ -5,8 +5,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>402</width>
-    <height>196</height>
+    <width>444</width>
+    <height>192</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -20,14 +20,14 @@
     <rect>
      <x>20</x>
      <y>70</y>
-     <width>361</width>
+     <width>401</width>
      <height>101</height>
     </rect>
    </property>
    <property name="font" >
     <font>
-     <family>Times</family>
-     <pointsize>10</pointsize>
+     <family>Lucida Sans Unicode</family>
+     <pointsize>8</pointsize>
      <weight>75</weight>
      <bold>true</bold>
     </font>
@@ -63,14 +63,14 @@ Info...</string>
     <rect>
      <x>10</x>
      <y>40</y>
-     <width>381</width>
+     <width>421</width>
      <height>21</height>
     </rect>
    </property>
    <property name="font" >
     <font>
-     <family>Times</family>
-     <pointsize>10</pointsize>
+     <family>Lucida Sans Unicode</family>
+     <pointsize>8</pointsize>
      <weight>75</weight>
      <bold>true</bold>
     </font>
@@ -87,7 +87,7 @@ Info...</string>
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>381</width>
+     <width>421</width>
      <height>28</height>
     </rect>
    </property>
@@ -96,8 +96,8 @@ Info...</string>
      <widget class="QLabel" name="label" >
       <property name="font" >
        <font>
-        <family>Times</family>
-        <pointsize>12</pointsize>
+        <family>Lucida Sans Unicode</family>
+        <pointsize>10</pointsize>
         <weight>75</weight>
         <bold>true</bold>
        </font>
@@ -111,8 +111,8 @@ Info...</string>
      <widget class="QLabel" name="VersionLabel" >
       <property name="font" >
        <font>
-        <family>Times</family>
-        <pointsize>12</pointsize>
+        <family>Lucida Sans Unicode</family>
+        <pointsize>10</pointsize>
         <weight>75</weight>
         <bold>true</bold>
        </font>
@@ -126,8 +126,8 @@ Info...</string>
      <widget class="QLabel" name="label_2" >
       <property name="font" >
        <font>
-        <family>Times</family>
-        <pointsize>12</pointsize>
+        <family>Lucida Sans Unicode</family>
+        <pointsize>10</pointsize>
         <weight>75</weight>
         <bold>true</bold>
        </font>
