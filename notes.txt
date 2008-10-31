@@ -265,5 +265,9 @@ done	Show rectilinear pictures (up to 90 deg)
 	Well, that seems to work -- and picture loading is clearly faster!
 	Definitely a winner, commit as SVN 44.
 	
+	Advance rev to 0.3, build, test => pretty consistent crash when cancel 
+	after showing an image.  Debug says segfault, down in ntdll, thread 1,
+	no valid stack trace.  So let's trace if from the cancel...
+	
 	
 	
