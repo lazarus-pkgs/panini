@@ -238,4 +238,32 @@ done	Show rectilinear pictures (up to 90 deg)
 	Improved commandline in several ways and updated usage doc.
 	The main ones are: can specify fov as 2nd arg after image types;
 	get empty frames right away if command is just type.
+
+31 Oct 2008
+
+	Got Qt for mac distrib.  gl_mac.cpp uses AGL calls; clearly sets
+	up an RGBA context.  So maybe the mac problem is that my RGB texels
+	are getting converted to RGBA texels that then won't fit vram??
+	Anyhow, changed the proxy texture test to use RGBA instead of RGB,
+	committed that as SVN 43 (along with some better OGL error reporting
+	and cancel handling); asked Harry to try it.
+	
+	The official Apple OGL capabilities matrix 
+	(http://developer.apple.com/graphicsimaging/opengl/capabilities/) 
+	says Harry's GMA 950 / OSX 10.5 system is OGL v 1.2, but with cube
+	mapping and non-pwr-of-2 textures.
+	
+	Looking at Apple OpenGL programming Guide
+	(http://developer.apple.com/documentation/GraphicsImaging/Conceptual/
+	OpenGL-MacProgGuide/) it seems they consider RGBA standard, and 
+	suggest best source format for texture image loading is GL_BGRA, 
+	GL_UNSIGNED_INT_8_8_8_8_REV.  That would seem to agree with the QImage 
+	ARGB format.  So let's try making everything RGBA internal, BGRA REV 
+	external & see what happens.  Note red book pp 315-319 explain the 
+	external pixel formats.
+	
+	Well, that seems to work -- and picture loading is clearly faster!
+	Definitely a winner, commit as SVN 44.
+	
+	
 	

@@ -153,7 +153,7 @@ bool pvQtPic::setType( pvQtPic::PicType t )
 	type = t;
 
   // pixel format for face images
-	faceformat = QImage::Format_RGB888; 
+	faceformat = PVQT_PIC_FACE_FORMAT; 
   // no face images assigned
 	numimgs = numsizes = 0;
   // angular size limits

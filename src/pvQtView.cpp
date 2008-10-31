@@ -770,30 +770,6 @@ bool pvQtView::setupPic( pvQtPic * pic )
 
 /**  Load texture images  **/
 
-#if 0	// the Qt approved way using bindTexture() and glBindTexture()
-/* On Windows this fails (white screen) without OGL error 
-*/
-
-	if( picType == pvQtPic::cub 
-	 || picType == pvQtPic::rec ){
-		for(int i = 0; i < 6; i++){
-			QImage * p = pic->FaceImage(pvQtPic::PicFace(i));
-			if( p ){
-				boundtex[i] = bindTexture( *p, GL_TEXTURE_2D, GL_RGB );
-				glBindTexture( cubefaces[i], boundtex[i] );
-				delete p;
-			}
-		}
-	} else {
-		QImage * p = pic->FaceImage(pvQtPic::PicFace(0));
-		if( p ){
-			boundtex[0] = bindTexture( *p, GL_TEXTURE_2D, GL_RGB );
-			glBindTexture( GL_TEXTURE_2D, boundtex[0] );
-			delete p;
-		}
-	}
-
-#else	// the original way using glTexImage2D
 
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);  // QImage row alignment
 
@@ -802,9 +778,9 @@ bool pvQtView::setupPic( pvQtPic * pic )
 		for(int i = 0; i < 6; i++){
 			QImage * p = pic->FaceImage(pvQtPic::PicFace(i));
 			if( p ){
-				glTexImage2D( cubefaces[i], 0, GL_RGB,
+				glTexImage2D( cubefaces[i], 0, GL_RGBA,
 					p->width(), p->height(), 0,
-					GL_RGB, GL_UNSIGNED_BYTE,
+					GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV,
 					p->bits() );
 				delete p;
 			}
@@ -812,15 +788,13 @@ bool pvQtView::setupPic( pvQtPic * pic )
 	} else {
 		QImage * p = pic->FaceImage(pvQtPic::PicFace(0));
 		if( p ){
-			glTexImage2D( textgt, 0, GL_RGB,
+			glTexImage2D( textgt, 0, GL_RGBA,
 				p->width(), p->height(), 0, 
-				GL_RGB, GL_UNSIGNED_BYTE,
+				GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV,
 				p->bits() );
 			delete p;
 		}
 	}
-
-#endif
 
   // rebuild the display list
 	makeSphere( theScreen );
