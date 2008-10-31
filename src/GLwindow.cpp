@@ -118,6 +118,7 @@ void GLwindow::newPicture( const char * type ){
 	files are handled by subroutines.
 */
 bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
+	QString errmsg("(no error)");
 	int n = pictypes.picTypeCount( tnm );
 	if( n == 0 ) return false;	// no such pic type
 	int c = fnm.count();
@@ -130,6 +131,7 @@ bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 		break;
 	case 1:	// qtvr
 		if( c == 1 ) shown = ok = QTVR_file( fnm[0] );
+		if(!shown) return false;
 		break;
 	case 2:	// rect
 		ok = pvpic->setType( pvQtPic::rec );
@@ -144,17 +146,22 @@ bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 		ok = pvpic->setType( pvQtPic::cub );
 		break;
 	}
-	if( ok && !shown ){	  // load and show image file types
+	if( !ok )  errmsg = tr("invalid picture type");
+	else if( !shown ){	  // load and show image file types
 		if( c > 1 ) fnm.sort();
 		if( pvpic->setImageFOV( picFov ) ){
 			int nok = 0;
 			for(int i = 0; i < c; i++ ){
 				if( pvpic->setFaceImage( pvQtPic::PicFace(i), fnm[i] ) ) ++nok;
 			}
-			ok = shown = glview->showPic( pvpic );
-		} else ok = false;
+			shown = glview->showPic( pvpic );
+			ok = glview->picOK( errmsg );
+		} else {
+			ok = false;
+			errmsg = tr("invalid fov");
+		}
 	}
-  // put image info in window title
+  // put image info or error message in window title
 	if( ok ){
 		QString msg = "  pvQt  ";
 		if( c > 0 ){
@@ -168,9 +175,7 @@ bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 		msg += QString().setNum( m, 'f', 2 ) + QString(" Mpixels");
 		emit showTitle( msg );
 	} else {
-		QString vmsg;
-		glview->picOK( vmsg ); 
-		QString msg = "  pvQt  ERROR: " + vmsg;
+		QString msg = "  pvQt  ERROR: " + errmsg;
 		emit showTitle( msg );
 		
 	}
@@ -411,7 +416,7 @@ bool GLwindow::choosePictureFiles( const char * ptnm ){
 	  			askPicType( files, picFov, ptnm );  			
   			}
     	}
-	} 
+	} else if( it >= 0 ) picFov = pictypes.maxFov( it );
   // fail if still no valid type
 	if( it < 0 ) return false;
   // else try to show the picture

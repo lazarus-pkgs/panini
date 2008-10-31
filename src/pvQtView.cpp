@@ -47,6 +47,10 @@
 	 thePic = 0;
 	 theScreen = 0;
 	 textgt = 0;
+ 	for( int i = 0; i < 6; i++ ){
+		boundtex[i] = 0;
+	}
+
  // set viewmatrix to rgt handed identity
 	 for(int i = 0; i < 16; i++ ){
 		 viewmatrix[i] = 0.0;
@@ -57,7 +61,6 @@
      Width = Height = 400;
 	 minpan = -180; maxpan = 180;
 	 mintilt = -90; maxtilt = 90;
-	 turnAngle = 0;
      initView();
  }
 
@@ -281,8 +284,7 @@ void pvQtView::timerEvent( QTimerEvent * pte ){
 /**  API call to display a picture  **/
 bool pvQtView::showPic( pvQtPic * pic )
  {
- 	errmsg = tr("no error");
- 	picok = setupPic( pic );
+ 	setupPic( pic );
  	return picok;
  }
 
@@ -335,6 +337,8 @@ void pvQtView::initView()
      zoomstep = 40;	// 2.5 degrees in FOV
 	 izoom = 90 * 16;
 	 setFOV(90);
+
+ 	 turnAngle = 0;
 
      panstep = tiltstep = spinstep = 32;	// 2 degrees
 	 home_view();	// zero rotations
@@ -427,6 +431,12 @@ void pvQtView::setDist( int id ){
     glDisable( GL_TEXTURE_GEN_T );
     glDisable( GL_TEXTURE_GEN_R );
     
+  // delete cached textures
+	for( int i = 0; i < 6; i++ ){
+		if( boundtex[i] ) deleteTexture( boundtex[i] );
+		boundtex[i] = 0;
+	}
+
 	
 	textgt = GL_TEXTURE_2D;
 	viewmatrix[0] = 1.0;	// right handed...
@@ -502,15 +512,19 @@ void pvQtView::setDist( int id ){
    
  }
  
- /* check for (and reset) OpenGL errors;
-   if no error return true, else
-   post description to errmsg and return false;
+ /* check for (and reset) async OpenGL error;
+   if picok is currently true, post any error to it
+   and to errmsg; otherwise leave them as-is.
+   But return current OGL error status in any case.
  */
 bool pvQtView::OGLok(){
 	GLenum c = glGetError();
 	if( c == GL_NO_ERROR ) return true;
-	errmsg = QString("OpenGL error: ")
+	if( picok ){
+		picok = false;
+		errmsg = QString("OpenGL error: ")
 			+ QString( (const char *)gluErrorString( c ) );
+	}
 	return false;
 }
 
@@ -588,7 +602,7 @@ bool pvQtView::OGLok(){
 
 	glCallList(theScreen);
 	
-	picok = OGLok();	// post any OGL error
+	paintok = OGLok();	// check for OGL error
  }
 
  void pvQtView::resizeGL(int width, int height)
@@ -639,17 +653,19 @@ bool pvQtView::setupPic( pvQtPic * pic )
 		GL_TEXTURE_CUBE_MAP_POSITIVE_Y,	// top
 		GL_TEXTURE_CUBE_MAP_NEGATIVE_Y	// bottom
 	};
-/* Reset picture type specific state
-*/	
-	thePic = pic;
-	if( pic ) picType = pic->Type();
-	else picType = pvQtPic::nil;
-	
+
  // abort if the OpenGL version is insufficient
  	if( !OGLisOK ){
  		errmsg = tr("Insufficient OpenGL facilities");
 		return false;
 	}
+	
+/* Reset picture type specific state
+*/	
+	thePic = pic;
+	if( pic ) picType = pic->Type();
+	else picType = pvQtPic::nil;
+ 	
 /*  Choose a display strategy based on image type and FOV,
 	set the texture image FOV, then set a feasible size.
 	
@@ -667,7 +683,7 @@ bool pvQtView::setupPic( pvQtPic * pic )
   the test face dims are powers of 2.
 
 */  
-	int tw, th;
+	int tw = 0, th = 0;
 	switch( picType ){
 	case pvQtPic::nil:
 		errmsg = tr("s/w error: empty pvQtPic");
@@ -697,18 +713,23 @@ bool pvQtView::setupPic( pvQtPic * pic )
   // set up OGL for the picture type
 	setPicType( picType );
 
+  // reset error status
+    picok = true;
+ 	errmsg = tr("no error");
+
   /* find max feasible texture size 
     starting with tw,th, increase proportionally until infeasible, 
 	or both picture dimensions would be > source image dimensions;
 	then back off one step.
+	NOTE use RGBA pixel type in case display context forces that
   */
 	GLenum proxy = textgt == GL_TEXTURE_2D ? 
 			GL_PROXY_TEXTURE_2D : GL_PROXY_TEXTURE_CUBE_MAP;
 	int tww = 0, thw = 0;	// last feasible size
 	for(;;){
 		GLint v;
-		glTexImage2D( proxy, 0, GL_RGB, tw, th, 0, 
-			GL_RGB, GL_UNSIGNED_BYTE, 0 );
+		glTexImage2D( proxy, 0, GL_RGBA, tw, th, 0, 
+			GL_RGBA, GL_UNSIGNED_BYTE, 0 );
 		glGetTexLevelParameteriv( proxy, 0, GL_TEXTURE_WIDTH, &v );
 		if( v == 0 ){	// infeasible size...
 			if( tww == 0 || thw == 0 ){
@@ -747,7 +768,32 @@ bool pvQtView::setupPic( pvQtPic * pic )
 	d = 0.5 * pv.height();
 	mintilt = -d; maxtilt = d;
 
-/* Load texture images */
+/**  Load texture images  **/
+
+#if 0	// the Qt approved way using bindTexture() and glBindTexture()
+/* On Windows this fails (white screen) without OGL error 
+*/
+
+	if( picType == pvQtPic::cub 
+	 || picType == pvQtPic::rec ){
+		for(int i = 0; i < 6; i++){
+			QImage * p = pic->FaceImage(pvQtPic::PicFace(i));
+			if( p ){
+				boundtex[i] = bindTexture( *p, GL_TEXTURE_2D, GL_RGB );
+				glBindTexture( cubefaces[i], boundtex[i] );
+				delete p;
+			}
+		}
+	} else {
+		QImage * p = pic->FaceImage(pvQtPic::PicFace(0));
+		if( p ){
+			boundtex[0] = bindTexture( *p, GL_TEXTURE_2D, GL_RGB );
+			glBindTexture( GL_TEXTURE_2D, boundtex[0] );
+			delete p;
+		}
+	}
+
+#else	// the original way using glTexImage2D
 
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);  // QImage row alignment
 
@@ -774,15 +820,14 @@ bool pvQtView::setupPic( pvQtPic * pic )
 		}
 	}
 
+#endif
+
   // rebuild the display list
 	makeSphere( theScreen );
 	
-  // show user the view parameters
-	showview();
+  // reset the view and display
+	reset_view();
 
-  // repaint the view
-	updateGL();
-	
 // check for (?asychronous?) OpenGL error
 	return picok;
 
