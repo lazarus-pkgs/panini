@@ -66,7 +66,9 @@ public:
 	returns sucess or failure, with errmsg updated.
   */
 	 bool showPic( pvQtPic * pic );
-  // check whether picture dislayed OK
+  /* check whether picture displayed OK, get message if not
+    The error flag is reset when a new picture is loaded.
+  */
 	 bool picOK( QString & errMsg ){
 	 	 errMsg = errmsg; 
 	 	 return picok;
@@ -157,15 +159,17 @@ public:
 	 GLenum textgt;	// current target (2D or cube)
 	 GLuint texIDs[2];	// 0: 2D, 1: cube object
 	 GLuint theTex;	// current object
+	 GLuint boundtex[6];	// textures converted from QImages
   // OpenGL capabilities
 	bool OGLisOK;	// is at least version 1.4
 	bool OGLv20;	// is at least version 2.0
 	bool texPwr2;	// needs power-of-2 texture dimensions
 	bool cubeMap;	// has cube mapping (rq'd)
   // status 
-  	bool picok;		// current pic displayed ok
-  	QString errmsg;	// reason why not
-  	bool OGLok();	// check for OGL errors
+	bool paintok;	// most recent OGL error status
+  	bool picok;		// sticky OGL error flag
+  	QString errmsg;	// sticky OGL error message
+  	bool OGLok();	// check & post OGL errors
 
 };
 
