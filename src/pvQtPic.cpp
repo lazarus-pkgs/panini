@@ -151,6 +151,7 @@ bool pvQtPic::setType( pvQtPic::PicType t )
 	}
   // accept the type
 	type = t;
+	picdims = facedims;	// default for empty frames
 
   // pixel format for face images
 	faceformat = PVQT_PIC_FACE_FORMAT; 
@@ -546,20 +547,21 @@ QImage * pvQtPic::FaceImage( PicFace face ){
 		pim =  loadURL( QUrl( names[i] ) );
 		break;
 	}
-// if no image, get the empty face
-	if( pim == 0 ) pim = loadEmpty( i ); 
+// if no image, return the empty face
+	if( pim == 0 ) return loadEmpty( i );
+
 // convert pixel format if necessary		
 	if( pim->format() != faceformat ) {
 		QImage *oim = new QImage( pim->convertToFormat(faceformat) );
 		delete pim;
 		pim = oim;
 	}
-// pack image into face if necessary		TODO: 90 degree rotations
+// pack image into face if necessary
 	if( !picdims.isEmpty()  
 	    && picdims != facedims ){
 		QSize cropdims = picdims.boundedTo( facedims );
 		QImage * oim = new QImage( facedims, faceformat );
-		oim->fill( Qt::black );
+		oim->fill( 0xFF000000 ); // opaque black
 		int jit = (pim->height() - cropdims.height() + 1) / 2;
 		int jft = (oim->height() - cropdims.height() + 1) / 2;
 		int jil = (pim->width() - cropdims.width() + 1) / 2;
