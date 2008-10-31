@@ -69,6 +69,7 @@
 
 #include <QtGui>
 
+#define PVQT_PIC_FACE_FORMAT  QImage::Format_ARGB32
 
 class pvQtPic : public QObject
 {	Q_OBJECT
