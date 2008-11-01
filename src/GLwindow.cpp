@@ -148,18 +148,13 @@ bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 	}
 	if( !ok )  errmsg = tr("invalid picture type");
 	else if( !shown ){	  // load and show image file types
+		if( c > 0 ) pvpic->setImageFOV( picFov );
 		if( c > 1 ) fnm.sort();
-		if( pvpic->setImageFOV( picFov ) ){
-			int nok = 0;
-			for(int i = 0; i < c; i++ ){
-				if( pvpic->setFaceImage( pvQtPic::PicFace(i), fnm[i] ) ) ++nok;
-			}
-			shown = glview->showPic( pvpic );
-			ok = glview->picOK( errmsg );
-		} else {
-			ok = false;
-			errmsg = tr("invalid fov");
+		for(int i = 0; i < c; i++ ){
+			pvpic->setFaceImage( pvQtPic::PicFace(i), fnm[i] );
 		}
+		shown = glview->showPic( pvpic );
+		ok = glview->picOK( errmsg );
 	}
   // put image info or error message in window title
 	if( ok ){
@@ -300,7 +295,7 @@ bool GLwindow::commandLine( int argc, char ** argv ){
 
   // see if 1st arg is a picture type name
 	int it = pictypes.picTypeIndex( argv[1] );
-	int ifile = (it == 0 ? 1 : 2 );
+	int ifile = (it < 0 ? 1 : 2 );
   // if it is an image type, see if 2nd is FOV
   // display empty frame if there is no 2nd arg
 	if( it > 1 ){
@@ -321,7 +316,7 @@ bool GLwindow::commandLine( int argc, char ** argv ){
 		if( it >= 0 ) ok = loadTypedFiles( argv[1], sl );
 		else ok = loadPictureFiles( sl );
 	}
-	else ok = choosePictureFiles( argv[1] );
+	else if( it >= 0 ) ok = choosePictureFiles( argv[1] );
 	
 	return true;
 }
