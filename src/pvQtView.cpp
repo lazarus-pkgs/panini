@@ -137,6 +137,7 @@ bool pvQtView::OpenGLOK()
 void pvQtView::mousePressEvent( QMouseEvent * pme ){
 	mx1 = mx0 = pme->x();
 	my1 = my0 = pme->y();
+	mb = pme->buttons();
 	timid = startTimer( 50 );
 }
 
@@ -148,15 +149,20 @@ void pvQtView::mouseMoveEvent( QMouseEvent * pme ){
 void pvQtView::mouseReleaseEvent( QMouseEvent * pme ){
 	mx1 = mx0 = pme->x();
 	my1 = my0 = pme->y();
-	if( timid ) killTimer(timid);
+	mb = pme->buttons();
+	if( timid && mb == 0 ) killTimer(timid);
 	timid = 0;
 }
 
 void pvQtView::timerEvent( QTimerEvent * pte ){
 	int dx = (mx1 - mx0) / 3,
-		dy = (my0 - my1) / 3;	
-	if( dx ) add_pan( dx );
-	if( dy ) add_tilt( dy );
+		dy = (my0 - my1) / 3;
+	if( mb == Qt::LeftButton ){
+		if( dx ) add_pan( dx );
+		if( dy ) add_tilt( dy );
+	} else {
+		if( dy ) add_zoom( dy );
+	}
 }
 
 
@@ -208,7 +214,14 @@ void pvQtView::timerEvent( QTimerEvent * pte ){
 	 showview();
  }
 
- // "detented" keybaord driven view controls
+ void pvQtView::add_zoom( int dp ){
+	 izoom -= dp;
+     setFOV( normalizeAngle( izoom, 1, minFOV, maxFOV ) );
+	 updateGL();
+	 showview();
+ }
+
+ // "detented" keyboard driven view controls
 
  void pvQtView::step_pan( int dp ){
 	 setPan( ipan + dp * panstep  );

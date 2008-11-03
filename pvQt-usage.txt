@@ -32,8 +32,8 @@ The Yaw and Pitch contols let you look in different directions.  Their ranges ar
 
 The Turn controls let you adjust which way is up.  They rotate the picture with respect to the panosphere, so have no visible effect on the wireframe model.
 
-Zoom controls magnification by changing the vertical field of view on the panosphere.  When you resize the window, the displayed image grows or shrinks to maintain the selected vertical field.  
-
+Zoom controls magnification by changing the vertical field of view on the panosphere.  When you resize the window, the displayed image grows or shrinks to maintain the selected vertical field.  To zoom with the mouse, hold down the right or middle button, move up to zoom in, down to zoom out.  You don't have to release the left button, zooming takes precedence over panning.
+  
 "Eye in" and "Eye out" change perspective by moving the point of view toward or away from the center of the panosphere.  Eye position is reported in units of the sphere's radius.  When Eye is zero, the viewing perspective is rectilinear, like a normal camera lens; as it increases, the perspective becomes more fisheye-like.  As the eye point moves out, you can zoom farther out to see wider views.  But you can zoom in to the same level of image detail at any perspective setting.
 
 Several preset views are available via single keystrokes.  "Home" resets the yaw, pitch and turn angles to zero; "End" also resets zoom and eye position.  "F" gives the widest possible full frame view (a stereographic projection of the sphere, 275 degrees high) and "S" gives a "super wide" view, a circular image showing about 310 degrees of the sphere (note: in super wide mode the displayed vFOV is not correct).
