@@ -278,4 +278,13 @@ done	Show rectilinear pictures (up to 90 deg)
 	That was easy (~10 minutes).  Updated usage.  Removed specs from source
 	tree as I'm not going to maintain it.
 	
+03 Nov 2008
+
+	Trying to get smoother mouse control...
+	combine pan & tilt deltas in one redraw -- big improvement.	
+	Change to one-shot timer to allow syncing.
+	Try sync with draw using glFinish() -- can't see any difference.
+	Fiddling with timer interval, 60 msec about as good as possible
+	(on my fast OGL2 machine).
+	Commit SVN 48.
 	
