@@ -93,6 +93,7 @@ public:
   // mini steps -- units of 1/16 degree
 	 void add_pan( int s );
 	 void add_tilt( int s );
+	 void add_zoom( int s );
   // preset views
   	 void reset_view();	// reinit all params
 	 void home_view();	// zero view angles
@@ -141,6 +142,7 @@ public:
 	 int idist, diststep;
 
 	int mx0, my0, mx1, my1;	// mouse coordinates
+	Qt::MouseButtons mb;
 	int timid;	// mouse timer ID
 
 

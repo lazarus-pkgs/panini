@@ -269,5 +269,13 @@ done	Show rectilinear pictures (up to 90 deg)
 	after showing an image.  Debug says segfault, down in ntdll, thread 1,
 	no valid stack trace.  So let's trace if from the cancel...
 	
+02 Nov 2008
+
+	0.3 is getting a good reception.  It works on several systems where 0.2 
+	didn't.  Mouse panning is popular, so let's add mouse zooming (hold rgt
+	button).
+	
+	That was easy (~10 minutes).  Updated usage.  Removed specs from source
+	tree as I'm not going to maintain it.
 	
 	
