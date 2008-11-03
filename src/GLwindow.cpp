@@ -331,8 +331,8 @@ bool GLwindow::loadPictureFiles( QStringList names ){
 	if( n < 1 ) return false;
 	QFileInfo fi( names[0] );
 	QString ext = fi.suffix();
-  // extensions that imply picture type...
-	if( ext == "mov" ) return QTVR_file( names[0] );
+  // extensions that imply picture QTVR_filetype...
+	if( ext == "mov" ) return loadTypedFiles( "qtvr", names );
 	if( ext == "pts" || ext == "pto" || ext == "pro"
 	  ){
 		qCritical("PTscript -- to be implemented");
