@@ -288,3 +288,11 @@ done	Show rectilinear pictures (up to 90 deg)
 	(on my fast OGL2 machine).
 	Commit SVN 48.
 	
+	Added request for a custom OGL context to the pvQtView c'tor,
+	with alpha channel and accum buffer, as I read somewhere that
+	this fixes an OGL setup problem with QGLWidget (it wasn't bad
+	cube mapping, but what the hell...).  This at least does not seem
+	to damage the Win32 version any.  Committed as SVN 49 and wrote
+	Harry.  Will now regress on linux.
+	
+	

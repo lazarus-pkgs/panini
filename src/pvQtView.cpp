@@ -36,9 +36,15 @@
 /**** maximum projection angle at eye ****/ 
 #define MAXPROJFOV  137.5
 
+/* C'tor for pvQtView 
+  specifies a custom OGL context format, not because we need it 
+  but in hope of working around a bug on Mac OSX that prevents
+  proper cube map display when the default format is used.
+*/
 
  pvQtView::pvQtView(QWidget *parent)
-     : QGLWidget(parent)
+	 : QGLWidget( QGLFormat( QGL::AlphaChannel | QGL::AccumBuffer ),
+				  parent)
  {
  // set up pan/zoom timer
 	mTimer.setInterval( 60 );
