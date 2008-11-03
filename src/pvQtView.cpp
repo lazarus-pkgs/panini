@@ -40,6 +40,12 @@
  pvQtView::pvQtView(QWidget *parent)
      : QGLWidget(parent)
  {
+ // set up pan/zoom timer
+	mTimer.setInterval( 60 );
+	mTimer.setSingleShot( true );
+	connect( &mTimer, SIGNAL(timeout()),
+		     this, SLOT( mTimeout()) );
+
  // post unusable OGL capabilities
  	OGLv20 = OGLisOK = false;
  	 picok = false;
@@ -132,13 +138,13 @@ bool pvQtView::OpenGLOK()
      return QSize(400, 400);
  }
  
- /** Mouse controlled panning  **/
+ /** Mouse controlled pan and zoom  **/
 
 void pvQtView::mousePressEvent( QMouseEvent * pme ){
 	mx1 = mx0 = pme->x();
 	my1 = my0 = pme->y();
 	mb = pme->buttons();
-	timid = startTimer( 50 );
+	mTimer.start();
 }
 
 void pvQtView::mouseMoveEvent( QMouseEvent * pme ){
@@ -150,19 +156,30 @@ void pvQtView::mouseReleaseEvent( QMouseEvent * pme ){
 	mx1 = mx0 = pme->x();
 	my1 = my0 = pme->y();
 	mb = pme->buttons();
-	if( timid && mb == 0 ) killTimer(timid);
-	timid = 0;
+	mTimer.stop();
 }
 
-void pvQtView::timerEvent( QTimerEvent * pte ){
+void pvQtView::mTimeout(){
+
+  // wait til previous draw done
+	makeCurrent();
+	glFinish();	
+
 	int dx = (mx1 - mx0) / 3,
 		dy = (my0 - my1) / 3;
 	if( mb == Qt::LeftButton ){
-		if( dx ) add_pan( dx );
-		if( dy ) add_tilt( dy );
+		ipan += dx ;
+		panAngle = normalizeAngle( ipan, 1, minpan, maxpan );
+		itilt += dy;
+		tiltAngle = normalizeAngle( itilt, 1, mintilt, maxtilt );
 	} else {
-		if( dy ) add_zoom( dy );
+		izoom -= dy;
+		setFOV( normalizeAngle( izoom, 1, minFOV, maxFOV ) );
 	}
+	updateGL();
+	showview();
+
+	mTimer.start();
 }
 
 
@@ -199,27 +216,6 @@ void pvQtView::timerEvent( QTimerEvent * pte ){
 
  }
 
- // "non-detented" mouse driven view controls
- void pvQtView::add_pan( int dp ){
-	 ipan += dp ;
-     panAngle = normalizeAngle( ipan, 1, minpan, maxpan );
-     updateGL();
-	 showview();
- }
-
- void pvQtView::add_tilt( int dp ){
-	 itilt += dp;
-     tiltAngle = normalizeAngle( itilt, 1, mintilt, maxtilt );
-	 updateGL();
-	 showview();
- }
-
- void pvQtView::add_zoom( int dp ){
-	 izoom -= dp;
-     setFOV( normalizeAngle( izoom, 1, minFOV, maxFOV ) );
-	 updateGL();
-	 showview();
- }
 
  // "detented" keyboard driven view controls
 
@@ -638,14 +634,21 @@ void pvQtView::makeSphere( GLuint list )
   // abort if the OpenGL version is insufficient
  	if( !OGLisOK ) return;
 
-	GLUquadricObj *qobj = gluNewQuadric();
-	gluQuadricDrawStyle(qobj, textgt ? GLU_FILL : GLU_LINE);
-	gluQuadricNormals(qobj, GLU_SMOOTH);
-	if( picType == pvQtPic::eqr ) gluQuadricTexture(qobj, GL_TRUE );
-
-	glNewList(list, GL_COMPILE);
-		gluSphere(qobj, 1.0, 72, 70);
-	glEndList();
+	if( textgt ) {	// there is a picture...
+		GLUquadricObj *qobj = gluNewQuadric();
+		gluQuadricNormals(qobj, GLU_SMOOTH);
+		gluQuadricDrawStyle(qobj, GLU_FILL );
+		if( picType == pvQtPic::eqr ) gluQuadricTexture(qobj, GL_TRUE );
+		glNewList(list, GL_COMPILE);
+			gluSphere(qobj, 1.0, 108, 54);
+		glEndList();
+	} else {	// show wireframe sphere
+		GLUquadricObj *qobj = gluNewQuadric();
+		gluQuadricDrawStyle(qobj, GLU_LINE );
+		glNewList(list, GL_COMPILE);
+			gluSphere(qobj, 1.0, 54, 27);
+		glEndList();
+	}
  }
 
 

@@ -90,10 +90,6 @@ public:
 	 void step_zoom( int dp );
 	 void step_roll( int dp );
 	 void step_dist( int dp );
-  // mini steps -- units of 1/16 degree
-	 void add_pan( int s );
-	 void add_tilt( int s );
-	 void add_zoom( int s );
   // preset views
   	 void reset_view();	// reinit all params
 	 void home_view();	// zero view angles
@@ -113,7 +109,8 @@ public:
      void mousePressEvent(QMouseEvent *pme );
      void mouseMoveEvent(QMouseEvent *pme );
 	 void mouseReleaseEvent( QMouseEvent *pme );
-	 void timerEvent( QTimerEvent * pte );
+private slots:
+	 void mTimeout();
  private:
  // GUI support
      double normalizeAngle(int &iangle, int istep, double lwr, double upr);
@@ -143,7 +140,7 @@ public:
 
 	int mx0, my0, mx1, my1;	// mouse coordinates
 	Qt::MouseButtons mb;
-	int timid;	// mouse timer ID
+	QTimer mTimer;
 
 
   // display support
