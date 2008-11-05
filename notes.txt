@@ -295,4 +295,27 @@ done	Show rectilinear pictures (up to 90 deg)
 	to damage the Win32 version any.  Committed as SVN 49 and wrote
 	Harry.  Will now regress on linux.
 	
+	That led to one small bugfix: was not posting widow title when
+	sowind a qtvr from commandline.
+	
+05 Nov 2008 	Change has comne to America!  Whewww.
+
+	Have an alpha version of class quadsphere, to generate table of
+	a sphere tesselation with texture coordinates for non-cubic
+	picure types.  I'll probably use it in a offline program to
+	generate source code tables to be compiled into pvQt, but will
+	test it first within pvQt.  
+	
+	But first, two putative improvements to pvQt:
+	1) clamp to edge for cubic, but to border for other types, and
+	change texture filter modes to linear from nearest.  Result:
+	white lines at joins of all pic types.  Do we need bordered
+	images to use linear filter?  No, CLAMP_TO_EDGE takes out
+	the white lines.  And low res images a bit less pixelated.
+	NOTE: will have to revisit clamping when install quadsphere.
+	2) make pvQtPic get maxFovs from a pictureTypes object.  This
+	requires a translation between pvQtPic::picType and pictureTypes
+	index. I added that to pictureTypes, folded pictureTypes.h into
+	pvQtPic.h and removed pictureTypes.h from the project.
+	NOTE: pictureTypes.cpp still has the bogus FOV for rect.
 	

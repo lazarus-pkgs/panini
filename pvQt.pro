@@ -23,7 +23,7 @@ win32 {
 HEADERS += src/pvQt_QTVR.h 
 SOURCES += src/pvQt_QTVR.cpp
 FORMS += ui/picTypeDialog.ui
-HEADERS += src/picTypeDialog.h src/pictureTypes.h
+HEADERS += src/picTypeDialog.h
 SOURCES += src/picTypeDialog.cpp src/pictureTypes.cpp
 FORMS += ui/About.ui
 HEADERS += src/About.h

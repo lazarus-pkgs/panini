@@ -19,7 +19,7 @@
   The picture type names visible to the user, and their attributes.
 
 */
-#include "pictureTypes.h"
+#include "pvQtPic.h"
 
 pictureTypes::pictypnumdesc
 pictureTypes::pictypn[NpictureTypes] = {
@@ -104,3 +104,9 @@ QSizeF pictureTypes::maxFov( int index ){
 	if( index < 0 || index >= NpictureTypes ) return QSizeF();
 	return QSizeF( pictypn[index].maxW, pictypn[index].maxH );
 }
+
+int pictureTypes::picType2Index( pvQtPic::PicType t ){
+	if( t < pvQtPic::rec || t > pvQtPic::cub ) return -1;
+	return int(t) + 1;
+}
+

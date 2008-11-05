@@ -22,7 +22,7 @@
 */
 
 #include <QWidget>
-#include "pictureTypes.h"
+#include "pvQtPic.h"
 #include "picTypeDialog.h"
 #include "About.h"
 
