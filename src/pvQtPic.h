@@ -71,6 +71,8 @@
 
 #define PVQT_PIC_FACE_FORMAT  QImage::Format_ARGB32
 
+class pictureTypes;	
+
 class pvQtPic : public QObject
 {	Q_OBJECT
 public:
@@ -191,6 +193,7 @@ int 	scalepix( int proj, int pix, double fov, double tofov );
 
 
 private:
+	pictureTypes * picTypes;	// for max fovs
 	PicType type;
 	int maxfaces;	// 1, 2, or 6
 	int numimgs;	// no. of faces with source images
@@ -240,5 +243,41 @@ private:
 		return 0; 
 	}
 };
+
+/* Picture types visble to the user
+*/
+#define NpictureTypes 7
+
+class pictureTypes :
+	public QObject
+{	Q_OBJECT
+public:
+  // picture type names, descriptions, and max file counts
+	typedef struct { 
+		const char * typ; 
+		const int nfi; 					// max file count
+		QString desc; 
+		double minW, minH, maxW, maxH;	// degrees
+	} pictypnumdesc;
+  // acces funtions
+	pictureTypes();
+	int picTypeIndex( const char * name );
+	const char * picTypeName( int index );
+	int picTypeCount( const char * name );
+	int picTypeCount( int index );
+	QString picTypeDescr( const char * name );
+	QString picTypeDescr( int index );
+	QStringList picTypeDescrs();
+	QSizeF minFov( int index );
+	QSizeF maxFov( int index );
+  /* convert pvQtPic type id to descriptor index, or -1
+    (returns only the primitive file types)
+  */
+	int picType2Index( pvQtPic::PicType t );
+private:
+  static pictypnumdesc pictypn[NpictureTypes]; 
+
+};
+
 
 #endif // __PVQTPIC_H__

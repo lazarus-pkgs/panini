@@ -93,6 +93,7 @@ int pvQtPic::scalepix( int proj, int pix, double fov, double tofov ){
 
  pvQtPic::pvQtPic( pvQtPic::PicType t )
 {
+	picTypes = new pictureTypes();
 	if( !setType( t ) ) setType( nil );
 }
 
@@ -113,36 +114,30 @@ bool pvQtPic::setType( pvQtPic::PicType t )
   	case nil:	// No picture
   		maxfaces = 0;
   		facedims = QSize(0,0);
-  		facefovs = QSizeF(0,0);
   		lockfovs = true;
   		break;
   	case rec:	// A rectilinear image up to 135 x 135 degrees
   		maxfaces = 1;
   		facedims = QSize(256,256);
-  		facefovs = QSizeF(90,90);		//// TEMP LIMIT ////
   		break;
   	case sph:	// A spherical image up to 180 degrees diameter
   		maxfaces = 1;
   		facedims = QSize(256,256);
-  		facefovs = QSizeF(360,360);
   		xproj = yproj = 2;	// ideal fisheye
   		break;
   	case cyl:	// A cylindrical panorama up to 360 x 135 degrees
   		maxfaces = 1;
   		facedims = QSize(512,256);
-  		facefovs = QSizeF(360,135);
   		xproj = 1;
   		break;
   	case eqr:	// An equirectangular panorama up to 360 x 180 degrees
   		maxfaces = 1;
   		facedims = QSize(512,256);
-  		facefovs = QSizeF(360,180);
   		xproj = yproj = 1;	// ideal equianglular
   		break;
   	case cub:	// A cubic panorama (1 to 6 rectilinear images 90x90 degrees)
    		maxfaces = 6;
   		facedims = QSize(256,256);
-  		facefovs = QSizeF(90,90);
   		lockfovs = true;
  		break;
   	default:
@@ -152,6 +147,7 @@ bool pvQtPic::setType( pvQtPic::PicType t )
   // accept the type
 	type = t;
 	picdims = facedims;	// default for empty frames
+	facefovs = picTypes->maxFov( picTypes->picType2Index(t) );
 
   // pixel format for face images
 	faceformat = PVQT_PIC_FACE_FORMAT; 

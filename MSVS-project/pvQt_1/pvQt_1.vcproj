@@ -115,10 +115,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\pictureTypes.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\picTypeDialog.h"
 				>
 			</File>
