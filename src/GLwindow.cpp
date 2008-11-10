@@ -77,11 +77,21 @@ GLwindow::GLwindow (QWidget * parent )
   if(ok) ok = 
 	connect( &ptd, SIGNAL(picTypeSelected( int )),
 			 this, SLOT(picTypeChanged( int )) );
+  if(ok) ok = 
+	connect( glview, SIGNAL(OGLerror( QString )),
+			 this, SLOT(OGLerror( QString )) );
   if(!ok) {
 	  qFatal("GLwindow setup failed");
   }
 
 }
+
+// Relay an OpenGL error report to main
+void GLwindow::OGLerror( QString errmsg){
+		QString msg = "  pvQt  " + errmsg;
+		emit showTitle( msg );
+}
+
 
 // pop the About box
 void GLwindow::about_pvQt(){
@@ -122,22 +132,24 @@ bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 	int n = pictypes.picTypeCount( tnm );
 	if( n == 0 ) return false;	// no such pic type
 	int c = fnm.count();
-	bool ok = false, shown = false;
+	bool ok = false, loaded = false;
+	errmsg = tr("invalid picture type");
 	switch( pictypes.picTypeIndex( tnm ) ){
 	case 0:	// proj
-	case 4:	// cyli
 		qCritical("%s -- to be implemented", tnm );
-		return false;
 		break;
 	case 1:	// qtvr
-		if( c == 1 ) shown = ok = QTVR_file( fnm[0] );
-		if(!shown) return false;
+		if( c == 1 ) ok = loaded = QTVR_file( fnm[0] );
+		if(!ok) errmsg = tr("QTVR load failed");
 		break;
 	case 2:	// rect
 		ok = pvpic->setType( pvQtPic::rec );
 		break;
 	case 3:	// fish
 		ok = pvpic->setType( pvQtPic::sph );;
+		break;
+	case 4:	// cyli
+		ok = pvpic->setType( pvQtPic::cyl );;
 		break;
 	case 5:	// equi
 		ok = pvpic->setType( pvQtPic::eqr );;
@@ -146,15 +158,19 @@ bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 		ok = pvpic->setType( pvQtPic::cub );
 		break;
 	}
-	if( !ok )  errmsg = tr("invalid picture type");
-	else if( !shown ){	  // load and show image file types
+
+	if( ok ) {
+		errmsg = "";
+		if( !loaded ){	// load image file types
 		if( c > 0 ) pvpic->setImageFOV( picFov );
-		if( c > 1 ) fnm.sort();
-		for(int i = 0; i < c; i++ ){
-			pvpic->setFaceImage( pvQtPic::PicFace(i), fnm[i] );
+			if( c > 1 ) fnm.sort();
+			for(int i = 0; i < c; i++ ){
+				pvpic->setFaceImage( pvQtPic::PicFace(i), fnm[i] );
+			}
 		}
-		shown = glview->showPic( pvpic );
-		ok = glview->picOK( errmsg );
+	  // display the image
+		glview->showPic( pvpic );
+		ok = glview->picOK( errmsg );	// get any OGL error
 	}
   // put image info or error message in window title
 	if( ok ){
@@ -162,7 +178,6 @@ bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 		if( c > 0 ){
 			msg += QFileInfo(fnm[0]).fileName();
 		} else 	msg += tr("(no image file)");
-
 		msg += QString("  ") + QString(tnm) + QString(" at ");
 		QSize pd = pvpic->PictureSize();
 		double m = pvpic->NumImages();
@@ -172,19 +187,17 @@ bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 	} else {
 		QString msg = "  pvQt  ERROR: " + errmsg;
 		emit showTitle( msg );
-		
 	}
 
 	return ok;
 }
 
-// Display a QTVR file
+// Load a QTVR file
 bool GLwindow::QTVR_file( QString name ){
 	QTVRDecoder dec;
 	bool ok = dec.parseHeaders( name.toUtf8().data() );
 	if( !ok ){
 		qCritical("QTVR parse: %s", dec.getError() );
-//		qCritical("Not QTVR: %s", name.toUtf8().data() );
 		return false;
 	}
 	if( dec.getType() == PANO_CUBIC ){
@@ -198,9 +211,7 @@ bool GLwindow::QTVR_file( QString name ){
 		QImage * pim = dec.getImage( 0 );
 		ok = pvpic->setFaceImage( pvQtPic::PicFace(0), pim );
 	} else ok = false; 
-	
-	if( ok ) glview->showPic( pvpic );
-	else qCritical("Not panorama: %s", name.toUtf8().data() );		
+
 	return ok;
 }
 

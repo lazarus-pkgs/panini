@@ -42,6 +42,7 @@ public slots:
 	void newPicture( const char * type );
 	void picTypeChanged( int t );
 	void about_pvQt();
+	void OGLerror( QString msg);
 	
 protected:
 	void resizeEvent( QResizeEvent * ev );

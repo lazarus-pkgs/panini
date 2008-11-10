@@ -16,14 +16,16 @@
  * 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+
 #include "pvQtView.h"
+
 #include <QtOpenGL/QtOpenGL>
 #ifdef __APPLE__
    #include "glext.h"
    #include "glu.h"
 #else
    #include <GL/glext.h>
-   #include <GL/glut.h>
+   #include <GL/glu.h>
 #endif 
 #include <cmath>
 
@@ -41,9 +43,8 @@
   but in hope of working around a bug on Mac OSX that prevents
   proper cube map display when the default format is used.
 */
-
  pvQtView::pvQtView(QWidget *parent)
-	 : QGLWidget( QGLFormat( QGL::AlphaChannel | QGL::AccumBuffer ),
+	 : QGLWidget( QGLFormat( QGL::AlphaChannel ),
 				  parent)
  {
  // set up pan/zoom timer
@@ -63,7 +64,10 @@
 		boundtex[i] = 0;
 	}
 
- // set viewmatrix to rgt handed identity
+  // create the sphere tables
+	pqs = new quadsphere( 30 );
+
+  // set viewmatrix to rgt handed identity
 	 for(int i = 0; i < 16; i++ ){
 		 viewmatrix[i] = 0.0;
 	 }
@@ -72,7 +76,7 @@
 
      Width = Height = 400;
 	 minpan = -180; maxpan = 180;
-	 mintilt = -90; maxtilt = 90;
+	 mintilt = -180; maxtilt = 180;
      initView();
  }
 
@@ -92,36 +96,51 @@ bool pvQtView::OpenGLOK()
   // assume the worst
 	texPwr2 = true;
 	cubeMap = false;
-
+	QS_BUF = false;
 	errmsg = tr("no error");
-	QString glver((const char *)glGetString(GL_VERSION));
-	QStringList vns = glver.split(QChar('.'));
-  // check version.  Assume hopeless if < 1.1
-	int vn0 = vns[0].toInt();
-	OGLv20 = vn0 >= 2;
 
-// TEMP KLUGE: assume mac OSX has all we need
+/* probe OGL capabilities...
+  Use Qt's version flags to test for standard features
+  then if necessary check the OGL extensions string
+  I'd like to use gluCheckExtension for that, but it
+  doesn't seem to be implemented on all systems.  And
+  Apple doesn't seem to implement even the extensions
+  string according to OGL specs, so we have to rely on 
+  the Apple "OpenGL Extensions Guide", which gives the
+  OSX version at which each extension is supported. 
+
+  The minimum feasible OpenGL version is 1.2
+*/
+	unsigned int vf = QGLFormat::openGLVersionFlags();
+	if( vf & QGLFormat::OpenGL_Version_1_2 ){  
+		if( vf & QGLFormat::OpenGL_Version_1_3 ){
+			cubeMap = true;
+			if( vf & QGLFormat::OpenGL_Version_1_5 ){
+				QS_BUF = true;
+				if( vf & QGLFormat::OpenGL_Version_2_0 ) texPwr2 = false;
+			}
+		}
 #ifdef __APPLE__
-	OGLv20 = true;
-#endif
-
-	if( !OGLv20 && vns.count() > 1 ){
-		OGLisOK = vn0 == 1 && vns[1].toInt() >= 1;
-	} else OGLisOK = OGLv20;
-  // check features
-	if( OGLv20 ){
+	// I have limited tolerance for Apple provinicialisms; so
+	// just assume cube mapping and non pwr of 2 textures,
+	// which are present on all but the oldest OSX versions
 		texPwr2 = false;
 		cubeMap = true;
-	} else if( OGLisOK ){
+#else
+	// check the GL_EXTENSIONS string
 		QString glext((const char *)glGetString(GL_EXTENSIONS));
-		texPwr2 = ! (
+		if(texPwr2 )
+			texPwr2 = ! (
 				glext.contains(QString("GL_ARB_texture_non_power_of_two"))
 			 || glext.contains(QString("GL_EXT_texture_non_power_of_two"))
 			);
-		cubeMap = (
-				glext.contains(QString("GL_ARB_texture_cube_map"))
-			);
+		if(!cubeMap)
+			cubeMap = glext.contains(QString("GL_ARB_texture_cube_map"));
+		if( !QS_BUF ) 
+			QS_BUF = glext.contains(QString("GL_ARB_vertex_buffer_object"));
+#endif
 	}
+
 	OGLisOK = cubeMap;
 
 	if( !OGLisOK ){
@@ -452,37 +471,41 @@ void pvQtView::setDist( int id ){
 		boundtex[i] = 0;
 	}
 
-	
-	textgt = GL_TEXTURE_2D;
-	viewmatrix[0] = 1.0;	// right handed...
 	glFrontFace( GL_CW );
-	switch( pt ){
-	default:
-		pt = pvQtPic::nil;
-	case pvQtPic::nil:		// No picture
-		break;
-	case pvQtPic::sph:		// A spherical image up to 180 degrees diameter
-		viewmatrix[0] = -1.0;	// left handed...
-		glFrontFace( GL_CCW );
-		glTexGeni( GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP );
-		glTexGeni( GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP );
-		glEnable( GL_TEXTURE_GEN_S );
-		glEnable( GL_TEXTURE_GEN_T );
-		break;
-	case pvQtPic::cyl:		// A cylindrical panorama up to 360 x 135 degrees
-		break;
-	case pvQtPic::eqr:		// An equirectangular panorama up to 360 x 180 degrees
-		break;
-	case pvQtPic::rec:		// A rectilinear image up to 90x90 degrees
-	case pvQtPic::cub:		// A cubic panorama (1 to 6 rectilinear images 90x90 degrees)
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	glDisableClientState(GL_NORMAL_ARRAY);
+	proj = quadsphere::projection(pt);
+
+	if( pt == pvQtPic::cub ){
+	/* for cube map, generate tex ccords from normals */
 		textgt = GL_TEXTURE_CUBE_MAP;
+		glEnableClientState(GL_NORMAL_ARRAY);
 		glTexGenf( GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP );
 		glTexGenf( GL_T, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP );
 		glTexGenf( GL_R, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP );
 		glEnable( GL_TEXTURE_GEN_S );
 		glEnable( GL_TEXTURE_GEN_T );
 		glEnable( GL_TEXTURE_GEN_R );
-		break;
+	} else if( pt != pvQtPic::nil ) {
+	/* for 2D maps, use quadsphere texture coordinates */
+		textgt = GL_TEXTURE_2D;
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	} else {
+	/* no picture, show wireframe */
+	}
+
+  // Set 2D texture mapping modes
+	if( pt != pvQtPic::cub ){
+	  // black outside valid map
+		float bord[4] = { 0, 0, 0, 1 };
+		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, bord);
+		GLuint sclamp, tclamp;
+		sclamp = tclamp = GL_CLAMP_TO_BORDER;
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, sclamp);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, tclamp);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	}
 
 	picType = pt;
@@ -497,7 +520,6 @@ void pvQtView::setDist( int id ){
 
 	qglClearColor(Qt::black);
 	glShadeModel(GL_SMOOTH);
-////	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
  // create 2D and cube texture objects
@@ -506,20 +528,18 @@ void pvQtView::setDist( int id ){
 	glBindTexture(GL_TEXTURE_CUBE_MAP, texIDs[1] );
   // constant texture mapping parameters...
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+  // for cube maps...
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
   // create projection screen displaylist
 	theScreen = glGenLists(1);
-  // make spherical screen
+
+  // make wireframe screen
 	makeSphere( theScreen );
 
   // clear the picture type specific state
@@ -529,8 +549,9 @@ void pvQtView::setDist( int id ){
  
  /* check for (and reset) async OpenGL error;
    if picok is currently true, post any error to it
-   and to errmsg; otherwise leave them as-is.
-   But return current OGL error status in any case.
+   and to errmsg and emit an error signal; otherwise 
+   leave them as-is.
+   But in any case return current OGL error status.
  */
 bool pvQtView::OGLok(){
 	GLenum c = glGetError();
@@ -539,6 +560,7 @@ bool pvQtView::OGLok(){
 		picok = false;
 		errmsg = QString("OpenGL error: ")
 			+ QString( (const char *)gluErrorString( c ) );
+		emit OGLerror( errmsg );
 	}
 	return false;
 }
@@ -551,7 +573,7 @@ bool pvQtView::OGLok(){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	if( textgt ) glEnable( textgt );
 
-// set texture rotation 
+// set texture rotation = turnAngle
 	glMatrixMode(GL_TEXTURE);
 	glLoadIdentity();
 	switch( picType ){
@@ -560,62 +582,44 @@ bool pvQtView::OGLok(){
 	case pvQtPic::cyl:
 	case pvQtPic::eqr:
 	case pvQtPic::sph:
+	case pvQtPic::rec:
   // 2D textures rotate around pic center
 		glTranslated( 0.5, 0.5, 0 );
-		glRotated( turnAngle - spinAngle, 0, 0, 1 );
+		glRotated( -turnAngle, 0, 0, 1 );
 		glTranslated( -0.5, -0.5, 0 );
 		break;
-	case pvQtPic::rec:
 	case pvQtPic::cub:
   // cube texture rotates around origin
-		glRotated( turnAngle + spinAngle, 0, 0, 1 );
+		glRotated( 180, 0,1,0 );
+		glRotated( 180, 0,0,1 );
+		glRotated( -turnAngle, 0, 0, 1 );
 		break;
 	}
 
-
  // eye position rotates, screen does not
 	glMatrixMode(GL_PROJECTION);
-    glLoadMatrixd( viewmatrix );
+	glLoadIdentity();
+//    glLoadMatrixd( viewmatrix );
 	Znear = 0.05; Zfar = 7;
 	gluPerspective( wFOV, portAR, 
 				    Znear,  Zfar);
 /* set view, yaw and pitch according to picture type
    rotations are Euler angles; orientation & sense set here
 */
-	switch( picType ){
-	default:
-	case pvQtPic::nil:
-	case pvQtPic::cyl:
-	case pvQtPic::eqr:		// look +Y, X rgt, Z up
-		gluLookAt( 0, -eyeDistance, 0,
-				   0, 1, 0,
-				   0, 0, 1 );
-		glRotated( 180, 0, 1, 0 );     
-		glRotated( tiltAngle, 1, 0, 0 );
-		glRotated( 180 - panAngle, 0, 0, 1 );
-		break;
-	case pvQtPic::sph:
-		gluLookAt( 0, 0, -eyeDistance,
-				   0, 0, 1,
-				   0, -1, 0 );
-//		glRotated( 180, 0, 1, 0 );     
-		glRotated( 180 + tiltAngle, 1, 0, 0 );
-		glRotated( - panAngle, 0, 1, 0 );
-		break;
-	case pvQtPic::rec:
-	case pvQtPic::cub:		// look +Z, X lft, Y up
-		gluLookAt( 0, 0, -eyeDistance,
-				   0, 0, 1,
-				   0, 1, 0 );
-		glRotated( 180, 0, 0, 1 );     
-		glRotated( -tiltAngle, 1, 0, 0 );
-		glRotated( 180 - panAngle, 0, 1, 0 );
-		break;
-	}
+	gluLookAt( 0, 0, -eyeDistance,
+			   0, 0, 1,
+			   0, 1, 0 );
+	glRotated( tiltAngle, 1, 0, 0 );
+	glRotated( panAngle, 0, 1, 0 );
+	glRotated( -spinAngle, 0, 0, 1 );     
+
 
 	glMatrixMode(GL_MODELVIEW);
 
-	glCallList(theScreen);
+
+	if( QS_BUF ) {	// use buffers
+		glCallList(theScreen);
+	} else glCallList(theScreen); // use display list
 	
 	paintok = OGLok();	// check for OGL error
  }
@@ -640,19 +644,26 @@ void pvQtView::makeSphere( GLuint list )
   // abort if the OpenGL version is insufficient
  	if( !OGLisOK ) return;
 
-	if( textgt ) {	// there is a picture...
-		GLUquadricObj *qobj = gluNewQuadric();
-		gluQuadricNormals(qobj, GLU_SMOOTH);
-		gluQuadricDrawStyle(qobj, GLU_FILL );
-		if( picType == pvQtPic::eqr ) gluQuadricTexture(qobj, GL_TRUE );
+	if( textgt ){	// there is an image
+		const int * idx = pqs->quadIndices(0); 
+		int nq = pqs->quadIdxPerFace();
 		glNewList(list, GL_COMPILE);
-			gluSphere(qobj, 1.0, 108, 54);
+		for( int i = 0; i < 6; i++ ){
+		  glVertexPointer( 3, GL_FLOAT, 0, pqs->vertices( i ));
+		  glNormalPointer( GL_FLOAT, 0, pqs->vertices( i ));
+		  glTexCoordPointer( 2, GL_FLOAT, 0, pqs->texCoords( i, proj ));
+		  glDrawElements(GL_QUADS, nq, GL_UNSIGNED_INT, idx );
+		}
 		glEndList();
-	} else {	// show wireframe sphere
-		GLUquadricObj *qobj = gluNewQuadric();
-		gluQuadricDrawStyle(qobj, GLU_LINE );
+	} else {
+		const int * idx = pqs->lineIndices(0); 
+		int nl = pqs->lineIdxPerFace();
+		glEnableClientState(GL_VERTEX_ARRAY);
 		glNewList(list, GL_COMPILE);
-			gluSphere(qobj, 1.0, 54, 27);
+		for( int i = 0; i < 6; i++ ){
+		  glVertexPointer( 3, GL_FLOAT, 0, pqs->vertices( i ));
+		  glDrawElements(GL_LINES, nl, GL_UNSIGNED_INT, idx );
+		}
 		glEndList();
 	}
  }
@@ -784,19 +795,22 @@ bool pvQtView::setupPic( pvQtPic * pic )
 	}
 
   // set pan and tilt limits according to picture fov
+#if 1
+	minpan = -180; maxpan = 180;
+	mintilt = -180; maxtilt = 180;
+#else
 	QSizeF pv = pic->PictureFOV();
 	double d = 0.5 * pv.width();
 	minpan = -d; maxpan = d;
 	d = 0.5 * pv.height();
 	mintilt = -d; maxtilt = d;
-
+#endif
 /**  Load texture images  **/
 
 
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);  // QImage row alignment
 
-	if( picType == pvQtPic::cub 
-	 || picType == pvQtPic::rec ){
+	if( picType == pvQtPic::cub ){
 		for(int i = 0; i < 6; i++){
 			QImage * p = pic->FaceImage(pvQtPic::PicFace(i));
 			if( p ){
@@ -811,7 +825,7 @@ bool pvQtView::setupPic( pvQtPic * pic )
 		QImage * p = pic->FaceImage(pvQtPic::PicFace(0));
 		if( p ){
 			glTexImage2D( textgt, 0, GL_RGBA,
-				p->width(), p->height(), 0, 
+				p->width(), p->height(), 0,
 				GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV,
 				p->bits() );
 			delete p;

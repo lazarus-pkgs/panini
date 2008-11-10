@@ -487,46 +487,6 @@ size_t	filePos;
 //char	*c = (char *)&atomType;
 //OSErr	iErr;
 
-
-
-			/*******/
-			/* MAC */
-			/*******/
-			
-#ifdef TARGET_OS_MAC
-			/* GET CURRENT FILE POS */
-			//
-			// We get the current file position, so that we can add the atom size
-			// to skip over it later.
-			//
-
-	GetFPos(gMovfRefNum, &filePos);
-
-				/* READ THE ATOM SIZE */
-
-	count = 4;											// size is 4 bytes
-	iErr = FSRead(gMovfRefNum, &count, &atomSize);
-	if (iErr)
-	{
-		m_error = "ReadMovieAtom:  FSRead failed!";
-		return(-1);
-	}	
-		
-				/* READ THE ATOM TYPE */
-
-	count = 4;											// type is 4 bytes
-	if (FSRead(gMovfRefNum, &count, &atomType) != noErr)
-	{
-		m_error = "ReadMovieAtom:  FSRead failed!";
-		return(1);
-	}
-
-
-			/***********/
-			/* WINDOWS */
-			/***********/
-			
-#else
 			/* GET CURRENT FILE POS */
 
 	filePos = ftell(gFile);							
@@ -553,7 +513,6 @@ size_t	filePos;
 	Swizzle(&atomSize);								// convert BigEndian data to LittleEndian
 	Swizzle(&atomType);
 		
-#endif		
     /* READ EXTENDED DATA IF NEEDED */
 		
 	if (atomSize == 1)									// if atom size == 1 then there's extended data in the header
@@ -733,14 +692,9 @@ size_t	filePos;
 	}
 	else	
 	{
-#ifdef TARGET_OS_MAC		
-		if (SetFPos(gMovfRefNum, fsFromStart, filePos + atomSize))
-////			printf("ReadMovieAtom: SetFPos failed, probably EOF?\n");	
-#else
 		fseek(gFile, (long)filePos + atomSize, SEEK_SET);
 ////		if (ferror(gFile))
 ////			printf("ReadMovieAtom: fseek() failed, probably EOF?\n");	
-#endif		
 	}
 			
 	return(atomSize);								// return the size of the atom
@@ -839,11 +793,7 @@ int				numEntries;
 			/* READ THE ATOM */
 			/*****************/
 			
-#ifdef TARGET_OS_MAC		
-	SetFPos(gMovfRefNum, fsFromMark, -8);		// back up 8 bytes to the atom's start so we can read it all in
-#else
 	fseek(gFile, -8, SEEK_CUR);
-#endif		
 
 
 				/* ALLOC MEMORY FOR IT */
@@ -856,21 +806,12 @@ int				numEntries;
 
 				/* READ IT */
 				
-#ifdef TARGET_OS_MAC		
-	count = size;							
-	if (FSRead(gMovfRefNum, &count, atom) != noErr)
-	{
-		m_error = "ReadAtom_STCO:  FSRead failed!";
-		return;
-	}
-#else
 	fread(atom, size, 1, gFile);		
 	if (ferror(gFile))
 	{
 		m_error = "ReadAtom_STCO:  fread() failed!";
 		return;
 	}	
-#endif		
 
 
 			/* SEE WHAT KIND OF TRACK WE'VE PARSED INTO AND GET CHUNKS BASED ON THAT */
@@ -994,11 +935,8 @@ int32			numEntries, i;
 			/* READ THE ATOM */
 			/*****************/
 		
-#ifdef TARGET_OS_MAC		
-	SetFPos(gMovfRefNum, fsFromMark, -8);		// back up 8 bytes to the atom's start so we can read it all in
-#else
 	fseek(gFile, -8, SEEK_CUR);
-#endif		
+		
 				
 
 				/* ALLOC MEMORY FOR IT */
@@ -1011,21 +949,13 @@ int32			numEntries, i;
 
 				/* READ IT */
 				
-#ifdef TARGET_OS_MAC		
-	count = size;							
-	if (FSRead(gMovfRefNum, &count, atom) != noErr)
-	{
-		m_error = "ReadAtom_STSZ:  FSRead failed!";
-		return;
-	}
-#else
 	fread(atom, size, 1, gFile);		
 	if (ferror(gFile))
 	{
 		m_error = "ReadAtom_STSZ:  fread() failed!";
 		return;
 	}	
-#endif		
+		
 
 			/* SEE WHAT KIND OF TRACK WE'VE PARSED INTO AND GET CHUNKS BASED ON THAT */
 
@@ -1170,11 +1100,8 @@ int32			componentSubType;
 			/* READ THE ATOM */
 			/*****************/
 			
-#ifdef TARGET_OS_MAC		
-	SetFPos(gMovfRefNum, fsFromMark, -8);		// back up 8 bytes to the atom's start so we can read it all in
-#else
 	fseek(gFile, -8, SEEK_CUR);
-#endif		
+		
 
 
 				/* ALLOC MEMORY FOR IT */
@@ -1187,21 +1114,12 @@ int32			componentSubType;
 
 				/* READ IT */
 				
-#ifdef TARGET_OS_MAC		
-	count = size;							
-	if (FSRead(gMovfRefNum, &count, atom) != noErr)
-	{
-		m_error = "ReadAtom_HDLR:  FSRead failed!";
-		return;
-	}
-#else
 	fread(atom, size, 1, gFile);		
 	if (ferror(gFile))
 	{
 		m_error = "ReadAtom_HDLR:  fread() failed!";
 		return;
 	}	
-#endif		
 
 			/* POINT TO HANDLER INFO */
 			
@@ -1353,21 +1271,12 @@ VRPanoSampleAtom *atom;
 
 				/* READ IT */
 				
-#ifdef TARGET_OS_MAC		
-	count = size;							
-	if (FSRead(gMovfRefNum, &count, atom) != noErr)
-	{
-		m_error = "ReadAtom_PDAT:  FSRead failed!";
-		return;
-	}
-#else
 	size_t sz = fread(atom, size, 1, gFile);		
 	if (ferror(gFile) || sz != 1)
 	{
 		m_error = "ReadAtom_PDAT:  fread() failed!";
 		return;
 	}	
-#endif		
 
 			/* SEE WHAT KIND OF TRACK WE'VE PARSED INTO AND GET CHUNKS BASED ON THAT */
 
