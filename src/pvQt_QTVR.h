@@ -122,7 +122,7 @@ int         gVideoSampleSize[MAX_IMAGE_OFFSETS];
 
 int32       gTileSize[MAX_TILES_PER_FACE];
 
-    FILE *gFile;  // FILE ref used for fopen().  Not used on Mac since mac uses FSSpec
+    FILE *gFile;  
     FILE * m_mainFile;
     FILE * m_cmovFile;
 

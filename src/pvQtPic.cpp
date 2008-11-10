@@ -30,7 +30,8 @@
  	
  */
  
- #include "pvQtPic.h"
+#include "pvQtPic.h"
+#include <cmath>
 
 #ifndef Pi
 #define Pi 3.141592654
@@ -524,11 +525,10 @@ QColor	pvQtPic::getFill( PicFace face )
 
 QImage * pvQtPic::FaceImage( PicFace face ){
 	if( type == nil ) return 0;
-	int i = type == rec ? 6 : maxfaces;
-	if( face < front || face >= PicFace(i) ) return 0;
+	if( face < front || face >= PicFace(maxfaces) ) return 0;
 
 	QImage * pim = 0;
-	i = int(face);
+	int i = int(face);
 	switch( kinds[i] ){
 	case QIMAGE_KIND: 
 		pim = loadQImage( i );

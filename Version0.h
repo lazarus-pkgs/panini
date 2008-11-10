@@ -1,2 +1,2 @@
 static char pvQtVersion[] = {
-"0.3.
+"0.4.

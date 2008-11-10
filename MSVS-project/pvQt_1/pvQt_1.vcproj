@@ -96,6 +96,10 @@
 				RelativePath="..\..\src\pvQtView.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\..\src\quadsphere.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -132,6 +136,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\pvQtView.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\quadsphere.h"
 				>
 			</File>
 			<File

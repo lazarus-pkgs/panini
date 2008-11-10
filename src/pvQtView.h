@@ -30,6 +30,7 @@
 
 #include <QtOpenGL/QGLWidget>
 #include "pvQtPic.h"
+#include "quadsphere.h"
 
 class pvQtView : public QGLWidget
 {
@@ -55,8 +56,8 @@ public:
 		return QString( (const char *)glGetString(GL_RENDERER) );
 	}
 	QString OpenGLFeatures(){
-		return QString("texPwr2 %1, cubeMap %2")
-			.arg(texPwr2).arg(cubeMap);
+		return QString("texPwr2 %1, cubeMap %2, vBuffer %3")
+			.arg(texPwr2).arg(cubeMap).arg(QS_BUF);
 	}
 
   /* Display a picture
@@ -101,6 +102,7 @@ public:
 
  signals:
 	 void reportView( QString msg );
+	 void OGLerror( QString msg );
 
  protected:
      void initializeGL();
@@ -169,7 +171,10 @@ private slots:
   	bool picok;		// sticky OGL error flag
   	QString errmsg;	// sticky OGL error message
   	bool OGLok();	// check & post OGL errors
-
+  // tabulated sphere points and texture coordinates
+	quadsphere  * pqs;
+	quadsphere::projection proj;
+	bool QS_BUF;	// put quadsphere data in OGL buffers
 };
 
 #endif //ndef PVQTVIEW_H
