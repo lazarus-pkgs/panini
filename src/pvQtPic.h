@@ -167,9 +167,10 @@ int 	scalepix( int proj, int pix, double fov, double tofov );
 */
 
 // to be called only from pvQtView, to set picture size...
- bool setFaceFOV( QSizeF fovs );	// FOV must be set first 
  bool setFaceSize( QSize dims );	// arbitrary dimensions
  bool fitFaceToImage();				// size from FOVs & source dims
+// linear ratios of size at max FOV to size at actual FOV
+ QSizeF  fovSizeRatios();	
  
 // to be called only from app:
  bool setType( PicType pt ); 		// clears, sets all defaults
