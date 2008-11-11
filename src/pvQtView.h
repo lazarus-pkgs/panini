@@ -56,8 +56,8 @@ public:
 		return QString( (const char *)glGetString(GL_RENDERER) );
 	}
 	QString OpenGLFeatures(){
-		return QString("texPwr2 %1, cubeMap %2, vBuffer %3")
-			.arg(texPwr2).arg(cubeMap).arg(QS_BUF);
+		return QString("texPwr2 %1, cubeMap %2, vertBuf %3")
+			.arg(texPwr2).arg(cubeMap).arg(vertBuf);
 	}
 
   /* Display a picture
@@ -151,8 +151,6 @@ private slots:
 	 void updatePic();
 	 pvQtPic  * thePic;
 	 pvQtPic::PicType	picType;
-  // initial view matrix (rgt or left hand)
-	 GLdouble viewmatrix[16];
   // display lists for screens
      void makeSphere( GLuint list );
 	 GLuint theScreen;	// current screen list
@@ -162,19 +160,21 @@ private slots:
 	 GLuint theTex;	// current object
 	 GLuint boundtex[6];	// textures converted from QImages
   // OpenGL capabilities
-	bool OGLisOK;	// is at least version 1.4
-	bool OGLv20;	// is at least version 2.0
+	bool OGLisOK;	// is usable
+	bool OGLv20;	// is version 2.0 or better
 	bool texPwr2;	// needs power-of-2 texture dimensions
 	bool cubeMap;	// has cube mapping (rq'd)
+	bool vertBuf;	// has vertex buffers (opt)
   // status 
 	bool paintok;	// most recent OGL error status
   	bool picok;		// sticky OGL error flag
   	QString errmsg;	// sticky OGL error message
-  	bool OGLok();	// check & post OGL errors
+  	bool OGLok();	// check, post and signal OGL errors
   // tabulated sphere points and texture coordinates
 	quadsphere  * pqs;
 	quadsphere::projection proj;
 	bool QS_BUF;	// put quadsphere data in OGL buffers
+	double xtexmag, ytexmag;  // tex coord scale factors
 };
 
 #endif //ndef PVQTVIEW_H

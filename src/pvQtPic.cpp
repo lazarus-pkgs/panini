@@ -91,6 +91,18 @@ int pvQtPic::scalepix( int proj, int pix, double fov, double tofov ){
 	return int(0.5 + s * pix );
 }
 
+// linear ratios of size at max FOV to size at actual FOV
+QSizeF  pvQtPic::fovSizeRatios(){
+	QSizeF r(1.0, 1.0);
+	if( type == nil ) return r;	// no projection
+	if(imagedims.isEmpty() ) return r;  // no image
+	if( facefovs == maxfovs ) return r;	// actual == max
+	double w = fov2rad( xproj, facefovs.width());
+	if( w > 0 ) r.setWidth( fov2rad( xproj, maxfovs.width()) / w );
+	double h = fov2rad( yproj, facefovs.height());
+	if( h > 0 ) r.setHeight( fov2rad( yproj, maxfovs.height()) / h );
+	return r;
+}
 
  pvQtPic::pvQtPic( pvQtPic::PicType t )
 {
@@ -224,19 +236,6 @@ bool pvQtPic::setFaceSize( QSize dims ){
 	return !picdims.isEmpty();
 }
 
-/* set face FOV 
-  Called from pvQtView; must be called before setFaceSize.
-  The passed fovs must be within the limits for the type,
-  but need not agree with the image FOVs.
-  
-*/
-bool pvQtPic::setFaceFOV( QSizeF fovs ){
-	if( type == nil ) return false;	// no picture
-	if(fovs != fovs.boundedTo(maxfovs).expandedTo(minfovs))
-		return false;	// illegal fovs
-	facefovs = fovs;
-	return true;
-}
 
 /* post source image FOVs
   should only be called once, before setFaceImage()
@@ -590,11 +589,6 @@ QImage * pvQtPic::loadEmpty( int i )
 	QPainter qp( pim );
   // fill
 	QRect box( pim->rect() );
-	if( type == rec && i > 0 ){	//// TEMP KLUGE ////
-		QBrush brush( Qt::black );
-		qp.fillRect( box, brush );
-		return pim;
-	}
 	QBrush brush( fills[i] );
 	qp.fillRect( box, brush );
   // draw border
