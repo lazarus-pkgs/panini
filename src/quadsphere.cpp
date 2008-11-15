@@ -1,17 +1,35 @@
-/* quadsphere.cpp	for pvQt 04 Nov 2008 TKS
+/* quadsphere.cpp	for pvQt 14 Nov 2008 (3rd version)
 
   A sphere tessellation with texture coordinates,
-  in tabular form usable by OpenGl
+  line and quad incices, in arrays usable by OpenGl
+
   Note the OGL coordinate system is left handed:
 	X right, Y up, Z toward eye
   PvQt puts the picture center at +Z, and loads
   Y-reversed images, so these texture coordinates 
   have X left, Y down (Z toward).
-
+ *
+ * Copyright (C) 2008 Thomas K Sharpless
+ *
+ * This file is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This file is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this file; if not, write to Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
 */
 
 #include	"quadsphere.h"
 #include	<cmath>
+#include	<cstdio>
 
 #ifndef Pi
 #define Pi 3.1415926535897932384626433832795
@@ -22,7 +40,6 @@
 static inline double dotp( double a[3], double b[3] ){
 	return a[0] * b[0] + a[1] * b[1] + a[2]  * b[2];
 }
-
 
 /* split the great circle between 2 unit vectors into divs
   intervals, storing results in a general array (divs + 1 
@@ -49,87 +66,97 @@ static void slerp( int divs, double v0[3], double v1[3],
 	}
 }
 
+// debug error messages can be put here
+static char msg[80];
+
+
+/*  Abandoning a long hard struggle to put together a
+  usable sphere from the mimimum number of data points,
+  I've decided in this third version to keep it simple,
+  stupid.  So here there are 6 full cube faces, 3 of
+  which are split up the middle to span the wraparound
+  line.  The redundant edges add 12 * (divs + 1) points,
+  but make it possible to draw the sphere with code I
+  can write.
+
+  The faces are stored in unform blocks as follows:
+	0:	+Z (front)		3:	-Z (back)
+	1:	+y (top)		4:	-Y (bottom)
+	2:	+X (left)		5:	-X (right)
+  followed by the duplicate points that split faces
+  1, 3, and 4.  The vertices and texture coordinate
+  sets are stored separately in this format.
+
+  The uniform face layout makes it easy to index the 
+  vertices and texture coordinates to create lines
+  and quads.
+
+  The faces are oriented as pvQt sees them -- that is, 
+  from the inside. Since the OGL coordinate system is 
+  left handed, the +Z face has +X left and +Y up, and 
+  so forth.  This makes all quad indices run CCW.
+
+*/
 
 quadsphere::quadsphere( int divs ){
-// allocate memory 
-	int n = divs + 1;
-	ppf = n * n;	// points per face
-	qpf = divs * divs;	// quads per face
-	lpf = 4 * ( qpf + 2 * divs ); // line ids per face
-	int vwpf  =  3 * ppf,	// vertex words/face
-		twpf = 2 * ppf;		// tcoord words/face
-	nwords = 6 * ( vwpf + 5 * twpf ) + 4 * qpf + lpf;
-	words = new float[ nwords ];
-// set pointers to arrays
-	vertptrs[0] = words;
-	rectptrs[0] = vertptrs[0] + 6 * vwpf;
-	fishptrs[0] = rectptrs[0] + 6 * twpf;
-	cyliptrs[0] = fishptrs[0] + 6 * twpf;
-	equiptrs[0] = cyliptrs[0] + 6 * twpf;
-	anglptrs[0] = equiptrs[0] + 6 * twpf;
-	quadidx = (int *)(anglptrs[0] + 6 * twpf);
-	lineidx = quadidx + 4 * qpf;
-	for( int i = 1; i < 6; i++ ){
-		vertptrs[i] = vertptrs[0] + i * vwpf;
-		rectptrs[i] = rectptrs[0] + i * twpf;
-		fishptrs[i] = fishptrs[0] + i * twpf;
-		cyliptrs[i] = cyliptrs[0] + i * twpf;
-		equiptrs[i] = equiptrs[0] + i * twpf;
-		anglptrs[i] = anglptrs[0] + i * twpf;
-	}
-/*  Index arrays: 4 linear indices per quad.  
-		Line indices link ul-ll, ul-ur
-		Quad indices link ul-ll-lr-ur
+
+// no error
+	errmsg = 0;	
+// make sure divs is even, or 1 (cube only)
+	divs = 2 * ((divs + 1) / 2);
+	if( divs < 1 ) divs = 1;
+/* allocate memory 
 */
-	int il = 0, iq = 0;
-	for( int r = 0; r < divs; r++ ){
-		int k = r * n;	// 1st index of row
-		int c;
-		for( c = 0; c < divs; c++ ){
-		// top & left quad edges
-			lineidx[il++] = k + c;		// ul
-			lineidx[il++] = n + k + c;	// ll
-			lineidx[il++] = k + c;
-			lineidx[il++] = k + c + 1;	// ur
-		// CCW quad
-			quadidx[iq++] = k + c;
-			quadidx[iq++] = n + k + c;
-			quadidx[iq++] = n + k + c + 1;
-			quadidx[iq++] = k + c + 1;
-		}
-	  // add right edge line
-		lineidx[il++] = k + c;
-		lineidx[il++] = n + k + c;
+	int dm1 = divs - 1;	// interior points per row
+	int dp1 = divs + 1;	// total points per row
+	int qpf = divs * divs;	// quads per face
+	int ppf = dp1 * dp1;	// points per face
+
+	vertpnts = 6 * ppf + 3 * dp1;	// total vertices
+	linewrds = 24 * qpf;
+	quadwrds = linewrds;
+	nwords =  15 * vertpnts + linewrds + quadwrds;
+	words = new float[ nwords ];
+	if( words == 0 ){
+		errmsg = "insufficient memory";
+		return;	
 	}
-  // add bottom edge lines
-	int k = divs * n;
-	for( int c = 0; c < divs; c++ ){
-		lineidx[il++] = k + c;
-		lineidx[il++] = k + c + 1;
-	}
-		
-/* Vertex arrays
-	First face is computed from cube corners using slerp;
-	rest are rotations of 1st by multiples of 90 degrees.
+// set pointers to arrays
+	verts = words;
+	angls = verts + 3 * vertpnts;
+	rects = angls + 2 * vertpnts;
+	fishs = rects + 2 * vertpnts;
+	cylis = fishs + 2 * vertpnts;
+	equis = cylis + 2 * vertpnts;
+	lineidx = (unsigned int *)(equis + 2 * vertpnts);
+	quadidx = lineidx + linewrds;
+
+
+/* Build Vertex arrays
+	+Z face is computed from cube corners using slerp;
+	rest are rotations of that by multiples of 90 degrees.
 */
   // cube corner coordinates for front face
 	const double ccc = sqrt( 1.0 / 3.0 );
-	double	vul[3] = {-ccc, ccc, ccc },	// upper left
-			vur[3] = { ccc, ccc, ccc },	// upper rigt
-			vll[3] = {-ccc, -ccc, ccc },	// lower left
-			vlr[3] = {ccc, -ccc, ccc };	// lower right
-  /* compute first face row-by row with a double slerp.
-    The outer one, done here, interpolates row end
-	points at double precision, then slerp() computes
-	the rows at float precision.
+	double	vul[3] = { ccc, ccc, ccc },	// upper left
+			vur[3] = { -ccc, ccc, ccc },	// upper rigt
+			vll[3] = { ccc, -ccc, ccc },	// lower left
+			vlr[3] = { -ccc, -ccc, ccc };	// lower right
+
+  /* compute front face row-by row with a double slerp.
+    The outer one, done here, interpolates row endpoints 
+	at double precision, then slerp() computes the rows 
+	at float precision.
+	Note posts the full face including all edge points.
   */
-	int i;
+	float * pd = verts;	// running output addr
+	int nr = divs + 1;	// row length for 1st 4 faces
+	unsigned int vcnt = 0;	// debug check
 	double om  = dotp( vul, vll ); // cos(angle between ends)
 	double som = sqrt( 1.0 - om * om );	// sin ditto
 	om = asin( som );		// the angle
-	float * pf = vertptrs[0];
 	double s = 1.0 / divs ;	// the t step
-	for( i = 0; i <= divs; i++ ){
+	for(int i = 0; i <= divs; i++ ){
 		double v0[3], v1[3];
 		double t = i * s;
 		double a = sin(om*(1.0 - t)) / som,
@@ -140,76 +167,138 @@ quadsphere::quadsphere( int divs ){
 		v1[0] = vur[0] * a + vlr[0] * b;
 		v1[1] = vur[1] * a + vlr[1] * b;
 		v1[2] = vur[2] * a + vlr[2] * b;	
-		slerp( divs, v0, v1, pf, 1 ); // fill row
-		pf += 3 * n;
+		slerp( divs, v0, v1, pd, 1 ); // fill row
+		pd += 3 * nr;
+		vcnt += divs + 1;
 	}
-  /* generate the other faces with 90 degree rotations 
-	 which are basically just coordinate swaps and negations;
-	 but note that "negative" faces are also row-reversed to 
-	 preserve index hand.
+
+  /* remaining faces 
+    Note this code depends on the symmetry of the
+	faces around their center points.
   */
-	float * ps, *pd;
-  // right (+X) face
-	ps = vertptrs[0];
-	pd = vertptrs[1];	
-	for( i = 0; i < ppf; i++ ){
-		pd[0] = ps[2];	// x = z
-		pd[1] = ps[1];	// y = y
-		pd[2] = -ps[0];	// z = -x
-		ps += 3; pd += 3;
+	unsigned int jf = 3 * ppf;	// words per face
+	float * ps = verts;	// -> front face
+	for( int i = 0; i < ppf; i++ ){
+		register float * p = ps;
+
+		p +=  jf;	// ->top
+		p[0] = ps[0];	//  x = x
+		p[1] = ps[2];	//  y = z
+		p[2] = -ps[1];	//  z = -y
+		p += jf;	// -> left
+		p[0] = ps[2];	//  x = z
+		p[1] = ps[1];	//  y = y
+		p[2] = -ps[0];	//  z = -x
+		p += jf;	// -> back
+		p[0] = -ps[0];	//  x = -x
+		p[1] = ps[1];	//  y = y
+		p[2] = -ps[2];	//  z = -z
+		p += jf;	// -> bottom
+		p[0] = ps[0];	//  x = x
+		p[1] = -ps[2];	//  y = -z
+		p[2] = ps[1];	//  z = y
+		p += jf;	// -> right
+		p[0] = -ps[2];	//  x = -z
+		p[1] = ps[1];	//  y = y
+		p[2] = ps[0];	//  z = x
+
+		ps += 3;
 	}
-  // top (+Y) face
-	ps = vertptrs[0];
-	pd = vertptrs[4];	
-	for( i = 0; i < ppf; i++ ){
-		pd[0] = ps[0];
-		pd[1] =	ps[2];
-		pd[2] = -ps[1];
-		ps += 3; pd += 3;
-	}
-  // back (-Z) face
-	ps = vertptrs[0];
-	pd = vertptrs[2];	
-	for( i = 0; i < n; i++ ){
-		float * p = pd + 3 * (n - 1);
-		pd += 3 * n;
-		for( int j = 0; j < n; j++ ){
-			p[0] = ps[0];
-			p[1] = ps[1];
-			p[2] = -ps[2];
-			ps += 3; p -= 3;
-		}
-	}
-  // left (-X) face
-	ps = vertptrs[1];
-	pd = vertptrs[3];	
-	for( i = 0; i < n; i++ ){
-		float * p = pd + 3 * (n - 1);
-		pd += 3 * n;
-		for( int j = 0; j < n; j++ ){
-			p[0] = -ps[0];
-			p[1] = ps[1];
-			p[2] = ps[2];
-			ps += 3; p -= 3;
-		}
-	}
-  // bottom (-Y) face
-	ps = vertptrs[4];
-	pd = vertptrs[5];	
-	for( i = 0; i < n; i++ ){
-		float * p = pd + 3 * (n - 1);
-		pd += 3 * n;
-		for( int j = 0; j < n; j++ ){
-			p[0] = ps[0];
-			p[1] = -ps[1];
-			p[2] = ps[2];
-			ps += 3; p -= 3;
+
+
+  /* quad indices
+	same pattern each face		0	3
+								1	2
+	generate one face then copy with offset
+  */
+	unsigned int * pq = quadidx;
+	int r, c;
+	for( r = 0; r < divs; r++ ){
+		unsigned int k = r * dp1;	// 1st index of row
+		for( int c = 0; c < divs; c++ ){
+		// CCW quad
+			*pq++ = k + c;
+			*pq++ = dp1 + k + c;
+			*pq++ = dp1 + k + c + 1;
+			*pq++ = k + c + 1;
 		}
 	}
 
-  /* Texture coordinates [0:1]
-	are generated from the sphere points one by one
-	(which is inefficient but simple).
+	unsigned int * qq = quadidx;
+	for( r = 20 * qpf; r > 0; --r ){
+		*pq++ = *qq++ + ppf;
+	}
+ 
+  /* line indices
+	copy quad indices, replacing one index of each quad
+	with a copy of another.  Only 2 edges of each quad 
+	are drawn; the doubled index selects which ones.  The
+	doubled corners are chosen so that all 12 cube edges
+	get drawn: F, T, R : 0 => 2; K, L: 1 => 3; B: 3 => 1
+  */
+	qq = quadidx;
+	pq = lineidx;
+	// front
+	for( r = qpf; r > 0; --r ){
+		pq[0] = qq[0];
+		pq[1] = qq[1];
+		pq[2] = qq[0];
+		pq[3] = qq[3];
+		pq += 4;
+		qq += 4;
+	}
+	// top
+	for( r = qpf; r > 0; --r ){
+		pq[0] = qq[0];
+		pq[1] = qq[1];
+		pq[2] = qq[0];
+		pq[3] = qq[3];
+		pq += 4;
+		qq += 4;
+	}
+	// left
+	for( r = qpf; r > 0; --r ){
+		pq[0] = qq[0];
+		pq[1] = qq[1];
+		pq[2] = qq[2];
+		pq[3] = qq[1];
+		pq += 4;
+		qq += 4;
+	}
+	// back
+	for( r = qpf; r > 0; --r ){
+		pq[0] = qq[0];
+		pq[1] = qq[1];
+		pq[2] = qq[2];
+		pq[3] = qq[1];
+		pq += 4;
+		qq += 4;
+	}
+	// bottom
+	for( r = qpf; r > 0; --r ){
+		pq[0] = qq[0];
+		pq[1] = qq[3];
+		pq[2] = qq[2];
+		pq[3] = qq[3];
+		pq += 4;
+		qq += 4;
+	}
+	// right
+	for( r = qpf; r > 0; --r ){
+		pq[0] = qq[0];
+		pq[1] = qq[1];
+		pq[2] = qq[0];
+		pq[3] = qq[3];
+		pq += 4;
+		qq += 4;
+	}
+	
+
+  /* Texture coordinates 
+	are generated from the sphere points one by one.
+	
+	The valid range of TCs is [0:1]; invalid points
+	get TCs just slightly outside that range.
 
 	NOTE max rectilinear FOV is the max vertical
 	view angle allowed by pvQtView
@@ -217,108 +306,106 @@ quadsphere::quadsphere( int divs ){
 // rectlinear fov params
 	const double amaxrect = DEG2RAD(137.5 / 2.0);
 	const double trect = tan( amaxrect );
- 
-	for( int face = 0; face < 6; face++ ){
-		ps = vertptrs[face];
-		float * pr = rectptrs[face],
-			  * pf = fishptrs[face],
-			  * pc = cyliptrs[face],
-			  * pe = equiptrs[face],
-			  * pa = anglptrs[face];
-		for( i = 0; i < ppf; i++ ){
-		  // angles from the axes [0:Pi]
-			double xa = -atan2(ps[0], ps[2]), // horiz from +Z
-				   ya = acos(ps[1]), // vert from -Y
-				   za = acos(ps[2]);  // radial from +Z
-		  // direction for radial fns (0: invalid)
-			s = sqrt(ps[0]*ps[0] + ps[1]*ps[1]);
-			double sx = 0, sy = 0;
-			if( s >= 1.0e-4 ){
-				sx = -ps[0] / s;
-				sy = -ps[1] / s;
-			}
 
-		  // rectilinear
-			if( za > 0.45 * Pi ) pr[0] = pr[1] = -1; // quickie
-			else {
-			  s = 0.5 * tan( za ) / trect;
-			  double x = 0.5 + s * sx, 
-				     y = 0.5 + s * sy;
-			  double t = 0.02;
-			  if( x < -t || y < -t || x > 1 + t || y > 1 + t ){
-				  pr[0] = pr[1] = -1;
-			  } else {
-				  pr[0] = float( x );
-				  pr[1] = float( y );
-			  }
-			}
+const float ninv = -0.1, pinv = 1.1;
+#define CLIP( x ) ( x < ninv ? ninv : x > pinv ? pinv : x )
+#define INVAL( t ) ((t > 0) ? pinv : ninv )
 
-		  // fish/mirrorball sphere
-			if( sx == 0 && sy == 0 && za > 0.5 * Pi ){
-				pf[0] = pf[1] = -1;
-			} else {
-				s = 0.5 * sin( 0.5 * za );
-				pf[0] = float(0.5 + s * sx );
-				pf[1] = float(0.5 + s * sy );
-			}
-
-		  // equirectangular
-			pe[0] = float( 0.5 + 0.5 * xa / Pi );
-			pe[1] = float(ya / Pi);
-
-		  // cylindrical
-			s = ya - 0.5 * Pi;
-			if( fabs( s ) > amaxrect ) pc[0] = pc[1] = -1;
-			else {
-				pc[0] = pe[0];
-				pc[1] = float(0.5 + 0.5 * tan(s) / trect );
-			}
-
-
-		  // equiangular sphere
-			if( sx == 0 && sy == 0 && za > 0.5 * Pi ){
-				pa[0] = pa[1] = -1;
-			} else {
-				s = 0.5 * za / Pi;
-				pa[0] = float(0.5 + s * sx );
-				pa[1] = float(0.5 + s * sy );
-			}
-
-		  // next point
-			ps += 3; 
-			pr += 2; pf += 2; pc += 2; pe += 2; pa += 2;
+	ps = verts;
+	float * pr = rects,
+		  * pf = fishs,
+		  * pc = cylis,
+		  * pe = equis,
+		  * pa = angls;
+  // loop over all vertices
+	for( r = 6 * ppf; r > 0; --r ){
+	  /* angles from the axes
+	    xa is in [-Pi:Pi], ya and za in[0:Pi]
+	  */
+		double xa = -atan2(ps[0], ps[2]), // horiz from +Z
+			   ya = acos(ps[1]), // vert from -Y
+			   za = acos(ps[2]);  // radial from +Z
+	  // direction for radial fns (0: invalid)
+		s = sqrt(ps[0]*ps[0] + ps[1]*ps[1]);
+		double sx = 0, sy = 0;
+		if( s >= 1.0e-4 ){
+			sx = -ps[0] / s;
+			sy = -ps[1] / s;
 		}
+
+	  // rectilinear
+		if( za > 0.45 * Pi ){
+			pr[0] = INVAL( sx );
+			pr[1] = INVAL( sy );
+		} else {
+		  s = 0.5 * tan( za ) / trect;
+		  double x = CLIP( 0.5 + s * sx ), 
+			     y = CLIP( 0.5 + s * sy );
+		  pr[0] = float( x );
+		  pr[1] = float( y );
+		}
+
+	  // fisheye
+		if( sx == 0 && sy == 0 && za > 0.5 * Pi ){
+			pf[0] = INVAL( xa );
+			pf[1] = INVAL( ya - 0.5 * Pi );
+		} else {
+			s = 0.5 * sin( 0.5 * za );
+			pf[0] = float(0.5 + s * sx );
+			pf[1] = float(0.5 + s * sy );
+		}
+
+	  // equirectangular
+		pe[0] = float( 0.5 + 0.5 * xa / Pi );
+		pe[1] = float(ya / Pi);
+
+	  // cylindrical
+		s = ya - 0.5 * Pi;
+		if( fabs( s ) > amaxrect ){
+			pc[0] = INVAL( xa );
+			pc[1] = INVAL( s );
+		} else {
+			pc[0] = pe[0];
+			pc[1] = float(0.5 + 0.5 * tan(s) / trect );
+		}
+
+
+	  // equiangular sphere
+		if( sx == 0 && sy == 0 && za > 0.5 * Pi ){
+			pa[0] = INVAL( xa );
+			pa[1] = INVAL( ya - 0.5 * Pi );
+		} else {
+			s = 0.5 * za / Pi;
+			pa[0] = float(0.5 + s * sx );
+			pa[1] = float(0.5 + s * sy );
+		}
+
+	  // next point
+		ps += 3; 
+		pr += 2; pf += 2; pc += 2; pe += 2; pa += 2;
 	}
+
+
 }
 
 quadsphere::~quadsphere(){
 	if( words ) delete[] words;
 }
 
-const int * quadsphere::lineIndices( int face ){
-	if( face < 0 || face > 5 ) return 0;
-	return lineidx;
-}
-
-const int * quadsphere::quadIndices( int face ){
-	if( face < 0 || face > 5 ) return 0;
-	return quadidx;
-}
-
-const float * quadsphere::vertices( int face ){
-	if( face < 0 || face > 5 ) return 0;
-	return vertptrs[face];
-}
-
-const float * quadsphere::texCoords( int face, projection proj ){
-	if( face < 0 || face > 5 ) return 0;
+const float * quadsphere::texCoords( projection proj ){
 	switch( proj ){
 	default: return 0;
-	case eqa: return anglptrs[face];
-	case rec: return rectptrs[face];
-	case sph: return fishptrs[face];
-	case cyl: return cyliptrs[face];
-	case eqr: return equiptrs[face];
+	case eqa: return angls;
+	case rec: return rects;
+	case sph: return fishs;
+	case cyl: return cylis;
+	case eqr: return equis;
 	}
+}
+
+unsigned int quadsphere::texCoordOffset( projection proj ){
+	const float * p = texCoords( proj );
+	if( p == 0 ) p = angls;
+	return (char *)p - (char *)verts;
 }
 
