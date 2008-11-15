@@ -65,7 +65,7 @@
 	}
 
   // create the sphere tables
-	pqs = new quadsphere( 30 );
+	pqs = new quadsphere( 32 );
 
      Width = Height = 400;
 	 minpan = -180; maxpan = 180;
@@ -526,7 +526,7 @@ bool pvQtView::OGLok(){
 		boundtex[i] = 0;
 	}
 
-	glFrontFace( GL_CW );
+	glFrontFace( GL_CCW );
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_NORMAL_ARRAY);
@@ -554,12 +554,12 @@ bool pvQtView::OGLok(){
 		if( pv.width() >= 360 ) sclamp = GL_CLAMP_TO_EDGE;
 		else {
 			double d = 0.5 * pv.width();
-			minpan = -d; maxpan = d;
+////			minpan = -d; maxpan = d;
 		}
 		if( pv.height() >= 180 ) tclamp = GL_CLAMP_TO_EDGE;
 		else {
 			double d = 0.5 * pv.height();
-			mintilt = -d; maxtilt = d;
+////			mintilt = -d; maxtilt = d;
 		}
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, sclamp);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, tclamp);
@@ -647,26 +647,25 @@ void pvQtView::makeSphere( GLuint list )
   // abort if the OpenGL version is insufficient
  	if( !OGLisOK ) return;
 
+	const char * erm = pqs->errMsg();
+	if( erm != 0 ){
+		qFatal("quadsphere: %s", erm );
+	}
+
 	if( textgt ){	// there is an image
-		const int * idx = pqs->quadIndices(0); 
-		int nq = pqs->quadIdxPerFace();
 		glNewList(list, GL_COMPILE);
-		for( int i = 0; i < 6; i++ ){
-		  glVertexPointer( 3, GL_FLOAT, 0, pqs->vertices( i ));
-		  glNormalPointer( GL_FLOAT, 0, pqs->vertices( i ));
-		  glTexCoordPointer( 2, GL_FLOAT, 0, pqs->texCoords( i, proj ));
-		  glDrawElements(GL_QUADS, nq, GL_UNSIGNED_INT, idx );
-		}
+		  glVertexPointer( 3, GL_FLOAT, 0, pqs->vertices());
+		  glNormalPointer( GL_FLOAT, 0, pqs->vertices());
+		  glTexCoordPointer( 2, GL_FLOAT, 0, pqs->texCoords( proj ));
+		  glDrawElements(GL_QUADS, pqs->quadIndexCount(), 
+			  GL_UNSIGNED_INT, pqs->quadIndices() );
 		glEndList();
 	} else {
-		const int * idx = pqs->lineIndices(0); 
-		int nl = pqs->lineIdxPerFace();
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glNewList(list, GL_COMPILE);
-		for( int i = 0; i < 6; i++ ){
-		  glVertexPointer( 3, GL_FLOAT, 0, pqs->vertices( i ));
-		  glDrawElements(GL_LINES, nl, GL_UNSIGNED_INT, idx );
-		}
+		  glVertexPointer( 3, GL_FLOAT, 0, pqs->vertices());
+		  glDrawElements(GL_LINES, pqs->lineIndexCount(), 
+			  GL_UNSIGNED_INT, pqs->lineIndices());
 		glEndList();
 	}
  }

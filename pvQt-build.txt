@@ -1,31 +1,35 @@
 How to Build pvQt
 
-First, you need to get and install Qt version 4, if you don't already have it.  Most Unix and Linux distributions provide a prebuilt Qt4 via their package managers; failing that, you can download and install a suitable version at http://trolltech.com/downloads/opensource/appdev.  On Windows, the open source distribution requires the MinGW port of the Gnu build tools.  If you don't already have that, the easiest way to get it is to download the Trolltech package that includes MinGW.  
+First, you need to get and install Qt version 4.4 or newer, if you don't already have it.  Most Unix and Linux distributions provide a prebuilt Qt4.4 via their package managers; failing that, you can download and install a suitable version at http://trolltech.com/downloads/opensource/appdev. 
+ 
+On Windows, the open source Qt distribution requires the MinGW port of the Gnu build tools.  If you don't already have that, the easiest way to get it is to install the Qt package that includes MinGW.
+
+To build on OSX you must have the Apple XCode package (version 3) installed.  Qt 4.4.0 may have OpenGL isues on OSX, so Mac users should install version 4.4.2 or later.  Note Qt does not support pre-OSX Mac systems.   
 
 Qt is a big package (120 MB zipped, 150MB with MinGW) so you need a fast connection and plenty of disk space.  But it installs without a glitch 99% of the time.  And is very well worth having.
 
-You should have the svn commandline client installed (even if you use Tortoise svn on Windows) or at least the svnversion command, so that qmake can build a version number with the SVN revision as the third ("patch") field.  You can build without this; the patch number will be "???".  Note that on Windows the qmake script uses the Gnu cat command (distributed with this code as wbin/cat.exe), because MS copy is defective.
+The only other required package is the zlib file compression library.  Most Unix/Linux systems (including OSX) will already have that, if not, their package managers will.  Or get it from the Gnu archives.  For Windows, download a prebuilt zlib from the GnuWin32 project at sourceforge.net and install it in the MinGW include and lib directories.
 
-The only other required package is the zlib file compression library.  Most Unix/Linux systems will already have that, if not, their package managers will.  Or get it from the Gnu archives.  For Windows, download a prebuilt zlib from the GnuWin32 project at sourceforge.net and install it in the MinGW include and lib directories.
-
-Once Qt and the build tools are in place, you can build pvQt from a command shell (on Windows, use the one supplied with Qt).  In the pvQt directory, on Linux or Windows just type 
-		"qmake pvQt.pro"  (repeat this command if you get messages about nonexistent directories)
+Once Qt and the build tools are in place, you can build pvQt from a command shell (on Windows, use the one supplied with Qt).  In the pvQt directory, on Linux or Windows type 
+		"qmake pvQt.pro"
+On OSX that command will create an XCode project, that you can open and build; or to get a Makefile, use 
+		"qmake -spec macx-g++"
+To build on Windows or Linux (or from a Mac Makefile) type
 		"make release"  
-On mac OSX qmake may create an XCode project that you can open and compile.  In fact qmake can generate project files for a variety of IDEs (though MS Visual Studio is disabled in the open source version), see the Qt Assistant for details.
- 
+
 The resulting executable will be in pvQt/bin and can be copied anywhere.  On Windows, you might have to add the Qt4 bin directory to the "all users" search path.  This is important because that directory contains required plugin subdirectories as well as the Qt DLLs (DON'T copy Qt DLL's to Windows\System32.  Any system which requires that is too old to run pvQt).  If you have a preexisting installation of MingGW, it is OK to put the MinGW DLL in System32; but if you installed it from the Qt distribution, there will be a copy of the MinGW DLL in Qt4 bin.
 
-The qmake project file, pvQt.pro, is set up to build both debug and release versions.  This has some quirks which you should be aware of.  There are two subordinate Makefiles; "make release" runs one, building executable bin/pvQt and "make debug" runs the other, building bin/pvQtd; plain "make" runs the debug build.  However these builds use the same object file names, and make cannot detect which version was built last.  So if you run "make debug" then "make release", it will incorrectly create pvQt by linking the existing debug object files.  You have to "make release_clean" first to build the release objects.  The release exe size is about 160 KB while the debug one is over 7 MB, so it is easy to tell which is which.
+The qmake project file, pvQt.pro, is set up to build both debug and release versions.  This has some quirks which you should be aware of.  There are two subordinate Makefiles. "make release" runs one, building executable bin/pvQt and "make debug" runs the other, building bin/pvQtd; plain "make" runs the debug build.  However these builds use the same object file names, and make cannot detect which version was built last.  So if you run "make debug" then "make release", it will incorrectly create pvQt by linking the existing debug object files (and vice versa).  So you have to "make clean" when switching build targets.  The release exe size is about 160 KB while the debug one is over 7 MB, so it is easy to tell which is which.
 
-Run Qt Assistant for very good documentation of qmake and the whole Qt framework.  Or if you have what seems to be a platform specific issue, the Trolltech website should be helpful.  Start at http://trolltech.com/developer.
+Run Qt Assistant for very good documentation of qmake and the whole Qt framework.  Or if you have what seems to be a platform specific issue, the Trolltech website could be helpful.  Start at http://trolltech.com/developer.
 
 If you need help, or have constructive suggestions, feature requests, bug reports, etc, please use the pvQt project pages on SourceForge to communicate with me (https://sourceforge.net/projects/pvqt/).  I may not be the best one to ask about some things, but will be glad to try to help.
 
 How to Develop pvQt
 
-If you want to contribute to the public development of pvQt, you will need an SVN client to download the curent source from SourceForge.  On Windows I use Tortoise SVN, and on Linux the Unix command line version.
+If you want to build from the curent development sources, you will need an SVN client to download the curent source from SourceForge.  On Windows I use Tortoise SVN, and on Linux and OSX the Unix command line version.  You should install the svn commandline client package even on Windows because the qmake project calls the svnversion command to get the SVN revision for the third ("patch") field of the pvQt version.  You can build without this but then the patch number will be "???".  
 
-You will also need my permission to put changes into the source archive.  Specifically, you must have a member account on SourceForge, and I must register you as an authorized pvQt developer (please request this on the pvQt "Open Discussion forum, https://sourceforge.net/forum/forum.php?forum_id=874270) .  Then you can commit source changes using your SF username and password.  If you are new to SVN, "committing" can feel a little scary, but don't worry: anything you do can be undone.  So commit early and often -- but please, only code that compiles withour error and more or less works.  
+If you want to contribute to the public development of pvQt you will also need my permission to put changes into the source archive.  Specifically, you must have a member account on SourceForge, and I must register you as an authorized pvQt developer (please request this on the pvQt "Open Discussion forum, https://sourceforge.net/forum/forum.php?forum_id=874270) .  Then you can commit source changes using your SF username and password.  If you are new to SVN, "committing" can feel a little scary, but don't worry: anything you do can be undone.  So commit early and often -- but please, only code that compiles without error and more or less works, and note in the message what platform(s) it has been tested on. 
 
 If you have an idea for developing pvQt in a whole new direction, ask me first and we can set up a "branch" of the source tree just for that.
 
@@ -45,11 +49,13 @@ To ensure that pvQt will work with non-Latin file names, use only Qt methods wit
 
 	IDEs
 
-There is a pretty good Qt-specific IDE for linux, called QDevelop, which I find less baffling than KDevelop, but it does crash oftener.  If you like to use the Eclipse IDE, you can get an integration package for it from Trolltech.   
+On Linux, you can use Elipse (there is an official support package for that from Trolltech) or KDevelop, which natively supports Qt projects.  There is also a pretty good Qt-specific IDE, called QDevelop, which I find less baffling than the big IDE's, but it does crash oftener (indeed it stopped working altogether after I installed an apparently unrelated 'upgrade' to my ubuntu/amd64 system).
 
-On Windows I use Microsoft Visual Studio in "makefile" mode to edit source code and trigger builds.  Source directory MSVS-project has Visual Studio project files set up for this.  Of course if you are lucky enough to own a commercial license for Qt you can build and debug with the Microsoft tools. 
+On Windows I use Microsoft Visual Studio in "makefile" mode to edit source code and trigger builds.  Source directory MSVS-project has Visual Studio project files set up for this.  Of course the gcc compiler output is not integrated with Visual Studio, and you can't use the MS debugger.  If you are lucky enough to own a commercial license for Qt you can build and debug with the Microsoft tools. 
 
-I use the Insight/gdb package for debugging on both platforms.  It is available on SourceForge.
+	Debuggers
+	
+I use the Insight/gdb package (available on SourceForge) for debugging on both Linux and Windows, and XCode on the Mac.
 
-Cheers, Tom Sharpless, 13 October 2008 
+Cheers, Tom Sharpless, 12 November 2008 
 
