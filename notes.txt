@@ -313,9 +313,44 @@ done	Show rectilinear pictures (up to 90 deg)
 	images to use linear filter?  No, CLAMP_TO_EDGE takes out
 	the white lines.  And low res images a bit less pixelated.
 	NOTE: will have to revisit clamping when install quadsphere.
-	2) make pvQtPic get maxFovs from a pictureTypes object.  This
+OK	2) make pvQtPic get maxFovs from a pictureTypes object.  This
 	requires a translation between pvQtPic::picType and pictureTypes
 	index. I added that to pictureTypes, folded pictureTypes.h into
 	pvQtPic.h and removed pictureTypes.h from the project.
 	NOTE: pictureTypes.cpp still has the bogus FOV for rect.
 	
+16 Nov 2008
+
+	Completing version 3 of quadsphere, which should be perfect.
+	Must finish code to fix up the +/-Pi seam.
+	
+OK	Quadsphere has equal angle and equisolid angle projections,
+	so must add an equal angle picture type ("sphr", keep 
+	"fish" for equisolid angle).  PTGui's "sphere" projection
+	actually is equal angle; PT's "mirror ball" is equisolid.
+	
+	Bug:  contrary to docs, cancelling FOV dialog does not give
+	empty frames.
+	
+	Spec change: turn should not reset at picture load.
+	
+	I've been able to build and debug on a Mac, but not solve 
+	the problem with cubic qtvrs.  It looks as if texture load
+	may be failing even though proxy test passed.  Maybe this
+	has to do with limiting texture dims to MAX_TEXTURE and
+	MAX_CUBE_TEXTURE on the working calls but not the proxy
+	ones?  Anyhow, must fetch the MAX's and respect them;
+	also check for error after every tex image load.
+	
+17 Nov 2008
+
+	Tried deleting textures before proxy test; but that does
+	not work (wipes out all texture options).
+	
+	Finally figured out how to do poxy text right -- once only,
+	before loading any pictures.  Then keep face sizes <= the
+	found limits  (revised fitFaceToImage to handle this).  This 
+	works, and I think it might fix the Mac mystery too.  On the
+	T60 it shows most things OK (tho small), with occasional 
+	"invalid value" errors at cubic image load. Works great on 
+	Winxp1. 

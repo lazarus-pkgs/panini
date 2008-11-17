@@ -55,9 +55,9 @@ public:
 	QString OpenGLHardware(){
 		return QString( (const char *)glGetString(GL_RENDERER) );
 	}
-	QString OpenGLFeatures(){
-		return QString("texPwr2 %1, cubeMap %2, vertBuf %3")
-			.arg(texPwr2).arg(cubeMap).arg(vertBuf);
+	QString OpenGLLimits(){
+		return QString("texPwr2 %1, texMax %2, cubeMax %3")
+			.arg(texPwr2).arg(max2d).arg(maxcube);
 	}
 
   /* Display a picture
@@ -156,23 +156,26 @@ private slots:
 	 GLuint theScreen;	// current screen list
   // textures
 	 GLenum textgt;	// current target (2D or cube)
-	 GLuint texIDs[2];	// 0: 2D, 1: cube object
-	 GLuint theTex;	// current object
-	 GLuint boundtex[6];	// textures converted from QImages
+	 GLuint texname; // current texture object
+	 GLuint texnms[2];	// bund handles: 0: 2d, 1: cube
   // OpenGL capabilities
 	bool OGLisOK;	// is usable
 	bool OGLv20;	// is version 2.0 or better
 	bool texPwr2;	// needs power-of-2 texture dimensions
 	bool cubeMap;	// has cube mapping (rq'd)
 	bool vertBuf;	// has vertex buffers (opt)
+	GLint maxcube, max2d;	// OGL's texture dim limits
+	QSize	maxTex2Dsqr,	// largest feasible texture dims
+			maxTex2Drec,
+			maxTexCube;
+	QSize maxTexSize( GLenum proxy, int tw, int th );
   // status 
 	bool paintok;	// most recent OGL error status
   	bool picok;		// sticky OGL error flag
   	QString errmsg;	// sticky OGL error message
-  	bool OGLok();	// check, post and signal OGL errors
+  	bool OGLok(const char * label);	// check, post and signal OGL errors
   // tabulated sphere points and texture coordinates
 	quadsphere  * pqs;
-	quadsphere::projection proj;
 	bool QS_BUF;	// put quadsphere data in OGL buffers
 	double xtexmag, ytexmag;  // tex coord scale factors
 };

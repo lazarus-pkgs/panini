@@ -89,6 +89,7 @@ private slots:
 	void on_actionQTVR_triggered();
 	void on_actionRectilinear_triggered();
 	void on_actionFisheye_triggered();
+	void on_actionSpherical_triggered();
 	void on_actionCylindrical_triggered();
 	void on_actionEquirectangular_triggered();
 	void on_actionCube_faces_triggered();

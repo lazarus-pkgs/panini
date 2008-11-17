@@ -58,13 +58,10 @@
 */
 #ifndef	QUADSPHERE_H
 #define	QUADSPHERE_H
+#include "pvQtPic.h"
 
 class quadsphere {
 public:
-// Identifiers for the supported projections.   
-// This enum matches pvQtPic type except at eqa = 0
-	typedef enum { eqa,	rec, sph, cyl, eqr } projection;
-
 	quadsphere( int divs = 30 );
 	~quadsphere();
 /* c'tor reports errors by posting an error message.  
@@ -77,8 +74,8 @@ public:
 	unsigned int vertexOffset(){ return 0; }
 	unsigned int vertexBytes(){ return 3 * vertpnts * sizeof(float); }
 // corresponding texture coordinates [0:1]
-	const float * texCoords( projection proj );
-	unsigned int texCoordOffset( projection proj );
+	const float * texCoords( pvQtPic::PicType proj );
+	unsigned int texCoordOffset( pvQtPic::PicType proj );
 	unsigned int texCoordSize(){ return 2 * vertpnts * sizeof(float); }
 // index sequence for line drawing
 	const unsigned int * lineIndices(){ return lineidx; }
@@ -96,6 +93,7 @@ public:
 
 private:
 	char * errmsg;
+	pictureTypes pictypes;	// for fov limits
   // all memory is allocated in one block
 	float * words;
 	unsigned int nwords;

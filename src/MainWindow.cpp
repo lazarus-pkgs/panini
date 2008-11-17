@@ -211,6 +211,10 @@ void MainWindow::on_actionFisheye_triggered(){
 	emit newPicture( "fish" );
 }
 
+void MainWindow::on_actionSpherical_triggered(){
+	emit newPicture( "sphr" );
+}
+
 void MainWindow::on_actionCylindrical_triggered(){
 	emit newPicture( "cyli" );
 }

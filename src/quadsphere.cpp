@@ -111,8 +111,9 @@ quadsphere::quadsphere( int divs ){
 	int dp1 = divs + 1;	// total points per row
 	int qpf = divs * divs;	// quads per face
 	int ppf = dp1 * dp1;	// points per face
+	int dups = 2 * divs + 3;	// extra pnts for wrap fix
 
-	vertpnts = 6 * ppf + 3 * dp1;	// total vertices
+	vertpnts = 6 * ppf + dups;	// total vertices
 	linewrds = 24 * qpf;
 	quadwrds = linewrds;
 	nwords =  15 * vertpnts + linewrds + quadwrds;
@@ -300,12 +301,17 @@ quadsphere::quadsphere( int divs ){
 	The valid range of TCs is [0:1]; invalid points
 	get TCs just slightly outside that range.
 
-	NOTE max rectilinear FOV is the max vertical
-	view angle allowed by pvQtView
+	Max fov for rect is read from pictureTypes;  sphr
+	and fish fov limits are set abitrarily here, because
+	I want to leave the image limits at 360
   */
-// rectlinear fov params
-	const double amaxrect = DEG2RAD(137.5 / 2.0);
-	const double trect = tan( amaxrect );
+// fov limits
+	int i = pictypes.picTypeIndex( pvQtPic::rec );
+	QSizeF fovs = pictypes.maxFov( i );
+	double amaxrect = DEG2RAD(0.5 * fovs.width());
+	double tmaxrect = tan( amaxrect );
+	double amaxsph = DEG2RAD(0.5 * 330 );
+	double amaxfish = DEG2RAD(0.5 * 300 );
 
 const float ninv = -0.1, pinv = 1.1;
 #define CLIP( x ) ( x < ninv ? ninv : x > pinv ? pinv : x )
@@ -338,7 +344,7 @@ const float ninv = -0.1, pinv = 1.1;
 			pr[0] = INVAL( sx );
 			pr[1] = INVAL( sy );
 		} else {
-		  s = 0.5 * tan( za ) / trect;
+		  s = 0.5 * tan( za ) / tmaxrect;
 		  double x = CLIP( 0.5 + s * sx ), 
 			     y = CLIP( 0.5 + s * sy );
 		  pr[0] = float( x );
@@ -346,7 +352,7 @@ const float ninv = -0.1, pinv = 1.1;
 		}
 
 	  // fisheye
-		if( sx == 0 && sy == 0 && za > 0.5 * Pi ){
+		if( za > amaxfish ){
 			pf[0] = INVAL( xa );
 			pf[1] = INVAL( ya - 0.5 * Pi );
 		} else {
@@ -366,12 +372,12 @@ const float ninv = -0.1, pinv = 1.1;
 			pc[1] = INVAL( s );
 		} else {
 			pc[0] = pe[0];
-			pc[1] = float(0.5 + 0.5 * tan(s) / trect );
+			pc[1] = float(0.5 + 0.5 * tan(s) / tmaxrect );
 		}
 
 
 	  // equiangular sphere
-		if( sx == 0 && sy == 0 && za > 0.5 * Pi ){
+		if( za > amaxsph ){
 			pa[0] = INVAL( xa );
 			pa[1] = INVAL( ya - 0.5 * Pi );
 		} else {
@@ -385,6 +391,64 @@ const float ninv = -0.1, pinv = 1.1;
 		pr += 2; pf += 2; pc += 2; pe += 2; pa += 2;
 	}
 
+  /* Fix up the wrap seam
+	The wrap seam runs from top center thru bottom center
+	down the middle of back, including top and bottom center 
+	points.  There are 2 *divs + 3 points in all because the
+	cube edge points are already doubled. 
+	
+	These vertices are copied to the dupes area and the indices 
+	for their right adjacent quads adjusted in-place.  Then the
+	corresponding TCs -- both old and new -- are set low or high 
+	according to the values of the other TC's in their quads.
+  */
+	unsigned int d2 = divs/2;
+  // point and quad indices
+	unsigned int ipt = ppf + d2,		// top rear
+				 iqt = qpf + d2,
+				 ipk = 3 * ppf + d2,	// back upper
+				 iqk = 3 * qpf + d2,
+				 ipb = 4 * ppf + d2 * dp1 + d2,	// bottom center
+				 iqb = 4 * qpf + d2,
+				 idt = 6 * ppf,			// dupe top
+				 idk = idt + d2 + 1,	// dupe back
+				 idb = idk + dp1;		// dupe bottom
+  // copy the vertices in ascending address order
+	ps = verts + 3 * ipt; 
+	pd = verts + 3 * idt;
+	for( r = 0; r < d2 + 1; r++ ){
+		pd[0] = ps[0]; 
+		pd[1] = ps[1]; 
+		pd[2] = ps[2]; 
+		ps += 3 * dp1;
+		pd += 3;
+	}
+	ps = verts + 3 * ipk;
+	for( r = 0; r < dp1; r++ ){
+		pd[0] = ps[0]; 
+		pd[1] = ps[1]; 
+		pd[2] = ps[2]; 
+		ps += 3 * dp1;
+		pd += 3;
+	}
+	ps = verts + 3 * ipb;
+	for( r = 0; r < d2 + 1; r++ ){
+		pd[0] = ps[0]; 
+		pd[1] = ps[1]; 
+		pd[2] = ps[2]; 
+		ps += 3 * dp1;
+		pd += 3;
+	}
+
+  /* post new texcoords and change quad indices.
+   The first and last points of each seam segment belong to
+   2 quads (right and left), the others belong to 4.  We visit
+   all those quads, determine correct texture coordinates for
+   the left and right seam points, then set new right indices
+   and post the TCs in the duplicate points areas.
+  */
+
+
 
 }
 
@@ -392,18 +456,18 @@ quadsphere::~quadsphere(){
 	if( words ) delete[] words;
 }
 
-const float * quadsphere::texCoords( projection proj ){
+const float * quadsphere::texCoords( pvQtPic::PicType proj ){
 	switch( proj ){
 	default: return 0;
-	case eqa: return angls;
-	case rec: return rects;
-	case sph: return fishs;
-	case cyl: return cylis;
-	case eqr: return equis;
+	case pvQtPic::eqa: return angls;
+	case pvQtPic::rec: return rects;
+	case pvQtPic::eqs: return fishs;
+	case pvQtPic::cyl: return cylis;
+	case pvQtPic::eqr: return equis;
 	}
 }
 
-unsigned int quadsphere::texCoordOffset( projection proj ){
+unsigned int quadsphere::texCoordOffset( pvQtPic::PicType proj ){
 	const float * p = texCoords( proj );
 	if( p == 0 ) p = angls;
 	return (char *)p - (char *)verts;

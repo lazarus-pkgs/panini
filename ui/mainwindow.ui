@@ -51,6 +51,7 @@
     <addaction name="actionQTVR" />
     <addaction name="actionRectilinear" />
     <addaction name="actionFisheye" />
+    <addaction name="actionSpherical" />
     <addaction name="actionCylindrical" />
     <addaction name="actionEquirectangular" />
     <addaction name="actionCube_faces" />
@@ -188,7 +189,7 @@
   </action>
   <action name="actionFisheye" >
    <property name="text" >
-    <string>fisheye, sphere</string>
+    <string>fisheye</string>
    </property>
   </action>
   <action name="actionCylindrical" >
@@ -256,6 +257,11 @@
    </property>
    <property name="shortcut" >
     <string>L</string>
+   </property>
+  </action>
+  <action name="actionSpherical" >
+   <property name="text" >
+    <string>spherical</string>
    </property>
   </action>
  </widget>

@@ -78,15 +78,16 @@ class pvQtPic : public QObject
 public:
 
 /* Picture type
-   implies the number of faces and the preferred image projection
+   implies the number of faces and the image projection
 */
 typedef enum {
   nil = 0,		// No picture
-  rec = 1,		// A rectilinear image up to 135 x 135 degrees
-  sph = 2,		// A spherical image up to 360 degrees diameter
-  cyl = 3,		// A cylindrical panorama up to 360 x 135 degrees
-  eqr = 4,		// An equirectangular panorama up to 360 x 180 degrees
-  cub = 5,		// A cubic panorama (1 to 6 rectilinear images 90x90 degrees)
+  rec,		// rectilinear
+  eqs,		// equal solid angle
+  eqa,		// equal angle
+  cyl,		// cylindrical
+  eqr,		// equirectangular
+  cub,		// cubic (1 to 6 rectilinear cube face images)
  } PicType;
  
 /* cube face IDs
@@ -166,9 +167,9 @@ int 	scalepix( int proj, int pix, double fov, double tofov );
   
 */
 
-// to be called only from pvQtView, to set picture size...
+// to be called only from pvQtView, to set displayed size...
  bool setFaceSize( QSize dims );	// arbitrary dimensions
- bool fitFaceToImage();				// size from FOVs & source dims
+ bool fitFaceToImage( QSize maxdims, bool pwr2 = false );	
 // linear ratios of size at max FOV to size at actual FOV
  QSizeF  fovSizeRatios();	
  
@@ -247,35 +248,49 @@ private:
 
 /* Picture types visble to the user
 */
-#define NpictureTypes 7
+#define NpictureTypes 8
 
 class pictureTypes :
 	public QObject
 {	Q_OBJECT
 public:
-  // picture type names, descriptions, and max file counts
-	typedef struct { 
-		const char * typ; 
-		const int nfi; 					// max file count
-		QString desc; 
-		double minW, minH, maxW, maxH;	// degrees
-	} pictypnumdesc;
-  // acces funtions
+  // constructor
 	pictureTypes();
-	int picTypeIndex( const char * name );
+/* access functions
+  Picture type attributes are accessible by index or by
+  the 4 letter picture type names visible to the user.  
+  For the subset corresponding to primitive projections, 
+  picture type names and pvQtPic::picType codes can be
+  interconverted.
+*/
+  // picType code from picture type name (nil if not valid)
+	pvQtPic::PicType PicType( const char * name );
+
+  // table index from key
+	int picTypeIndex( pvQtPic::PicType t );	// subset only
+	int picTypeIndex( const char * name );	// all rows
+
+  // attributes
 	const char * picTypeName( int index );
 	int picTypeCount( const char * name );
 	int picTypeCount( int index );
 	QString picTypeDescr( const char * name );
 	QString picTypeDescr( int index );
-	QStringList picTypeDescrs();
 	QSizeF minFov( int index );
 	QSizeF maxFov( int index );
-  /* convert pvQtPic type id to descriptor index, or -1
-    (returns only the primitive file types)
-  */
-	int picType2Index( pvQtPic::PicType t );
+  // all descriptors as a list of strings
+	QStringList picTypeDescrs();
+
 private:
+  // picture type names, descriptions, and max file counts
+	typedef struct { 
+		const char * typ; 
+		pvQtPic::PicType pictype;
+		const int nfi; 					// max file count
+		QString desc; 
+		double minW, minH, maxW, maxH;	// degrees
+	} pictypnumdesc;
+
   static pictypnumdesc pictypn[NpictureTypes]; 
 
 };
