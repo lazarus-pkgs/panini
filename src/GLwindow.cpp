@@ -99,7 +99,7 @@ void GLwindow::about_pvQt(){
 	msg += tr("Version: ") + glview->OpenGLVersion() + QString("\n");
 	msg += tr("Vendor: ") + glview->OpenGLVendor() + QString("\n");
 	msg += tr("Video: ") + glview->OpenGLHardware() + QString("\n");
-	msg += tr("Features: ") + glview->OpenGLFeatures();
+	msg += tr("Limits: ") + glview->OpenGLLimits();
 	aboutbox.setInfo( msg );
 	aboutbox.show();
 }
@@ -129,12 +129,15 @@ void GLwindow::newPicture( const char * type ){
 */
 bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 	QString errmsg("(no error)");
-	int n = pictypes.picTypeCount( tnm );
-	if( n == 0 ) return false;	// no such pic type
+	int ipt = pictypes.picTypeIndex( tnm );
+	if( ipt < 0 ) return false;	// no such pic type
+	int n = pictypes.picTypeCount( ipt );
 	int c = fnm.count();
 	bool ok = false, loaded = false;
 	errmsg = tr("invalid picture type");
-	switch( pictypes.picTypeIndex( tnm ) ){
+
+	pvQtPic::PicType pictype = pictypes.PicType( tnm );
+	switch( ipt ){
 	case 0:	// proj
 		qCritical("%s -- to be implemented", tnm );
 		break;
@@ -142,20 +145,8 @@ bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 		if( c == 1 ) ok = loaded = QTVR_file( fnm[0] );
 		if(!ok) errmsg = tr("QTVR load failed");
 		break;
-	case 2:	// rect
-		ok = pvpic->setType( pvQtPic::rec );
-		break;
-	case 3:	// fish
-		ok = pvpic->setType( pvQtPic::sph );;
-		break;
-	case 4:	// cyli
-		ok = pvpic->setType( pvQtPic::cyl );;
-		break;
-	case 5:	// equi
-		ok = pvpic->setType( pvQtPic::eqr );;
-		break;
-	case 6:	// cube
-		ok = pvpic->setType( pvQtPic::cub );
+	default:
+		ok = pvpic->setType( pictype );
 		break;
 	}
 

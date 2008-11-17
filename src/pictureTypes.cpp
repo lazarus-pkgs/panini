@@ -23,24 +23,26 @@
 
 pictureTypes::pictypnumdesc
 pictureTypes::pictypn[NpictureTypes] = {
-    { "proj", 1, QString(), 0,0,0,0 },
-	{ "qtvr", 1, QString(), 0,0,0,0 },
-	{ "rect", 1, QString(), 5,5,137.5,137.5 },
-	{ "fish", 1, QString(), 50,50,360,360 },
-	{ "cyli", 1, QString(), 50,25,360,137.5 },
-	{ "equi", 1, QString(), 50, 25,360,180 }, 
-	{ "cube", 6, QString(), 90,90,90,90 }
+	{ "proj", pvQtPic::nil, 1, QString(), 0,0,0,0 },
+	{ "qtvr", pvQtPic::nil, 1, QString(), 0,0,0,0 },
+	{ "rect", pvQtPic::rec, 1, QString(), 5,5,137.5,137.5 },
+	{ "fish", pvQtPic::eqs, 1, QString(), 50,50,360,360 },
+	{ "sphr", pvQtPic::eqa, 1, QString(), 50,50,360,360 },
+	{ "cyli", pvQtPic::cyl, 1, QString(), 50,25,360,137.5 },
+	{ "equi", pvQtPic::eqr, 1, QString(), 50, 25,360,180 }, 
+	{ "cube", pvQtPic::cub, 6, QString(), 90,90,90,90 }
  };
 
 // need c'tor as tr() does not work outside a QObject
 pictureTypes::pictureTypes(){
     pictypn[0].desc = tr("PanoTools script or project");
 	pictypn[1].desc = tr("QuickTime VR panorama");
-	pictypn[2].desc = tr("Rectilinear image");
-	pictypn[3].desc = tr("Fisheye or sphere image");
-	pictypn[4].desc = tr("Cylindrical panorama");
-	pictypn[5].desc = tr("Equirectangular panorama"); 
-	pictypn[6].desc = tr("1 to 6 Cube face images");
+	pictypn[2].desc = tr("Normal rectilinear photo");
+	pictypn[3].desc = tr("Fisheye or mirrorball photo");
+	pictypn[4].desc = tr("Spherical panorama");
+	pictypn[5].desc = tr("Cylindrical panorama");
+	pictypn[6].desc = tr("Equirectangular panorama"); 
+	pictypn[7].desc = tr("2 to 6 Cube face images");
 }
 
 // return index of a pic type name, -1 if none
@@ -105,8 +107,13 @@ QSizeF pictureTypes::maxFov( int index ){
 	return QSizeF( pictypn[index].maxW, pictypn[index].maxH );
 }
 
-int pictureTypes::picType2Index( pvQtPic::PicType t ){
+int pictureTypes::picTypeIndex( pvQtPic::PicType t ){
 	if( t < pvQtPic::rec || t > pvQtPic::cub ) return -1;
 	return int(t) + 1;
 }
 
+pvQtPic::PicType pictureTypes::PicType( const char * name ){
+	int i = picTypeIndex( name );
+	if( i < 2 ) return pvQtPic::nil;
+	return pictypn[i].pictype;
+}

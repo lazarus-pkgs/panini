@@ -133,20 +133,25 @@ bool pvQtPic::setType( pvQtPic::PicType t )
   		maxfaces = 1;
   		facedims = QSize(256,256);
   		break;
-  	case sph:	// A spherical image up to 180 degrees diameter
+  	case eqs:	// equisolid angle (fisheye, mirrorball) image
   		maxfaces = 1;
   		facedims = QSize(256,256);
-  		xproj = yproj = 2;	// ideal fisheye
+  		xproj = yproj = 2;
   		break;
-  	case cyl:	// A cylindrical panorama up to 360 x 135 degrees
+  	case eqa:	// equal angle spherical image
+  		maxfaces = 1;
+  		facedims = QSize(256,256);
+  		xproj = yproj = 1;
+  		break;
+  	case cyl:	// A cylindrical panorama
   		maxfaces = 1;
   		facedims = QSize(512,256);
   		xproj = 1;
   		break;
-  	case eqr:	// An equirectangular panorama up to 360 x 180 degrees
+  	case eqr:	// An equirectangular panorama
   		maxfaces = 1;
   		facedims = QSize(512,256);
-  		xproj = yproj = 1;	// ideal equianglular
+  		xproj = yproj = 1;
   		break;
   	case cub:	// A cubic panorama (1 to 6 rectilinear images 90x90 degrees)
    		maxfaces = 6;
@@ -160,7 +165,7 @@ bool pvQtPic::setType( pvQtPic::PicType t )
   // accept the type
 	type = t;
 	picdims = facedims;	// default for empty frames
-	facefovs = picTypes->maxFov( picTypes->picType2Index(t) );
+	facefovs = picTypes->maxFov( picTypes->picTypeIndex(t) );
 
   // pixel format for face images
 	faceformat = PVQT_PIC_FACE_FORMAT; 
@@ -202,28 +207,64 @@ QString pvQtPic::FaceName( PicFace face )
 }
 
 /* set display face size just large enough to hold
-  the source image at 1:1 pixel magnification.
-  sets
-	facedims = imagedims scaled by fov ratios
-	picdims = imagedims
+  the source image, but not larger than a given size.
+  If pwr2 is true, maxdims should be powers of 2
+  and the resulting face dimensions will be, too.
+
 */
-bool pvQtPic::fitFaceToImage(){
+bool pvQtPic::fitFaceToImage( QSize maxdims, bool pwr2 ){
 	if( type == nil ) return false;	// no picture
 	if(imagedims.isEmpty() ) return false;  // no image
-	picdims = imagedims;
-	facedims.setWidth( scalepix( xproj, imagedims.width(),
-			 imagefovs.width(), facefovs.width()));
-	facedims.setHeight( scalepix( yproj, imagedims.height(),
-			 imagefovs.height(), facefovs.height()));
+
+	
+  // get imagedims scaled by fov ratios
+	int tw = scalepix( xproj, imagedims.width(),
+			 imagefovs.width(), facefovs.width());
+	int th = scalepix( yproj, imagedims.height(),
+			 imagefovs.height(), facefovs.height());
+
+  // scale down to fit maxdims (maybe adj to pwr of 2)
+	int mw = maxdims.width(), mh = maxdims.height();
+	double rw = double(mw) / double(tw),
+		   rh = double(mh) / double(th);
+	if( rw < rh ){
+		if( rw < 1 ){
+			tw = int( tw * rw );
+			th = int( th * rw );
+			if( pwr2 ){
+				while( rw <= 0.5 ){
+					mw /= 2; mh /= 2;
+					rw *= 2;
+				}
+				tw = mw;
+				th = mh;
+			}
+		}
+	} else if( rh < 1 ){
+		tw = int( tw * rh );
+		th = int( th * rh );
+		if( pwr2 ){
+			while( rh <= 0.5 ){
+				mw /= 2; mh /= 2;
+				rh *= 2;
+			}
+			tw = mw;
+			th = mh;
+		}
+	}
+
+  // set the corresponding picture dimensions
+	setFaceSize( QSize(tw, th) );
+
 	return !facedims.isEmpty();
 }
 
-/* Set working face dimensions (called from pcQtView only)
-  Sets working picture size to face size, scaled by the ratios
+/* Set working face dimensions (to be called from pcQtView only)
+  Sets facedims = the passed dimensions, then sets picdims
+  (the displayed image size)to facedims scaled by the ratios 
   of face to image FOVs.  Picture will be cropped to the face 
-  size when image fov is larger, and will be padded to face
-  size when image fov is smaller.
-  
+  size when image fov is larger, and will be padded to face size 
+  when image fov is smaller.
 */
 bool pvQtPic::setFaceSize( QSize dims ){
 	if( type == nil ) return false;	// no picture

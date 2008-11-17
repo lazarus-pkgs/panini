@@ -1,42 +1,39 @@
-How to use pvQt version 0.3.xx   30 October 2008
+How to use pvQt version 0.4.xx   16 November 2008
 
-The purpose of pvQt is to view panoramic and wide angle pictures.  It can load all the common panoramic formats, from ordinary image files or QuickTime VR (.mov) files.  Like other viewers, it shows pictures in normal rectilinear perspective, but can also display extremely wide angle views, and a range of intermediate perspectives.  It can do this because it "paints" pictures on a 3D sphere -- the "panosphere" -- which you view from the inside in true perspective.
+pvQt is a viewer for panoramic and wide angle pictures that runs on Linux, Windows and Apple OSX.  It can load all the common photo and panoramic formats from ordinary image files or QuickTime VR (.mov) files.  Like other viewers, it shows pictures in rectilinear perspective, but can also display extremely wide angle views, and a range of intermediate perspectives.  It can do this because it "paints" pictures on a 3D sphere -- the "panosphere" -- which you view from the inside in true perspective.
 
 SYSTEM REQUIREMENTS
 
-pvQt depends on OpenGL features that became standard at version 1.4.  Some implementations of earlier versions contain these features as nonstandard extensions, others do not.  You will get best results with OpenGL version 2.0 and above.  As a practical matter that means you should have either a "gaming" video card, or a recent "multimedia" one.  But ultimate gaming performance is not needed: cards that will upgrade most desktop PCs to OpenGL 2.0 now cost from $50 to $100.  Note that OpenGL is tightly integrated with the system's video drivers and cannot be installed as a separate piece of software.
+To display pictures pvQt uses OpenGL, a low level graphics API that is tightly integrated with a system's video drivers, and cannot be installed as a separate piece of software.  
 
-On Ubuntu Linux you will probably need to install the manufacturer's video drivers (both nVidia and ATI now supply those) which Ubuntu does not install by default because they are not open-source.
-
-The "About" dialog shows information about your system's OpenGL facilities as well as the version of pvQT you are running.
+If the version of your OpenGL implementation is less than 1.2 or does not support cubic textures, pvQt will not run.  If the OpenGL version is less than 1.5 it may not be able to display all pictures correctly.
 
 Depending on the amount of OpenGL texture memory available, pictures may be shown at reduced resolution.  The actual displayed size (in megapixels) is shown in the pvQt window's title bar. 
 
-The program places no special demands on CPU speed or memory; if you can stitch panoramas, you will have no trouble viewing them.
+You will get best results with OpenGL version 2.0 and above.  That means you should have either a "gaming" video card, or a recent "multimedia" one.  But ultimate gaming performance is not needed: cards that will upgrade most desktop PCs to OpenGL 2.0 now cost from $50 to $70.  
 
-RELEASE INFORMATION
+On ubuntu Linux you will probably need to install the manufacturer's video drivers (both nVidia and ATI now supply them).  Ubuntu does not install these drivers by default because they are not open-source.
 
-The version number shown in the "about" dialog has the form: major.minor.rev.  Major.minor is the "release number", set somewhat arbitrarily by me; rev is the SVN revision of the source from which it was built.  The SVN rev increases at every source archive update, and does not reset when I change the release number.  
-
-Rev will have two revision numbers separated by a colon (:) if the program was built from a mixture of SVN revisions, and an "M" at the end if it was built from a modified local copy of the SVN archive.
-
-Some of the functions described here may not work in all versions of pvQt.  Please consult the Release Notes for further information.  And please check the project site (https://sourceforge.net/projects/pvqt/) to see if you have the latest version.  Releases come as a self installing Win32 executable package, and as source code buildable on any platform that supports Qt version 4.
+The "About" dialog shows information about your system's OpenGL facilities as well as the version of pvQT you are running.  Some limits pvQt reports are:
+  texPwr2:	must texture dimensions be powers of 2? 0 (false) preferred.
+  texMax:	maximum dimension of 2D textures, the bigger the better.
+  cubeMax:	maximum dimension of cubic textures, the bigger the better.
+  			
+pvQt places no special demands on CPU speed or memory; if you can stitch panoramas, you will have no trouble viewing them.
 
 VIEW CONTROLS
 
 When you start pvQt without a command line, for example by double clicking an icon, it displays a wire frame model of the panosphere.  You can use the View commands to see how they change your view of the sphere.  All the view commands have keyboard shortcuts, shown in the View menu. 
 
-The "L" and "R" keys set the basic orientation of the picture in multiples of 90 degrees.  
-
-The Yaw and Pitch contols let you look in different directions.  Their ranges are limited to the angular size of the picture.  You can control Yaw and Pitch with the mouse by holding down the button and moving the pointer in the direction you wish to look.
-
-The Turn controls let you adjust which way is up.  They rotate the picture with respect to the panosphere, so have no visible effect on the wireframe model.
+The Yaw, Pitch and Roll controls rotate the viewing frame with respect to the panosphere, just as in a flight simulator.  Yaw and Pitch let you look in different directions; Roll adjusts which way is up.  You can control Yaw and Pitch with the mouse by holding down the button and moving the pointer in the direction you wish to look.
 
 Zoom controls magnification by changing the vertical field of view on the panosphere.  When you resize the window, the displayed image grows or shrinks to maintain the selected vertical field.  To zoom with the mouse, hold down the right or middle button, move up to zoom in, down to zoom out.  You don't have to release the left button, zooming takes precedence over panning.
   
 "Eye in" and "Eye out" change perspective by moving the point of view toward or away from the center of the panosphere.  Eye position is reported in units of the sphere's radius.  When Eye is zero, the viewing perspective is rectilinear, like a normal camera lens; as it increases, the perspective becomes more fisheye-like.  As the eye point moves out, you can zoom farther out to see wider views.  But you can zoom in to the same level of image detail at any perspective setting.
 
 Several preset views are available via single keystrokes.  "Home" resets the yaw, pitch and turn angles to zero; "End" also resets zoom and eye position.  "F" gives the widest possible full frame view (a stereographic projection of the sphere, 275 degrees high) and "S" gives a "super wide" view, a circular image showing about 310 degrees of the sphere (note: in super wide mode the displayed vFOV is not correct).
+
+The Turn controls ("L" an "R" keys) rotate the image on the panosphere in increments of 90 degrees.  This orientation is not reset by "End", or by loading a new picture.
 
 COMMAND LINE 
 
@@ -48,13 +45,14 @@ The first command line argument can be a 4 letter picture type name, one of:
 	proj	PanoTools script or project
 	qtvr	QuickTime VR panorama (cubic or cylindrical)
 	rect	Normal lens photo
-	fish	Fisheye lens photo, or "mirror sphere" panorama
+	fish	Fisheye lens photo, or "mirror ball" panorama
 	cyli	Cylindrical panorama
 	equi	Equirectangular panorama
+	sphr	Equal angle spherical panorama
 	cube	1 to 6 Cube face images
 The proj and qtvr type names are rarely needed, because the file name extension will normally indicate the file type, and the file itself defines the picture type.  So for those types you can just give a file name.  If you do specify one of these types and don't give a file name, pvQt will ask for the file name before it displays anything.
 
-For types rect, fish, cyli, or equi you need to specify the angular size; so the next argument can be the field of view, in degrees, as a floating point number.  This is always the fov of the longer image axis, if the image is not square; the fov on the other axis is determined from the image shape.  You needn't give a fov for the cube type, as it is always 90 degrees.  If you specify a type but do not give a fov, pvQt uses the largest standard fov for the type.
+For the other picture types, except cube, you need to specify the angular size; so the next argument can be the field of view, in degrees, as a floating point number.  This is always the fov of the longer image axis, if the image is not square.  The default fov is the largest legal fov for the type.
 
 The last thing on the command line is one or more file names.  pvQt can read most of the common image file formats, identified by the conventional file name extensions.
 
@@ -70,11 +68,22 @@ The Picture menu lets you select a picture type, then pvQt asks for files and fo
 
 The "rect" picture type can display any kind of image, much as an ordinary image processing program would.  Just accept the default fov. 
 
-The "fish" picture type uses the mirror sphere projection, a classical panoramic format that is reasonably close to the projections of most modern fisheye lenses.  So you can use it for mirror sphere photos and computed panoramas up to 360 degrees in diameter.
+The "fish" picture type uses the equisolid angle (also know as "mirror ball")
+ projection, a classical panoramic format that is approximated by most modern fisheye lenses.  So you can use "fish" to display mirror sphere photos and computed panoramas up to 360 degrees in diameter.
+
+The "sphr" picture type uses the equal-angle spherical projection.  Some fisheye lenses approximate this projection, and many stitchers can generate it.
 
 You can load 1 to 6 image files for the "cube" picture type.  They must be square images of the same size, and their sorted names must fall in the conventional cube face order: front, right, back, left, top, bottom.  So if you have names like foo_front.tif, foo_right.tif,..., you will have to change them to something like foo_1.tif, foo_2.tif,....  Later when drag and drop and PT scripts are implemented, you will be able to load such files without renaming them.  If you give fewer than 6 cube face files, pvQt will display empty frames for the missing ones.  This applies to nonexistent or unreadable files, too, so if you wanted to show 3 images on the left, front, and right cube faces, you could (on the command line) insert a dummy file name for the back face between the right and left ones, or make an empty file with that name and select it along with the real image files.
 
-When a picture is loaded, the pvQt window's title bar shows the file name, picture type and displayed size in megapixels, which will be smaller than the source image size if there is not enough OpenGL texture memory to hold the full image.  In case loading a picture fails, the title bar will show an error message instead.
+When a picture is loaded, the pvQt window's title bar shows the file name, picture type and displayed size in megapixels, which will be smaller than the source image size if there is not enough OpenGL texture memory to hold the full image.  In case loading or display fails, the title bar will show an error message instead.
+
+RELEASE INFORMATION
+
+The version number shown in the "about" dialog has the form: major.minor.rev.  Major.minor is the "release number", set somewhat arbitrarily by me; rev is the SVN revision of the source from which it was built.  The SVN rev increases at every source archive update, and does not reset when I change the release number.  
+
+Rev will have two revision numbers separated by a colon (:) if the program was built from a mixture of SVN revisions, and an "M" at the end if it was built from a locally modified copy of the archived code.  It may also be "???" if the program was built from an unknown source code revision.
+
+Some of the functions described here may not work in all versions of pvQt.  Please consult the Release Notes for further information.  And please check the project site (https://sourceforge.net/projects/pvqt/) to see if you have the latest version.  
 
 LICENSE
 

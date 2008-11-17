@@ -29,6 +29,9 @@
 #endif 
 #include <cmath>
 
+#define max( a, b ) (a > b ? a : b )
+#define min( a, b ) (a > b ? b : a )
+
 #ifndef Pi
 #define Pi 3.141592654
 #define DEG(r) ( 180.0 * (r) / Pi )
@@ -37,6 +40,7 @@
 
 /**** maximum projection angle at eye ****/ 
 #define MAXPROJFOV  137.5
+
 
 /* C'tor for pvQtView 
   specifies a custom OGL context format, not because we need it 
@@ -60,9 +64,7 @@
 	 thePic = 0;
 	 theScreen = 0;
 	 textgt = 0;
- 	for( int i = 0; i < 6; i++ ){
-		boundtex[i] = 0;
-	}
+	 texname = 0;
 
   // create the sphere tables
 	pqs = new quadsphere( 32 );
@@ -113,14 +115,8 @@ bool pvQtView::OpenGLOK()
 				if( vf & QGLFormat::OpenGL_Version_2_0 ) texPwr2 = false;
 			}
 		}
-#ifdef __APPLE__
-	// I have limited tolerance for Apple provinicialisms; so
-	// just assume cube mapping and non pwr of 2 textures,
-	// which are present on all but the oldest OSX versions
-		texPwr2 = false;
-		cubeMap = true;
-#else
 	// check the GL_EXTENSIONS string
+	// NOTE Apple says this works on OSX too
 		QString glext((const char *)glGetString(GL_EXTENSIONS));
 		if(texPwr2 )
 			texPwr2 = ! (
@@ -131,8 +127,10 @@ bool pvQtView::OpenGLOK()
 			cubeMap = glext.contains(QString("GL_ARB_texture_cube_map"));
 		if( !vertBuf ) 
 			vertBuf = glext.contains(QString("GL_ARB_vertex_buffer_object"));
-#endif
 	}
+  // nominal OGL texture dimension limits
+	glGetIntegerv( GL_MAX_TEXTURE_SIZE, &max2d );
+	glGetIntegerv( GL_MAX_CUBE_MAP_TEXTURE_SIZE, &maxcube );
 
   // operating controls
 	OGLisOK = cubeMap;
@@ -452,12 +450,12 @@ void pvQtView::setDist( int id ){
    leave them as-is.
    But in any case return current OGL error status.
  */
-bool pvQtView::OGLok(){
+bool pvQtView::OGLok( const char * label ){
 	GLenum c = glGetError();
 	if( c == GL_NO_ERROR ) return true;
 	if( picok ){
 		picok = false;
-		errmsg = QString("OpenGL error: ")
+		errmsg = QString("%1 OGL error: ").arg(label)
 			+ QString( (const char *)gluErrorString( c ) );
 		emit OGLerror( errmsg );
 	}
@@ -465,9 +463,16 @@ bool pvQtView::OGLok(){
 }
 
 /* One-time setup of the OpenGL environment
+  Determines the biggest feasible texture sizes
 */
  void pvQtView::initializeGL()
  {
+  // debug check for quadsphere setup error
+ 	const char * erm = pqs->errMsg();
+	if( erm != 0 ){
+		qFatal("quadsphere: %s", erm );
+	}
+
   // abort if the OpenGL version is insufficient
  	if( !OpenGLOK() ) return;
 
@@ -475,10 +480,16 @@ bool pvQtView::OGLok(){
 	glShadeModel(GL_SMOOTH);
 	glEnable(GL_CULL_FACE);
 
- // create 2D and cube texture objects
-	glGenTextures( 2, texIDs );
-	glBindTexture(GL_TEXTURE_2D, texIDs[0] );
-	glBindTexture(GL_TEXTURE_CUBE_MAP, texIDs[1] );
+  // create texture objects
+	glGenTextures( 2, texnms );
+	glBindTexture( GL_TEXTURE_2D, texnms[0] );
+	glBindTexture( GL_TEXTURE_CUBE_MAP, texnms[1] );
+
+  // find the largest feasible textures
+	maxTex2Dsqr = maxTexSize( GL_PROXY_TEXTURE_2D, max2d, max2d );
+	maxTex2Drec = maxTexSize( GL_PROXY_TEXTURE_2D, max2d, max2d / 2 );
+	maxTexCube = maxTexSize( GL_PROXY_TEXTURE_CUBE_MAP, maxcube, maxcube );
+
   // constant texture mapping parameters...
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
   // for cube maps...
@@ -487,6 +498,7 @@ bool pvQtView::OGLok(){
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  // 2d maps...
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
@@ -500,6 +512,33 @@ bool pvQtView::OGLok(){
 	 setPicType( pvQtPic::nil );
    
  }
+
+/* find the largest feasible texture dimensions
+  proportional to and not larger than a given pair
+  using a proxy test
+*/
+ QSize pvQtView::maxTexSize( GLenum proxy, int tw, int th ){
+	for(;;){
+		GLint v;
+		glTexImage2D( proxy, 0, GL_RGBA, tw, th, 0, 
+			GL_RGBA, GL_UNSIGNED_BYTE, 0 );
+		glGetTexLevelParameteriv( proxy, 0, GL_TEXTURE_WIDTH, &v );
+		if( v == tw ){	// feasible size...
+			break;
+		} else {	// infeasible
+		  // decrease size and try again
+			if( texPwr2 ){
+				tw /= 2; th /= 2;
+			} else {
+				tw = int( 0.8 * tw ); 
+				th = int( 0.8 * th );
+			}
+			if( max( tw, th ) < 64 ) break;	// sanity?
+		}
+	}
+	return QSize( tw, th );
+}
+
  
 /* Set picture type-specific OpenGL options
    and class variables.
@@ -515,27 +554,28 @@ bool pvQtView::OGLok(){
 	mintilt = -180; maxtilt = 180;
 
 	makeCurrent();	// get OGL's attention
-	if(textgt) glDisable( textgt ); textgt = 0;
+
+	if(textgt){
+		glDisable( textgt ); 
+//		glDeleteTextures( 1, &texname );
+		texname = 0;
+		textgt = 0;
+	}
+
     glDisable( GL_TEXTURE_GEN_S );
     glDisable( GL_TEXTURE_GEN_T );
     glDisable( GL_TEXTURE_GEN_R );
     
-  // delete cached textures
-	for( int i = 0; i < 6; i++ ){
-		if( boundtex[i] ) deleteTexture( boundtex[i] );
-		boundtex[i] = 0;
-	}
-
 	glFrontFace( GL_CCW );
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_NORMAL_ARRAY);
-	proj = quadsphere::projection(pt);
 	xtexmag = ytexmag = 1.0;
 
 	if( picType == pvQtPic::cub ){
 	/* for cube map, generate texture coords from normals */
 		textgt = GL_TEXTURE_CUBE_MAP;
+		texname = texnms[1];
 		glEnableClientState(GL_NORMAL_ARRAY);
 		glTexGenf( GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP );
 		glTexGenf( GL_T, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP );
@@ -546,6 +586,7 @@ bool pvQtView::OGLok(){
 	} else if( picType != pvQtPic::nil ) {
 	/* for 2D maps, use quadsphere texture coordinates */
 		textgt = GL_TEXTURE_2D;
+		texname = texnms[0];
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
       // texture wrap mode; pan/tilt limits	  
 		GLuint sclamp, tclamp;
@@ -583,7 +624,10 @@ bool pvQtView::OGLok(){
 	if( !OGLisOK ) return;
  	
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	if( textgt ) glEnable( textgt );
+	if( textgt ){
+//		glBindTexture( textgt, texname );
+		glEnable( textgt );
+	}
 
 // set texture rotation and scaling
 	glMatrixMode(GL_TEXTURE);
@@ -624,7 +668,7 @@ bool pvQtView::OGLok(){
 	} else glCallList(theScreen); // use display list
 	
   // check for OGL error
-	paintok = OGLok();
+	paintok = OGLok("paintGL");
  }
 
  void pvQtView::resizeGL(int width, int height)
@@ -647,16 +691,11 @@ void pvQtView::makeSphere( GLuint list )
   // abort if the OpenGL version is insufficient
  	if( !OGLisOK ) return;
 
-	const char * erm = pqs->errMsg();
-	if( erm != 0 ){
-		qFatal("quadsphere: %s", erm );
-	}
-
 	if( textgt ){	// there is an image
 		glNewList(list, GL_COMPILE);
 		  glVertexPointer( 3, GL_FLOAT, 0, pqs->vertices());
 		  glNormalPointer( GL_FLOAT, 0, pqs->vertices());
-		  glTexCoordPointer( 2, GL_FLOAT, 0, pqs->texCoords( proj ));
+		  glTexCoordPointer( 2, GL_FLOAT, 0, pqs->texCoords( picType ));
 		  glDrawElements(GL_QUADS, pqs->quadIndexCount(), 
 			  GL_UNSIGNED_INT, pqs->quadIndices() );
 		glEndList();
@@ -679,7 +718,7 @@ void pvQtView::makeSphere( GLuint list )
 */
 bool pvQtView::setupPic( pvQtPic * pic )
 {
-// texture cube faces in the order pvQtPic uses
+  // texture cube faces in the order pvQtPic uses
 	static GLenum cubefaces[6] = {
 		GL_TEXTURE_CUBE_MAP_POSITIVE_Z, // front
 		GL_TEXTURE_CUBE_MAP_POSITIVE_X,	// right
@@ -701,45 +740,6 @@ bool pvQtView::setupPic( pvQtPic * pic )
 	if( pic ) picType = pic->Type();
 	else picType = pvQtPic::nil;
  	
-/*  Choose a display strategy based on image type and FOV,
-	set the texture image FOV, then set a feasible size.
-	
-  The strategies for variable fov pictures are
-	rec: embed in front cube face (90x90 deg)
-	sph: embed in front hemisphere face (180x180)
-	cyl: embed in full cylinder (360 x vfov)
-	eqr: embed in full equi (360 x 180)
-  NOTE With proper texture coordinates, there would be
-  no need to use padded texture images.
-
-  The max feasible face size is found by probing OGL
-  with a proxy texture image whose aspect ratio is fixed
-  by the face fovs.  If OGL requires power-of-2 textures,
-  the test face dims are powers of 2.
-
-*/  
-	int tw = 0, th = 0;
-	switch( picType ){
-	case pvQtPic::nil:
-		errmsg = tr("s/w error: empty pvQtPic");
-		return false;
-		break;
-	case pvQtPic::rec:
-		tw = th = 256;
-		break;
-	case pvQtPic::sph:
-		tw = th = 512;
-		break;
-	case pvQtPic::cyl:
-		tw = 512; th = 256;
-		break;
-	case pvQtPic::eqr:
-		tw = 512; th = 256;
-		break;
-	case pvQtPic::cub:
-		tw = th = 256;
-		break;
-	}
   // set up OGL for the picture type
 	setPicType( picType );
 
@@ -747,49 +747,31 @@ bool pvQtView::setupPic( pvQtPic * pic )
     picok = true;
  	errmsg = tr("no error");
 
-  /* find max feasible texture size 
-    starting with tw,th, increase proportionally until infeasible, 
-	or both picture dimensions would be > source image dimensions;
-	then back off one step.
-	NOTE use RGBA pixel type in case display context forces that
-  */
-	GLenum proxy = textgt == GL_TEXTURE_2D ? 
-			GL_PROXY_TEXTURE_2D : GL_PROXY_TEXTURE_CUBE_MAP;
-	int tww = 0, thw = 0;	// last feasible size
-	for(;;){
-		GLint v;
-		glTexImage2D( proxy, 0, GL_RGBA, tw, th, 0, 
-			GL_RGBA, GL_UNSIGNED_BYTE, 0 );
-		glGetTexLevelParameteriv( proxy, 0, GL_TEXTURE_WIDTH, &v );
-		if( v == 0 ){	// infeasible size...
-			if( tww == 0 || thw == 0 ){
-				errmsg = tr("no feasible picture size!");
-				return false;
-			}
-			tw = tww; th = thw;	// use last feasible size
-			pic->setFaceSize( QSize( tw, th ) );
-			break;
-		} else {		// feasible size...
-		  // if no source pictures, use minimum size
-			if( pic->NumImages() == 0 ) break;
-		  // post face size, check picture size
-			pic->setFaceSize( QSize( tw, th ));
-			QSize pdd = pic->PictureSize() - pic->ImageSize();
-			if( !pdd.isEmpty() ){
-			  // picture >= image: fit face to image if possible
-				if( !texPwr2 ) pic->fitFaceToImage();
-				break;
-			}
-		  // increase size and try again
-			tww = tw; 	thw = th;	// post last feasible size
-			if( texPwr2 ){
-				tw += tw; th += th;
-			} else {
-				tw = int( tw * 1.2599 ); // (cube root of 2)
-				th = int( th * 1.2599 );
-			}
-		}
+/* limit face size to feasible texture size
+*/
+
+// select largest feasible texture size
+	QSize maxdims;
+	switch( picType ){
+	case pvQtPic::nil:
+		errmsg = tr("s/w error: empty pvQtPic");
+		return false;
+		break;
+	case pvQtPic::rec:
+	case pvQtPic::eqs:
+	case pvQtPic::eqa:
+		maxdims = maxTex2Dsqr;
+		break;
+	case pvQtPic::cyl:
+	case pvQtPic::eqr:
+		maxdims = maxTex2Drec;
+		break;
+	case pvQtPic::cub:
+		maxdims = maxTexCube;
+		break;
 	}
+
+	thePic->fitFaceToImage( maxdims );
 
 /**  Load texture images  **/
 
@@ -804,6 +786,7 @@ bool pvQtView::setupPic( pvQtPic * pic )
 					GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV,
 					p->bits() );
 				delete p;
+				if( !OGLok("load cube") ) return false;
 			}
 		}
 	} else {
@@ -814,6 +797,7 @@ bool pvQtView::setupPic( pvQtPic * pic )
 				GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV,
 				p->bits() );
 			delete p;
+			if( !OGLok("load 2D") ) return false;
 		}
 	}
 
