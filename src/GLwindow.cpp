@@ -30,6 +30,10 @@ GLwindow::GLwindow (QWidget * parent )
 	glview = new pvQtView(this);
 	pvpic = new pvQtPic( pvQtPic::cub );
 
+	for(int i = 0; i < NpictureTypes; i++ ){
+		lastTurn[i] = 0;
+	}
+
   ok = (glview != 0 && pvpic != 0 );
 
   if(ok) ok = 
@@ -63,6 +67,9 @@ GLwindow::GLwindow (QWidget * parent )
 	connect( parent, SIGNAL(turn90( int )),
 		     glview, SLOT(turn90( int )));
   if(ok) ok = 
+	connect( glview, SIGNAL(reportTurn(double)),
+		     this, SLOT(reportTurn(double)));
+  if(ok) ok = 
 	connect( glview, SIGNAL(reportView( QString )),
 			 parent, SLOT(showStatus( QString )) );
   if(ok) ok = 
@@ -90,6 +97,11 @@ GLwindow::GLwindow (QWidget * parent )
 void GLwindow::OGLerror( QString errmsg){
 		QString msg = "  pvQt  " + errmsg;
 		emit showTitle( msg );
+}
+
+// Record turn angle changes
+void GLwindow::reportTurn( double deg ){
+	if( ipt >= 0 ) lastTurn[ipt] = deg;
 }
 
 
@@ -129,7 +141,7 @@ void GLwindow::newPicture( const char * type ){
 */
 bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 	QString errmsg("(no error)");
-	int ipt = pictypes.picTypeIndex( tnm );
+	ipt = pictypes.picTypeIndex( tnm );
 	if( ipt < 0 ) return false;	// no such pic type
 	int n = pictypes.picTypeCount( ipt );
 	int c = fnm.count();
@@ -153,7 +165,10 @@ bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 	if( ok ) {
 		errmsg = "";
 		if( !loaded ){	// load image file types
-		if( c > 0 ) pvpic->setImageFOV( picFov );
+			if( c > 0 ){
+				pvpic->setImageFOV( picFov );
+				lastFOV[ipt] = picFov;
+			}
 			if( c > 1 ) fnm.sort();
 			for(int i = 0; i < c; i++ ){
 				pvpic->setFaceImage( pvQtPic::PicFace(i), fnm[i] );
@@ -162,6 +177,7 @@ bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 	  // display the image
 		glview->showPic( pvpic );
 		ok = glview->picOK( errmsg );	// get any OGL error
+		glview->turnAbs( lastTurn[ipt] );
 	}
   // put image info or error message in window title
 	if( ok ){
@@ -265,9 +281,14 @@ const char * GLwindow::askPicType(  QStringList files,
 }
 // Slot: post FOV limits & default = max when pic type changes
 void GLwindow::picTypeChanged( int t ){
-	ptd.setMinFOV( pictypes.minFov( t + 2 ) );
-	ptd.setMaxFOV( pictypes.maxFov( t + 2 ) );
-	ptd.setFOV( pictypes.maxFov( t + 2 ) );
+	int it = t + 2;
+	ptd.setMinFOV( pictypes.minFov( it ) );
+	ptd.setMaxFOV( pictypes.maxFov( it ) );
+	if( !lastFOV[it].isValid() ){ 
+		lastFOV[it] = pictypes.maxFov( it );
+	}
+	ptd.setFOV( lastFOV[it] );
+
 }
 
 /* handle command line (before GUI shows)
@@ -410,12 +431,12 @@ bool GLwindow::choosePictureFiles( const char * ptnm ){
 			 picFov = pictypes.maxFov( it );
 		// if variable, ask user for FOV only
 	  		if( pictypes.minFov( it ) != picFov ){
-	  			askPicType( files, picFov, ptnm );  			
+	  			ptnm = askPicType( files, picFov, ptnm );
   			}
     	}
 	} else if( it >= 0 ) picFov = pictypes.maxFov( it );
   // fail if still no valid type
-	if( it < 0 ) return false;
+//	if( it < 0 ) return false;
   // else try to show the picture
 	return loadTypedFiles( ptnm, files );
 }

@@ -8,8 +8,8 @@ picTypeDialog::picTypeDialog( QWidget * parent)
 	setupUi( this );
 	setDims( QSize(0,0) );
 	setMinFOV( QSizeF( 5, 5 ));
-	setMaxFOV( QSizeF( 360, 180 ));
-	setFOV( QSizeF( 360, 180 ));
+	setMaxFOV( QSizeF( 360, 360 ));
+	setFOV( QSizeF( 360, 360 ));
 	
 	connect( typesBox, SIGNAL(currentIndexChanged( int )),
 			this, SIGNAL( picTypeSelected( int )) );

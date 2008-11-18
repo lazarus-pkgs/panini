@@ -367,3 +367,13 @@ OK	Quadsphere has equal angle and equisolid angle projections,
 	
 	Overall the picture quality looks about as good as one could
 	hope for with this technology. 
+	
+	Now just make UI agree with usage notes, and cut release 0.4.
+ok	- cancel file => empty frames; cancel fov => no change.
+ok	- view control names same in doc and menu
+ok	- turn never resets.
+ok	- turn and fov remembered by picture type.
+
+	Good enough for release 0.4.
+	
+	

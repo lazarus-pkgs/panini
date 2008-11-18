@@ -2,24 +2,24 @@ How to use pvQt version 0.4.xx   16 November 2008
 
 pvQt is a viewer for panoramic and wide angle pictures that runs on Linux, Windows and Apple OSX.  It can load all the common photo and panoramic formats from ordinary image files or QuickTime VR (.mov) files.  Like other viewers, it shows pictures in rectilinear perspective, but can also display extremely wide angle views, and a range of intermediate perspectives.  It can do this because it "paints" pictures on a 3D sphere -- the "panosphere" -- which you view from the inside in true perspective.
 
-SYSTEM REQUIREMENTS
+SYSTEM REQUIREMENTS and LIMITATIONS
 
-To display pictures pvQt uses OpenGL, a low level graphics API that is tightly integrated with a system's video drivers, and cannot be installed as a separate piece of software.  
+To display pictures pvQt uses OpenGL, a low level graphics API that is tightly integrated with a system's video drivers.  OpenGL cannot be installed as a separate piece of software.  
 
 If the version of your OpenGL implementation is less than 1.2 or does not support cubic textures, pvQt will not run.  If the OpenGL version is less than 1.5 it may not be able to display all pictures correctly.
-
-Depending on the amount of OpenGL texture memory available, pictures may be shown at reduced resolution.  The actual displayed size (in megapixels) is shown in the pvQt window's title bar. 
 
 You will get best results with OpenGL version 2.0 and above.  That means you should have either a "gaming" video card, or a recent "multimedia" one.  But ultimate gaming performance is not needed: cards that will upgrade most desktop PCs to OpenGL 2.0 now cost from $50 to $70.  
 
 On ubuntu Linux you will probably need to install the manufacturer's video drivers (both nVidia and ATI now supply them).  Ubuntu does not install these drivers by default because they are not open-source.
 
-The "About" dialog shows information about your system's OpenGL facilities as well as the version of pvQT you are running.  Some limits pvQt reports are:
+The "About" dialog shows information about your system's OpenGL facilities as well as the version of pvQT you are running.  pvQt reports these limits:
   texPwr2:	must texture dimensions be powers of 2? 0 (false) preferred.
   texMax:	maximum dimension of 2D textures, the bigger the better.
   cubeMax:	maximum dimension of cubic textures, the bigger the better.
   			
 pvQt places no special demands on CPU speed or memory; if you can stitch panoramas, you will have no trouble viewing them.
+
+Depending on the amount of OpenGL texture memory available, pictures may be shown at reduced resolution.  The actual displayed size (in megapixels) is shown in the pvQt window's title bar.  Cubic panoramas can generally be displayed at higher resolution than the other picture types.
 
 VIEW CONTROLS
 
@@ -31,9 +31,11 @@ Zoom controls magnification by changing the vertical field of view on the panosp
   
 "Eye in" and "Eye out" change perspective by moving the point of view toward or away from the center of the panosphere.  Eye position is reported in units of the sphere's radius.  When Eye is zero, the viewing perspective is rectilinear, like a normal camera lens; as it increases, the perspective becomes more fisheye-like.  As the eye point moves out, you can zoom farther out to see wider views.  But you can zoom in to the same level of image detail at any perspective setting.
 
-Several preset views are available via single keystrokes.  "Home" resets the yaw, pitch and turn angles to zero; "End" also resets zoom and eye position.  "F" gives the widest possible full frame view (a stereographic projection of the sphere, 275 degrees high) and "S" gives a "super wide" view, a circular image showing about 310 degrees of the sphere (note: in super wide mode the displayed vFOV is not correct).
+Several preset views are available via single keystrokes.  "Home" resets the yaw, pitch and roll angles to zero; "End" also resets zoom and eye position.  "F" gives the widest possible full frame view (a stereographic projection of the sphere, 275 degrees high) and "S" gives a "super wide" view, a circular image showing about 310 degrees of the sphere (note: in super wide mode the displayed vFOV is not correct).
 
-The Turn controls ("L" an "R" keys) rotate the image on the panosphere in increments of 90 degrees.  This orientation is not reset by "End", or by loading a new picture.
+The Turn controls ("L" and "R" keys) rotate the image on the panosphere in increments of 90 degrees.  
+
+For convenience in viewing series of similar pictures, pvQt remembers the last selected Turn angle and FOV for each type of picture (but does not save them when you exit the program).
 
 COMMAND LINE 
 
@@ -45,10 +47,10 @@ The first command line argument can be a 4 letter picture type name, one of:
 	proj	PanoTools script or project
 	qtvr	QuickTime VR panorama (cubic or cylindrical)
 	rect	Normal lens photo
-	fish	Fisheye lens photo, or "mirror ball" panorama
+	fish	Fisheye lens or "mirror ball" photo
+	sphr	Equal angle spherical panorama
 	cyli	Cylindrical panorama
 	equi	Equirectangular panorama
-	sphr	Equal angle spherical panorama
 	cube	1 to 6 Cube face images
 The proj and qtvr type names are rarely needed, because the file name extension will normally indicate the file type, and the file itself defines the picture type.  So for those types you can just give a file name.  If you do specify one of these types and don't give a file name, pvQt will ask for the file name before it displays anything.
 
@@ -56,7 +58,7 @@ For the other picture types, except cube, you need to specify the angular size; 
 
 The last thing on the command line is one or more file names.  pvQt can read most of the common image file formats, identified by the conventional file name extensions.
 
-If you give only an image file name on the command line, pvQt will pop a dialog asking for both the picture type and major field of view.  If you give more than one name, it will assume they are cube face images (to show a single cube face you must give the type name).  Note that on Windows, dragging files onto the pvQt program icon generates a files-only command line.
+If you give only an image file name on the command line, pvQt will pop a dialog asking for both the picture type and major field of view.  If you give more than one name, it will assume they are cube face images (to show a single cube face you must give the type name).  On Windows and Mac you can drag files onto the pvQt program icon to generate a files-only command line.
 
 If you omit the file name, pvQt will pop a file selector dialog so you can choose the file(s) to be displayed.  If the picture type is rect, fish, cyli or equi, and you did not specify a fov on the command line, it will then ask you to specify the field of view.
 
@@ -64,7 +66,7 @@ There are two special cases.  If the command line is empty, pvQt displays a wire
 
 PICTURE MENU
 
-The Picture menu lets you select a picture type, then pvQt asks for files and fov.  If you cancel either of those dialogs, empty frames will be displayed.
+The Picture menu lets you select a picture type, then pvQt asks for files and fov.  If you cancel the file selector dialog, empty frames will be displayed.  If you cancel the fov dialog, the selected file will not be loaded and the previous picture will remain.
 
 The "rect" picture type can display any kind of image, much as an ordinary image processing program would.  Just accept the default fov. 
 
