@@ -82,6 +82,11 @@ inline void setEdgeTCs( float * base, unsigned int ic, unsigned int id ){
 		base[id + 1] = base[ic + 1];
 }
 
+inline void copyTCs( float * base, unsigned int ic, unsigned int id ){
+		base[id] = base[ic];
+		base[id + 1] = base[ic + 1];
+}
+
 /*  Abandoning a long hard struggle to put together a
   usable sphere from the mimimum number of data points,
   I've decided in this third version to keep it simple,
@@ -123,7 +128,10 @@ quadsphere::quadsphere( int divs ){
 	int dp1 = divs + 1;	// total points per row
 	int qpf = divs * divs;	// quads per face
 	int ppf = dp1 * dp1;	// points per face
-	int dups = 2 * divs + 3;	// extra pnts for wrap fix
+	int d2 = divs/2;
+	int ntb = d2;		// top/bottom seam pnts to copy
+	// top/bot centers handled specially, 2 xtra pnts each
+	int dups = dp1 + 2 * ntb + 4;	// extra pnts for seam fix
 
 	vertpnts = 6 * ppf + dups;	// total vertices
 	linewrds = 24 * qpf;
@@ -322,8 +330,8 @@ quadsphere::quadsphere( int divs ){
 	QSizeF fovs = pictypes.maxFov( i );
 	double amaxrect = DEG2RAD(0.5 * fovs.width());
 	double tmaxrect = tan( amaxrect );
-	double amaxsph = DEG2RAD(0.5 * 330 );
-	double amaxfish = DEG2RAD(0.5 * 300 );
+	double amaxsph = DEG2RAD(0.5 * 365 );
+	double amaxfish = DEG2RAD(0.5 * 365 );
 
 	ps = verts;
 	float * pr = rects,
@@ -365,8 +373,8 @@ quadsphere::quadsphere( int divs ){
 			pf[1] = INVAL( ya - 0.5 * Pi );
 		} else {
 			s = 0.5 * sin( 0.5 * za );
-			pf[0] = float(0.5 + s * sx );
-			pf[1] = float(0.5 + s * sy );
+			pf[0] = float(CLIP(0.5 + s * sx) );
+			pf[1] = float(CLIP(0.5 + s * sy) );
 		}
 
 	  // equirectangular
@@ -390,8 +398,8 @@ quadsphere::quadsphere( int divs ){
 			pa[1] = INVAL( ya - 0.5 * Pi );
 		} else {
 			s = 0.5 * za / Pi;
-			pa[0] = float(0.5 + s * sx );
-			pa[1] = float(0.5 + s * sy );
+			pa[0] = float( CLIP(0.5 + s * sx) );
+			pa[1] = float( CLIP(0.5 + s * sy) );
 		}
 
 	  // next point
@@ -409,34 +417,38 @@ quadsphere::quadsphere( int divs ){
 	for their right adjacent quads adjusted in-place.  Then the
 	corresponding TCs -- both old and new -- are set low or high 
 	according to the values of the other TC's in their quads.
+
+	Finally the top and bottom centers are split vertically by
+	assigning a new split center point to their lower quads.
   */
-	unsigned int d2 = divs/2;
   // point and quad indices
+	int qtb = ntb - 1;	// whole quads top/bottom
 	unsigned int ipt = ppf + d2,		// top rear
 				 iqt = qpf + d2,
 				 ipk = 3 * ppf + d2,	// back upper
 				 iqk = 3 * qpf + d2,
-				 ipb = 4 * ppf + d2 * dp1 + d2,	// bottom center
-				 iqb = 4 * qpf + d2 * divs + d2,
+				 ipb = 4 * ppf + (dp1 - ntb) * dp1 + d2,
+				 iqb = 4 * qpf + (divs - 1 - qtb) * divs + d2,
 				 idt = 6 * ppf,		// dupe top
-				 idk = idt + d2 + 1,	// dupe back
-				 idb = idk + dp1;	// dupe bottom
+				 idk = idt + ntb,	// dupe back
+				 idb = idk + dp1,	// dupe bottom
+				 idc = idb + ntb;	// dupe centers
   // copy the vertices in ascending address order
   // and post corresponding correct TCs (old and new)
 	unsigned int ic = 2 * ipt,
 				id = 2 * idt;
 	ps = verts + 3 * ipt; 
 	pd = verts + 3 * idt;
-	for( r = 0; r < d2 + 1; r++ ){
+	for( r = 0; r < ntb; r++ ){
 		pd[0] = ps[0]; 
 		pd[1] = ps[1]; 
 		pd[2] = ps[2]; 
 		ps += 3 * dp1;
 		pd += 3;
 
-		setEdgeTCs( angls, ic, id );
+		copyTCs( angls, ic, id );
 		setEdgeTCs( rects, ic, id );
-		setEdgeTCs( fishs, ic, id );
+		copyTCs( fishs, ic, id );
 		setEdgeTCs( cylis, ic, id );
 		setEdgeTCs( equis, ic, id );	
 		ic += 2 * dp1; 
@@ -452,9 +464,9 @@ quadsphere::quadsphere( int divs ){
 		pd[2] = ps[2]; 
 		ps += 3 * dp1;
 		pd += 3;
-		setEdgeTCs( angls, ic, id );
+		copyTCs( angls, ic, id );
 		setEdgeTCs( rects, ic, id );
-		setEdgeTCs( fishs, ic, id );
+		copyTCs( fishs, ic, id );
 		setEdgeTCs( cylis, ic, id );
 		setEdgeTCs( equis, ic, id );	
 		ic += 2 * dp1; 
@@ -464,33 +476,33 @@ quadsphere::quadsphere( int divs ){
 	ic = 2 * ipb;
 	id = 2 * idb;
 	ps = verts + 3 * ipb;
-	for( r = 0; r < d2 + 1; r++ ){
+	for( r = 0; r < ntb; r++ ){
 		pd[0] = ps[0]; 
 		pd[1] = ps[1]; 
 		pd[2] = ps[2]; 
 		ps += 3 * dp1;
 		pd += 3;
-		setEdgeTCs( angls, ic, id );
+		copyTCs( angls, ic, id );
 		setEdgeTCs( rects, ic, id );
-		setEdgeTCs( fishs, ic, id );
+		copyTCs( fishs, ic, id );
 		setEdgeTCs( cylis, ic, id );
 		setEdgeTCs( equis, ic, id );	
 		ic += 2 * dp1; 
 		id += 2;	
 	}
 
-  /* change right quad indices.
+  /* change right quad indices of non-center pnts.
    The first and last points of each seam get 1
    new index, the others get 2.
   */
-
 	pq = quadidx + 4 * iqt;
-	for( r = 0; r < d2 ; r++ ){
+	for( r = 0; r < qtb ; r++ ){
 		pq[0] = idt;
 		idt++;
 		pq[1] = idt;
 		pq += 4 * divs;
 	}
+	pq[0] = idt;
 
 	pq = quadidx + 4 * iqk;
 	pq[0] = idk;
@@ -505,13 +517,73 @@ quadsphere::quadsphere( int divs ){
 
 
 	pq = quadidx + 4 * iqb;
-	for( r = 0; r < d2 ; r++ ){
+	pq[1] = idb;
+	pq += 4 * divs;
+	for( r = 0; r < qtb ; r++ ){
 		pq[0] = idb;
 		idb++;
 		pq[1] = idb;
 		pq += 4 * divs;
 	}
 
+  /* fix up the center points
+    Centers get split vertically as well as horizontally,
+	so need 2 new vertices and 2 new TC sets.  The upper
+	indices of the lower 2 quads point to the new data.
+	The vertices are just copies of the center vertex;
+	the new TCs have x = x of next row, y = center y.
+  */
+	unsigned int jq = (divs + 1) * d2;	// lwr rgt quad
+	jf = (dp1 + 1) * d2;	// edge to center
+	ic = ppf + jf;		// top center
+	id = 4 * ppf + jf;	// bot center
+
+  // copy vertices
+	ps = verts + 3 * ic;
+	pd = verts + 3 * idc;
+	*pd++ = ps[0]; *pd++ = ps[1]; *pd++ = ps[2];
+	*pd++ = ps[0]; *pd++ = ps[1]; *pd++ = ps[2];
+	ps = verts + 3 * id;
+	*pd++ = ps[0]; *pd++ = ps[1]; *pd++ = ps[2];
+	*pd++ = ps[0]; *pd++ = ps[1]; *pd++ = ps[2];
+
+  // build new TCs via old quad indices
+  // then change the indices
+#define makeCTC(ps, pd, pq ) \
+		*pd++ = ps[2 * pq[-2]];   \
+		*pd++ = ps[2 * pq[-1] + 1]; \
+		*pd++ = ps[2 * pq[1]]; \
+		*pd++ = ps[2 * pq[0] + 1]
+
+	pq = quadidx + 4 * ( qpf + jq ); // top...
+	jf = 2 * idc;
+	ps = angls; pd = ps + jf;
+	makeCTC(ps, pd, pq );
+	ps = rects; pd = ps + jf;
+	makeCTC(ps, pd, pq );
+	ps = fishs; pd = ps + jf;
+	makeCTC(ps, pd, pq );
+	ps = cylis; pd = ps + jf;
+	makeCTC(ps, pd, pq );
+	ps = equis; pd = ps + jf;
+	makeCTC(ps, pd, pq );
+  // change indices
+	pq[-1] = idc; pq[0] = idc + 1;
+
+	pq = quadidx + 4 * ( 4 * qpf + jq ); // bot...
+	jf = 2 * idc + 4;
+	ps = angls; pd = ps + jf;
+	makeCTC(ps, pd, pq );
+	ps = rects; pd = ps + jf;
+	makeCTC(ps, pd, pq );
+	ps = fishs; pd = ps + jf;
+	makeCTC(ps, pd, pq );
+	ps = cylis; pd = ps + jf;
+	makeCTC(ps, pd, pq );
+	ps = equis; pd = ps + jf;
+	makeCTC(ps, pd, pq );
+  // change indices
+	pq[-1] = idc + 2; pq[0] = idc + 3;
 
 }
 
