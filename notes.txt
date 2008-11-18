@@ -347,10 +347,14 @@ OK	Quadsphere has equal angle and equisolid angle projections,
 	Tried deleting textures before proxy test; but that does
 	not work (wipes out all texture options).
 	
-	Finally figured out how to do poxy text right -- once only,
+	Finally figured out how to do proxy test right -- once only,
 	before loading any pictures.  Then keep face sizes <= the
 	found limits  (revised fitFaceToImage to handle this).  This 
 	works, and I think it might fix the Mac mystery too.  On the
 	T60 it shows most things OK (tho small), with occasional 
 	"invalid value" errors at cubic image load. Works great on 
 	Winxp1. 
+	
+	Committed rev 55 and asked Harry to try it.
+	
+	
