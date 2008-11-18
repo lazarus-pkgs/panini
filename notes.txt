@@ -357,4 +357,13 @@ OK	Quadsphere has equal angle and equisolid angle projections,
 	
 	Committed rev 55 and asked Harry to try it.
 	
+18 Nov 2008
+
+	Finished fixing the wrap seam.  Top and bottom center points
+	needed special splitting.  Fish and sphere don't want split X,
+	so just copy TCs for those.  Also removed the blanking at back
+	of those views, because it looks worse than the breakup (which
+	might be improvable -- later!)
 	
+	Overall the picture quality looks about as good as one could
+	hope for with this technology. 
