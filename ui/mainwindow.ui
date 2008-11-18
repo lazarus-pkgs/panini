@@ -26,23 +26,25 @@
     <property name="title" >
      <string>&amp;View</string>
     </property>
-    <addaction name="actionZoom_In" />
-    <addaction name="actionZoom_Out" />
-    <addaction name="actionEye_In" />
-    <addaction name="actionEye_Out" />
     <addaction name="actionPan_Left" />
     <addaction name="actionPan_Right" />
     <addaction name="actionTilt_Up" />
     <addaction name="actionTilt_Down" />
     <addaction name="actionRoll_Left" />
-    <addaction name="action90_deg_CW" />
     <addaction name="actionRoll_Right" />
-    <addaction name="action90_deg_CCW" />
     <addaction name="separator" />
+    <addaction name="actionZoom_In" />
+    <addaction name="actionZoom_Out" />
+    <addaction name="actionEye_In" />
+    <addaction name="actionEye_Out" />
     <addaction name="actionFull_frame" />
     <addaction name="actionSuper_wide" />
+    <addaction name="separator" />
     <addaction name="action_Home" />
     <addaction name="actionReset" />
+    <addaction name="separator" />
+    <addaction name="action90_deg_CCW" />
+    <addaction name="action90_deg_CW" />
    </widget>
    <widget class="QMenu" name="menuLoad" >
     <property name="title" >
@@ -128,7 +130,7 @@
   </action>
   <action name="actionRoll_Left" >
    <property name="text" >
-    <string>Turn CW</string>
+    <string>Roll CW</string>
    </property>
    <property name="shortcut" >
     <string>Ctrl+Left</string>
@@ -136,7 +138,7 @@
   </action>
   <action name="actionRoll_Right" >
    <property name="text" >
-    <string>Turn CCW</string>
+    <string>Roll CCW</string>
    </property>
    <property name="shortcut" >
     <string>Ctrl+Right</string>
@@ -245,7 +247,7 @@
   </action>
   <action name="action90_deg_CW" >
    <property name="text" >
-    <string>90 deg CW</string>
+    <string>Turn right</string>
    </property>
    <property name="shortcut" >
     <string>R</string>
@@ -253,7 +255,7 @@
   </action>
   <action name="action90_deg_CCW" >
    <property name="text" >
-    <string>90 deg CCW</string>
+    <string>Turn left</string>
    </property>
    <property name="shortcut" >
     <string>L</string>

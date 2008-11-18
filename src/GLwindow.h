@@ -43,6 +43,7 @@ public slots:
 	void picTypeChanged( int t );
 	void about_pvQt();
 	void OGLerror( QString msg);
+	void reportTurn( double deg );
 	
 protected:
 	void resizeEvent( QResizeEvent * ev );
@@ -55,6 +56,8 @@ private:
 	const char * askPicType( QStringList files, 
 							 QSizeF & size,
 							 const char * ptyp = 0 );
+	bool loadTypedFiles( const char * type, QStringList files );
+
 	pvQtAbout aboutbox;
 
 	picTypeDialog ptd;
@@ -64,6 +67,8 @@ private:
 	bool ok;	// true if created w/o error
 	pictureTypes pictypes;
 
-	bool loadTypedFiles( const char * type, QStringList files );
+	int ipt;	// current picture type index, or -1
+	QSizeF lastFOV[NpictureTypes];
+	double lastTurn[NpictureTypes];
 
 };

@@ -96,13 +96,15 @@ public:
 	 void home_view();	// zero view angles
 	 void full_frame();	// stereographic, min zoom
 	 void super_fish();	// circular superwide
-	 void turn90( int d) ;	// turn picture
+	 void turn90( int d ) ;	// turn picture incremental
+	 void turnAbs(double deg);	// tun absolute
   // update display of current picture
 	 void picChanged();
 
  signals:
 	 void reportView( QString msg );
 	 void OGLerror( QString msg );
+	 void reportTurn( double deg );
 
  protected:
      void initializeGL();

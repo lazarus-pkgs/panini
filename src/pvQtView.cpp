@@ -72,6 +72,7 @@
      Width = Height = 400;
 	 minpan = -180; maxpan = 180;
 	 mintilt = -180; maxtilt = 180;
+ 	 turnAngle = 0;
      initView();
  }
 
@@ -289,15 +290,23 @@ void pvQtView::mTimeout(){
 	showview();
  }
 
+ // incremental turn picture
  void pvQtView::turn90( int d ){
-  // add the step and normalize
-	 turnAngle += d * 90.0;
-	 while( turnAngle > 180 ) turnAngle -= 360;
-	 while( turnAngle < -180 ) turnAngle += 360;
-   // post 
-	 updateGL();
-	 showview();
+	 turnAbs( turnAngle + d * 90.0);
  }
+
+// absolute turn picture
+void pvQtView::turnAbs( double deg ){
+	 while( deg > 180 ) deg -= 360;
+	 while( deg < -180 ) deg += 360;
+	 if( deg != turnAngle ){
+		turnAngle = deg;
+		updateGL();
+		showview();
+		emit( reportTurn( turnAngle ));
+	 }
+}
+
 
  /** report current view **/
  
@@ -364,8 +373,6 @@ void pvQtView::initView()
      zoomstep = 40;	// 2.5 degrees in FOV
 	 izoom = 90 * 16;
 	 setFOV(90);
-
- 	 turnAngle = 0;
 
      panstep = tiltstep = spinstep = 32;	// 2 degrees
 	 home_view();	// zero rotations
