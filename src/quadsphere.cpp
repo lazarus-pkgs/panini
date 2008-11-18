@@ -69,6 +69,18 @@ static void slerp( int divs, double v0[3], double v1[3],
 // debug error messages can be put here
 static char msg[80];
 
+/* texcoord utilities
+*/
+const float ninv = -0.1, pinv = 1.1;
+#define CLIP( x ) ( x < ninv ? ninv : x > pinv ? pinv : x )
+#define INVAL( t ) (t > 0 ? pinv : ninv )
+#define EVAL( t ) ( t < 0.5 ? t < 0 ? t : 0 : t > 1 ? t : 1 ) 
+
+inline void setEdgeTCs( float * base, unsigned int ic, unsigned int id ){
+		base[ic] = EVAL( base[ic - 2]);
+		base[id] = EVAL( base[ic + 2]);
+		base[id + 1] = base[ic + 1];
+}
 
 /*  Abandoning a long hard struggle to put together a
   usable sphere from the mimimum number of data points,
@@ -313,10 +325,6 @@ quadsphere::quadsphere( int divs ){
 	double amaxsph = DEG2RAD(0.5 * 330 );
 	double amaxfish = DEG2RAD(0.5 * 300 );
 
-const float ninv = -0.1, pinv = 1.1;
-#define CLIP( x ) ( x < ninv ? ninv : x > pinv ? pinv : x )
-#define INVAL( t ) ((t > 0) ? pinv : ninv )
-
 	ps = verts;
 	float * pr = rects,
 		  * pf = fishs,
@@ -409,11 +417,14 @@ const float ninv = -0.1, pinv = 1.1;
 				 ipk = 3 * ppf + d2,	// back upper
 				 iqk = 3 * qpf + d2,
 				 ipb = 4 * ppf + d2 * dp1 + d2,	// bottom center
-				 iqb = 4 * qpf + d2,
-				 idt = 6 * ppf,			// dupe top
+				 iqb = 4 * qpf + d2 * divs + d2,
+				 idt = 6 * ppf,		// dupe top
 				 idk = idt + d2 + 1,	// dupe back
-				 idb = idk + dp1;		// dupe bottom
+				 idb = idk + dp1;	// dupe bottom
   // copy the vertices in ascending address order
+  // and post corresponding correct TCs (old and new)
+	unsigned int ic = 2 * ipt,
+				id = 2 * idt;
 	ps = verts + 3 * ipt; 
 	pd = verts + 3 * idt;
 	for( r = 0; r < d2 + 1; r++ ){
@@ -422,7 +433,18 @@ const float ninv = -0.1, pinv = 1.1;
 		pd[2] = ps[2]; 
 		ps += 3 * dp1;
 		pd += 3;
+
+		setEdgeTCs( angls, ic, id );
+		setEdgeTCs( rects, ic, id );
+		setEdgeTCs( fishs, ic, id );
+		setEdgeTCs( cylis, ic, id );
+		setEdgeTCs( equis, ic, id );	
+		ic += 2 * dp1; 
+		id += 2;
 	}
+
+	ic = 2 * ipk;
+	id = 2 * idk;
 	ps = verts + 3 * ipk;
 	for( r = 0; r < dp1; r++ ){
 		pd[0] = ps[0]; 
@@ -430,7 +452,17 @@ const float ninv = -0.1, pinv = 1.1;
 		pd[2] = ps[2]; 
 		ps += 3 * dp1;
 		pd += 3;
+		setEdgeTCs( angls, ic, id );
+		setEdgeTCs( rects, ic, id );
+		setEdgeTCs( fishs, ic, id );
+		setEdgeTCs( cylis, ic, id );
+		setEdgeTCs( equis, ic, id );	
+		ic += 2 * dp1; 
+		id += 2;	
 	}
+
+	ic = 2 * ipb;
+	id = 2 * idb;
 	ps = verts + 3 * ipb;
 	for( r = 0; r < d2 + 1; r++ ){
 		pd[0] = ps[0]; 
@@ -438,16 +470,47 @@ const float ninv = -0.1, pinv = 1.1;
 		pd[2] = ps[2]; 
 		ps += 3 * dp1;
 		pd += 3;
+		setEdgeTCs( angls, ic, id );
+		setEdgeTCs( rects, ic, id );
+		setEdgeTCs( fishs, ic, id );
+		setEdgeTCs( cylis, ic, id );
+		setEdgeTCs( equis, ic, id );	
+		ic += 2 * dp1; 
+		id += 2;	
 	}
 
-  /* post new texcoords and change quad indices.
-   The first and last points of each seam segment belong to
-   2 quads (right and left), the others belong to 4.  We visit
-   all those quads, determine correct texture coordinates for
-   the left and right seam points, then set new right indices
-   and post the TCs in the duplicate points areas.
+  /* change right quad indices.
+   The first and last points of each seam get 1
+   new index, the others get 2.
   */
 
+	pq = quadidx + 4 * iqt;
+	for( r = 0; r < d2 ; r++ ){
+		pq[0] = idt;
+		idt++;
+		pq[1] = idt;
+		pq += 4 * divs;
+	}
+
+	pq = quadidx + 4 * iqk;
+	pq[0] = idk;
+	idk++;
+	for( r = 0; r < divs - 1; r++ ){
+		pq[1] = idk;
+		pq += 4 * divs;
+		pq[0] = idk;
+		idk++;
+	}
+	pq[1] = idk;
+
+
+	pq = quadidx + 4 * iqb;
+	for( r = 0; r < d2 ; r++ ){
+		pq[0] = idb;
+		idb++;
+		pq[1] = idb;
+		pq += 4 * divs;
+	}
 
 
 }
