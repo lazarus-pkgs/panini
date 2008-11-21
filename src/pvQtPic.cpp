@@ -91,7 +91,8 @@ int pvQtPic::scalepix( int proj, int pix, double fov, double tofov ){
 	return int(0.5 + s * pix );
 }
 
-// linear ratios of size at max FOV to size at actual FOV
+// linear ratios of size at max FOV for type, to size at face FOV
+// Used to scale texture coordinates
 QSizeF  pvQtPic::fovSizeRatios(){
 	QSizeF r(1.0, 1.0);
 	if( type == nil ) return r;	// no projection
@@ -265,15 +266,21 @@ bool pvQtPic::fitFaceToImage( QSize maxdims, bool pwr2 ){
   of face to image FOVs.  Picture will be cropped to the face 
   size when image fov is larger, and will be padded to face size 
   when image fov is smaller.
+20 Nov 08:
+  When horizontal fov == 360 degrees, force pic width == face width
 */
 bool pvQtPic::setFaceSize( QSize dims ){
 	if( type == nil ) return false;	// no picture
 	if(dims.isEmpty() ) return false;  // bad dimensions
 	facedims = dims;
-	picdims.setWidth( scalepix( xproj, facedims.width(),
-			 facefovs.width(), imagefovs.width()));
-	picdims.setHeight( scalepix( yproj, facedims.height(),
-			 facefovs.height(), imagefovs.height()));
+	int picw = scalepix( xproj, facedims.width(),
+					facefovs.width(), imagefovs.width());
+	int pich = scalepix( yproj, facedims.height(),
+					facefovs.height(), imagefovs.height());
+  // ensure clean wrap for 360 degree images
+	if( imagefovs.width() == 360 ) picw = facedims.width();
+
+	picdims = QSize( picw, pich );
 	return !picdims.isEmpty();
 }
 
@@ -651,8 +658,37 @@ QImage * pvQtPic::loadFile( int face )
 {
 	QImageReader ir( names[face] );
 	if( !ir.canRead() ) return 0;
+// get info for temp fix now
+// because read() wipes it out!
+	QSize fs = ir.size();
+	QByteArray fmt = ir.format();
+
 	ir.setScaledSize( picdims );
 	QImage *pim = new QImage( ir.read() );
+
+/* Temp fix for a bug in Qt jpeg reader:
+  if size was reduced, last column is probably black;
+  so if hfov == 360, replace that col with the average 
+  of its neighbors.  NOTE assumes 8 bits per color
+*/
+	if(  imagefovs.width() == 360
+	  && picdims.width() < fs.width()
+	  && ( fmt == "jpg" || fmt == "jpeg" )
+	  )
+	{
+		int ppl = pim->width(),
+			bpl = pim->bytesPerLine(),
+			bpp = bpl / ppl;
+		int ic = (ppl - 1) * bpp;
+		unsigned char * pl = pim->bits();
+		for( int l = 0; l < pim->height(); l++ ){
+			for(int i = 0; i < bpp; i++ ){
+				pl[i + ic] = (pl[i] + pl[i + ic - bpp]) >> 1;
+			}
+			pl += bpl;
+		}
+	}
+
 	return pim;
 }
 

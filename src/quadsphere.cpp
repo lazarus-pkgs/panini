@@ -378,8 +378,8 @@ quadsphere::quadsphere( int divs ){
 		}
 
 	  // equirectangular
-		pe[0] = float( 0.5 + 0.5 * xa / Pi );
-		pe[1] = float(ya / Pi);
+		pe[0] = float( CLIP(0.5 + 0.5 * xa / Pi));
+		pe[1] = float( CLIP(ya / Pi));
 
 	  // cylindrical
 		s = ya - 0.5 * Pi;
@@ -388,7 +388,7 @@ quadsphere::quadsphere( int divs ){
 			pc[1] = INVAL( s );
 		} else {
 			pc[0] = pe[0];
-			pc[1] = float(0.5 + 0.5 * tan(s) / tmaxrect );
+			pc[1] = float(CLIP(0.5 + 0.5 * tan(s) / tmaxrect));
 		}
 
 
@@ -496,34 +496,29 @@ quadsphere::quadsphere( int divs ){
    new index, the others get 2.
   */
 	pq = quadidx + 4 * iqt;
-	for( r = 0; r < qtb ; r++ ){
-		pq[0] = idt;
-		idt++;
+	for( r = 0; r < qtb; r++ ){
+		pq[0] = idt++;
 		pq[1] = idt;
 		pq += 4 * divs;
 	}
 	pq[0] = idt;
 
 	pq = quadidx + 4 * iqk;
-	pq[0] = idk;
-	idk++;
+	pq[0] = idk++;
 	for( r = 0; r < divs - 1; r++ ){
 		pq[1] = idk;
 		pq += 4 * divs;
-		pq[0] = idk;
-		idk++;
+		pq[0] = idk++;
 	}
 	pq[1] = idk;
 
 
 	pq = quadidx + 4 * iqb;
 	pq[1] = idb;
-	pq += 4 * divs;
 	for( r = 0; r < qtb ; r++ ){
-		pq[0] = idb;
-		idb++;
-		pq[1] = idb;
 		pq += 4 * divs;
+		pq[0] = idb++;
+		pq[1] = idb;
 	}
 
   /* fix up the center points
@@ -532,8 +527,9 @@ quadsphere::quadsphere( int divs ){
 	indices of the lower 2 quads point to the new data.
 	The vertices are just copies of the center vertex;
 	the new TCs have x = x of next row, y = center y.
+	NOTE "next" is addr-- for top, addr++ for bottom, 
   */
-	unsigned int jq = (divs + 1) * d2;	// lwr rgt quad
+  // point indices
 	jf = (dp1 + 1) * d2;	// edge to center
 	ic = ppf + jf;		// top center
 	id = 4 * ppf + jf;	// bot center
@@ -547,44 +543,53 @@ quadsphere::quadsphere( int divs ){
 	*pd++ = ps[0]; *pd++ = ps[1]; *pd++ = ps[2];
 	*pd++ = ps[0]; *pd++ = ps[1]; *pd++ = ps[2];
 
-  // build new TCs via old quad indices
+  // build new TC points via old quad indices
   // then change the indices
-#define makeCTC(ps, pd, pq ) \
+#define makeCTCtop(ps, pd, pq ) \
+		*pd++ = ps[2 * pq[-1]];   \
+		*pd++ = ps[2 * pq[-2] + 1]; \
+		*pd++ = ps[2 * pq[0]]; \
+		*pd++ = ps[2 * pq[1] + 1]
+#if 1
+	unsigned int jq = divs * (d2 - 1) + d2;	// upr rgt quad
+	pq = quadidx + 4 * ( qpf + jq );
+	jf = 2 * idc;
+	ps = angls; pd = ps + jf;
+	makeCTCtop(ps, pd, pq );
+	ps = rects; pd = ps + jf;
+	makeCTCtop(ps, pd, pq );
+	ps = fishs; pd = ps + jf;
+	makeCTCtop(ps, pd, pq );
+	ps = cylis; pd = ps + jf;
+	makeCTCtop(ps, pd, pq );
+	ps = equis; pd = ps + jf;
+	makeCTCtop(ps, pd, pq );
+  // change indices
+	pq[-2] = idc; pq[1] = idc + 1;
+#endif
+
+#define makeCTCbot(ps, pd, pq ) \
 		*pd++ = ps[2 * pq[-2]];   \
 		*pd++ = ps[2 * pq[-1] + 1]; \
 		*pd++ = ps[2 * pq[1]]; \
 		*pd++ = ps[2 * pq[0] + 1]
-
-	pq = quadidx + 4 * ( qpf + jq ); // top...
-	jf = 2 * idc;
-	ps = angls; pd = ps + jf;
-	makeCTC(ps, pd, pq );
-	ps = rects; pd = ps + jf;
-	makeCTC(ps, pd, pq );
-	ps = fishs; pd = ps + jf;
-	makeCTC(ps, pd, pq );
-	ps = cylis; pd = ps + jf;
-	makeCTC(ps, pd, pq );
-	ps = equis; pd = ps + jf;
-	makeCTC(ps, pd, pq );
-  // change indices
-	pq[-1] = idc; pq[0] = idc + 1;
-
+#if 1
+	jq = (divs + 1) * d2;		// lwr rgt quad
 	pq = quadidx + 4 * ( 4 * qpf + jq ); // bot...
 	jf = 2 * idc + 4;
 	ps = angls; pd = ps + jf;
-	makeCTC(ps, pd, pq );
+	makeCTCbot(ps, pd, pq );
 	ps = rects; pd = ps + jf;
-	makeCTC(ps, pd, pq );
+	makeCTCbot(ps, pd, pq );
 	ps = fishs; pd = ps + jf;
-	makeCTC(ps, pd, pq );
+	makeCTCbot(ps, pd, pq );
 	ps = cylis; pd = ps + jf;
-	makeCTC(ps, pd, pq );
+	makeCTCbot(ps, pd, pq );
 	ps = equis; pd = ps + jf;
-	makeCTC(ps, pd, pq );
+	makeCTCbot(ps, pd, pq );
   // change indices
 	pq[-1] = idc + 2; pq[0] = idc + 3;
-
+#endif
 }
 
 quadsphere::~quadsphere(){

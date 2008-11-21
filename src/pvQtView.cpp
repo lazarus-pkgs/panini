@@ -67,7 +67,7 @@
 	 texname = 0;
 
   // create the sphere tables
-	pqs = new quadsphere( 32 );
+	pqs = new quadsphere( 50 );
 
      Width = Height = 400;
 	 minpan = -180; maxpan = 180;
@@ -612,9 +612,10 @@ bool pvQtView::OGLok( const char * label ){
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, sclamp);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, tclamp);
 	// texture coordinate scaling
-		pv = thePic->fovSizeRatios();
-		xtexmag = pv.width();
-		ytexmag = pv.height();
+		QSizeF sr = thePic->fovSizeRatios();
+		xtexmag = sr.width();
+		ytexmag = sr.height();
+		if( xtexmag < 1.0 ) xtexmag = 1.0;
 	 // black border color for 2D textures
 		float bord[4] = { 0, 0, 0, 1 };
 		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, bord);
@@ -803,6 +804,7 @@ bool pvQtView::setupPic( pvQtPic * pic )
 				p->width(), p->height(), 0,
 				GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV,
 				p->bits() );
+//// DEBUG //// p->save("dbg-pvQt-teximg.jpg");
 			delete p;
 			if( !OGLok("load 2D") ) return false;
 		}
