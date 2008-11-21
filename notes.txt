@@ -376,4 +376,33 @@ ok	- turn and fov remembered by picture type.
 
 	Good enough for release 0.4.
 	
+21 Nov 2008  
+	Bugs in 0.4.58:
+	-- Mac package nees imageformat plugins and should install
+	pvQt as an executable command.  Harry is working on that.
+ok	-- cylindrical qtvrs all messed up.  Cause: not respecting 
+	pixel size when copying tiles to final image. Fixed.
+ok	-- black line at 180 degrees on equirectangulars.  Cause: Qt
+	image reader sets last column black when reducing large jpegs.
+	Filed bug report.  Temp fix: replace last column of 360 deg
+	reduced jpeg with avg of neighbors.
+	-- there is still a tex mapping glitch at zenith and maybe 
+	nadir of eqrs.  Part of this was due to incorrect indexing
+	of the top center quads, and has been fixed.  Now the seam
+	is clean to center, however there is still a "hook" in the
+	first row beyond center (both top and bottom, but I think a
+	little more obvious at top) that I can't figure out.  It is
+	small and I've made it smaller by increasing the number of
+	quads to 50x50 per face (15000 in all).
+	
+	Feature requests
+ok	-- 2:1 images shd default to eqr.
+	-- free vs constrained rotation should be an option.  As
+	should several other things.  Need persistent settings
+	first, so put this in rev 0.5.
+	
+	Features for 0.5:
+	-- Save displayed image as jpeg
+	-- Persistent settings for control styles, default FOVs,....
+	-- Read PT projects (save too??)
 	

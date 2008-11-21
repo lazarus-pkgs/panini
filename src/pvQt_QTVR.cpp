@@ -1385,6 +1385,7 @@ bool QTVRDecoder::extractCylImage(QImage * &img)
         return SeekAndExtractImageCyl_Tiled(img);
     }
 
+
     if (!gFoundJPEGs)
     {
         m_error = "No usable JPEG image found";
@@ -1396,7 +1397,7 @@ bool QTVRDecoder::extractCylImage(QImage * &img)
     fseek(gFile, gVideoChunkOffset[0], SEEK_SET);
 
     img = new QImage;
-    // decode jpeg cube face, and rotate 90 CW, if required
+    // decode jpeg, and rotate 90 CW, if required
     if (!decodeJPEG( gFile, *img, (!m_horizontalCyl))) {
         m_error = "JPEG decoding failed";
         delete img;
@@ -1512,43 +1513,47 @@ bool QTVRDecoder::SeekAndExtractImageCyl_Tiled(QImage * &image)
             return false;
         }
 
-        /* CALCULATE THE DIMENSIONS OF THE TARGET IMAGE */
+        /* Create target image at first tile */
+		int imgw, imgh, tw, th;
+		unsigned int bpp, imgbpl, tilebpl, tilebtc;
         if (tileSize.isEmpty()) {
-            // resize cube face
             tileSize = tile.size();
-
-            int w = tileSize.width() * gNumTilesPerImage, 
-                h = tileSize.height();
-            image = new QImage(w,h,tile.format());
+			tw = tileSize.width();
+            imgw = tw * gNumTilesPerImage;
+			th = tileSize.height();
+            imgh = th;
+            image = new QImage(imgw, imgh, tile.format());
+			imgbpl = image->bytesPerLine();
+			tilebpl = tile.bytesPerLine();
+			bpp = tilebpl / tw;	// bytes per pixel
+			tilebtc = tw * bpp;	// bytes to copy
         }
-        if (tile.size().width() != tileSize.width() || tile.size().height() != tileSize.height()) {
+        if (tile.size().width() != tw || tile.size().height() != th ) {
             // jpeg image size doesn't correspond to tile size
             m_error = "Tiles with different size found";
             return false;
         }
 
-
         ////////////////////////////////////////
         //   add tile to image
+		//   left-to right for horizontal fmt,
+		//   right-to-left for vertical fmt.
 
         int left=0;
         int right=0;
         if (m_horizontalCyl) {
-            left    = t * tileSize.width();
-            right   = left + tileSize.width();
+            left    = t * tw;
+            right   = left + tw;
         } else {
-            left    = image->size().width() - (t+1) * tileSize.width();
-            right   = left + tileSize.width();
+            left    = image->size().width() - (t+1) * tw;
+            right   = left + tw;
         }
-
         unsigned char * srcPtr = tile.bits();
-        unsigned char * destPtr = image->bits() + 3*left;
-
-        for (int y=0; y< tileSize.height(); y++)
-        {
-            memcpy(destPtr, srcPtr, 3*tileSize.width());
-            destPtr += image->bytesPerLine();
-            srcPtr += tile.bytesPerLine();
+        unsigned char * destPtr = image->bits() + bpp * left;
+        for (int y = 0; y < th; y++ ){
+            memcpy(destPtr, srcPtr, tilebtc );
+            destPtr += imgbpl;
+            srcPtr += tilebpl;
         }
     }
     return true;

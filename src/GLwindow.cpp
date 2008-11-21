@@ -366,7 +366,19 @@ bool GLwindow::loadPictureFiles( QStringList names ){
 		picFov = QSizeF( 90, 0 );
 		return loadTypedFiles( "cube", names );
 	}
-  // must be an image file, ask for picture type and fov
+	
+  // fail if not a readable image file
+	QImageReader ir( names[0] );
+	if( !ir.canRead() ){
+		qCritical("Can't read image: %s", (const char *)names[0].toUtf8());
+		return 0;
+	}
+  // If 2:1 aspect ratio assume eqr
+	QSize dims = ir.size();
+	if( dims.width() == 2 * dims.height() ) 
+		return loadTypedFiles( "equi", names );
+	
+  // ask for picture type and fov
     return loadTypedFiles( askPicType( names, picFov ), names );
 }
 
