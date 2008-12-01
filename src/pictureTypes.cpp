@@ -16,33 +16,50 @@
  * 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
 
-  The picture type names visible to the user, and their attributes.
+  The picture type names visible to the user, and their attributes,
+  one of which is the associated pvQtPic::PicType code.
+
+  The first 7 names are the projection names used  by quadsphere.
 
 */
 #include "pvQtPic.h"
 
 pictureTypes::pictypnumdesc
 pictureTypes::pictypn[NpictureTypes] = {
-	{ "proj", pvQtPic::nil, 1, QString(), 0,0,0,0 },
-	{ "qtvr", pvQtPic::nil, 1, QString(), 0,0,0,0 },
-	{ "rect", pvQtPic::rec, 1, QString(), 5,5,137.5,137.5 },
+	{ "rect", pvQtPic::rec, 1, QString(), 5,5,140,140 },
 	{ "fish", pvQtPic::eqs, 1, QString(), 50,50,360,360 },
 	{ "sphr", pvQtPic::eqa, 1, QString(), 50,50,360,360 },
-	{ "cyli", pvQtPic::cyl, 1, QString(), 50,25,360,137.5 },
+	{ "cyli", pvQtPic::cyl, 1, QString(), 50,25,360,140 },
 	{ "equi", pvQtPic::eqr, 1, QString(), 50, 25,360,180 }, 
-	{ "cube", pvQtPic::cub, 6, QString(), 90,90,90,90 }
+	{ "ster", pvQtPic::stg, 1, QString(), 50, 50, 310, 310 },
+	{ "merc", pvQtPic::mrc, 1, QString(), 50, 25, 360, 140 },
+	{ "cube", pvQtPic::cub, 6, QString(), 90,90,90,90 },
+	{ "proj", pvQtPic::nil, 1, QString(), 0,0,0,0 },
+	{ "qtvr", pvQtPic::nil, 1, QString(), 0,0,0,0 }
  };
 
 // need c'tor as tr() does not work outside a QObject
 pictureTypes::pictureTypes(){
-    pictypn[0].desc = tr("PanoTools script or project");
-	pictypn[1].desc = tr("QuickTime VR panorama");
-	pictypn[2].desc = tr("Normal rectilinear photo");
-	pictypn[3].desc = tr("Fisheye or mirrorball photo");
-	pictypn[4].desc = tr("Spherical panorama");
-	pictypn[5].desc = tr("Cylindrical panorama");
-	pictypn[6].desc = tr("Equirectangular panorama"); 
-	pictypn[7].desc = tr("2 to 6 Cube face images");
+    pictypn[picTypeIndex("proj")].desc = 
+		tr("PanoTools script or project");
+	pictypn[picTypeIndex("qtvr")].desc = 
+		tr("QuickTime VR panorama");
+	pictypn[picTypeIndex("rect")].desc = 
+		tr("Normal rectilinear image");
+	pictypn[picTypeIndex("fish")].desc = 
+		tr("Fisheye or mirror ball image");
+	pictypn[picTypeIndex("sphr")].desc = 
+		tr("Spherical image");
+	pictypn[picTypeIndex("cyli")].desc = 
+		tr("Cylindrical panorama");
+	pictypn[picTypeIndex("equi")].desc = 
+		tr("Equirectangular panorama"); 
+	pictypn[picTypeIndex("cube")].desc = 
+		tr("1 to 6 Cube face images");
+	pictypn[picTypeIndex("ster")].desc = 
+		tr("Stereographic image");
+	pictypn[picTypeIndex("merc")].desc = 
+		tr("Mercator panorama");
 }
 
 // return index of a pic type name, -1 if none
@@ -51,6 +68,14 @@ int pictureTypes::picTypeIndex( const char * name ){
 	int i;
 	for( i = 0; i < NpictureTypes; i++ ){
 		if(!strcmp( name, pictypn[i].typ )) return i;
+	}
+	return -1;
+}
+
+int pictureTypes::picTypeIndex( pvQtPic::PicType t ){
+	int i;
+	for( i = 0; i < NpictureTypes; i++ ){
+		if( t == pictypn[i].pictype ) return i;
 	}
 	return -1;
 }
@@ -64,6 +89,12 @@ int pictureTypes::picTypeCount( const char * name ){
 
 // given type index, return cstring name, 0 if no such type
 const char * pictureTypes::picTypeName( int index ){
+	if( index < 0 || index >= NpictureTypes ) return 0;
+	return pictypn[index].typ;	
+}
+// get name for a pvQtPic type code
+const char * pictureTypes::picTypeName( pvQtPic::PicType t ){
+	int index = picTypeIndex( t );
 	if( index < 0 || index >= NpictureTypes ) return 0;
 	return pictypn[index].typ;	
 }
@@ -107,13 +138,13 @@ QSizeF pictureTypes::maxFov( int index ){
 	return QSizeF( pictypn[index].maxW, pictypn[index].maxH );
 }
 
-int pictureTypes::picTypeIndex( pvQtPic::PicType t ){
-	if( t < pvQtPic::rec || t > pvQtPic::cub ) return -1;
-	return int(t) + 1;
-}
 
 pvQtPic::PicType pictureTypes::PicType( const char * name ){
-	int i = picTypeIndex( name );
-	if( i < 2 ) return pvQtPic::nil;
+	return PicType( picTypeIndex( name ));
+}
+
+pvQtPic::PicType pictureTypes::PicType( int i ){
+	if( i < 0 || i > NpictureTypes ) return pvQtPic::nil;
 	return pictypn[i].pictype;
 }
+

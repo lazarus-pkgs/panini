@@ -24,10 +24,12 @@
 int main(int argc, char **argv )
 {
 	QApplication app(argc, argv);
+
 	MainWindow *window = new MainWindow;
-  // process commandline, abort if fails
-	if( !window->postArgs(argc, argv) ) return 3;
   // ok, run the GUI...
 	window->show();
+  // process commandline, abort if fails
+	if( !window->postArgs(argc, argv) ) return 3;
+  // event loop
 	return app.exec();
 }

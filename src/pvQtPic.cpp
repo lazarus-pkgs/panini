@@ -18,15 +18,19 @@
  	This is the base implementation; see pvQtPic.h for details.
  	
   A note on projections
-	Three ideal projection types are supported:
-	0 - rectilinear: radius = f * tan(angle)
-	1 - equiangular: radius = f * angle
-	2 - spherical:	 radius = f * sin( angle / 2 )
-	(angles in radians, f = focal length)
+	These ideal axial projections are supported:
+	0 - rectilinear: d = f * tan(angle)
+	1 - equiangular: d = f * angle
+	2 - fisheye:	 d = f * sin( angle / 2 )
+	3 - stereographic:  d = f * tan( angle / 2 )
+	4 - mercator y:	 d = ln( tan( Pi/4 + angle / 2 ))
+	(d = distance in image, f = focal length)
 	type 2, also known as the "mirror ball" projection, is a decent
 	approximation for most fisheye lenses, and type 0 is a good
 	approximation for most "normal" lenses.  Type 1 is used for the
-	"pure angle" axes of cylindrical and equirectangular panoramas.
+	"pure angle" axes of cylindrical, mercator and equirectangular 
+	panoramas, type 3 for both axes of stereographic images, type 4
+	for the vertical axis of mercator panoramas.
  	
  */
  
@@ -53,34 +57,80 @@ static QColor defborders[6] = {
 };
 static QColor deffill = QColor(Qt::lightGray);
 
-/** utility functions, not exported  **/
+/**  Exported utility functions  **
+	that don't depend on object state
+*/
 
 // radius from (full) field of view
-static double fov2rad( int proj, double fov ){
+double pvQtPic::fov2rad( int proj, double fov ){
 	double a = DEG2RAD(0.5 * fov);
 	switch( proj ){
 	default: return 0;
 	case 0: return tan( a );
 	case 1: return a;
 	case 2: return sin( 0.5 * a );
+	case 3: return tan( 0.5 * a );
+	case 4: return log( tan( 0.25 * Pi + 0.5 * a ));
 	}
 }
 // (full) field of view from radius
-static double rad2fov( int proj, double rad ){
+double pvQtPic::rad2fov( int proj, double rad ){
+	if( rad <= 0 ) return 0;
 	double a;
 	switch( proj ){
 	default: return 0;
-	case 0: a = atan( rad );
+	case 0: 
+		a = atan( rad );
 		break;
-	case 1: a = rad;
+	case 1: 
+		a = rad;
 		break;
-	case 2: a = 2 * asin( rad );
+	case 2: 
+		a = 2 * asin( rad );
+		break;
+	case 3: 
+		a = 2 * atan( rad );
+		break;
+	case 4: 
+		double t = exp( rad );
+		a = 2 * (atan( t ) - 0.25 * Pi );
 		break;
 	}
 	return 2 * RAD2DEG( a );
 }
-/* scale image dimensions to changes of FOV and vice versa
-  proj is 0 for rectilinear, 1 for equiangular
+
+// get axis projection type codes for a PicType
+bool pvQtPic::getxyproj( PicType t, int & xproj, int & yproj ){
+  	xproj = yproj = 0;	// default rectilinear projection
+	switch( t ){
+  	default:
+		return false;
+  	case cub:	
+  	case rec:	
+  		break;
+  	case eqs:	
+  		xproj = yproj = 2;
+  		break;
+  	case eqa:	
+  	case eqr:	
+  		xproj = yproj = 1;
+  		break;
+  	case cyl:	
+  		xproj = 1;
+  		break;
+  	case stg:	
+  		xproj = yproj = 3;
+  		break;
+  	case mrc:	
+  		xproj = 1; yproj = 4;
+  		break;
+	}
+	return true;
+ }
+
+/* scale an image dimension to change of FOV 
+	or a FOV to change of dimension
+  proj is an axis projection type code
   pix is pixels at fov degrees (full width or height)
   return pixels at tofov or degrees at topix
 */
@@ -91,25 +141,105 @@ int pvQtPic::scalepix( int proj, int pix, double fov, double tofov ){
 	return int(0.5 + s * pix );
 }
 
-// linear ratios of size at max FOV for type, to size at face FOV
-// Used to scale texture coordinates
-QSizeF  pvQtPic::fovSizeRatios(){
-	QSizeF r(1.0, 1.0);
-	if( type == nil ) return r;	// no projection
-	if(imagedims.isEmpty() ) return r;  // no image
-	if( facefovs == maxfovs ) return r;	// actual == max
-	double w = fov2rad( xproj, facefovs.width());
-	if( w > 0 ) r.setWidth( fov2rad( xproj, maxfovs.width()) / w );
-	double h = fov2rad( yproj, facefovs.height());
-	if( h > 0 ) r.setHeight( fov2rad( yproj, maxfovs.height()) / h );
-	return r;
+double pvQtPic::scalefov( int proj, double fov, 
+						  int pix, int topix ){
+	if( pix == 0 ) return 0;
+	double r = topix / pix;
+	return rad2fov( proj, r * fov2rad( proj, fov ) );
 }
 
- pvQtPic::pvQtPic( pvQtPic::PicType t )
+/* fit a 2D FOV to image dimensions
+  Both dimensions must be valid.  The longer dimension
+  sets the scale.  If one fov is zero, the other gets
+  assigned to the long dimension.
+*/
+QSizeF pvQtPic::adjustFov( PicType t, QSizeF fovs, QSize dims ){
+	int pr[2];
+	if( !getxyproj( t, pr[0], pr[1] ) ) return QSizeF(0,0);
+	int d[2];
+	d[0] = dims.width(); d[1] = dims.height();
+	if( d[0] <= 0 || d[1] <= 0 ) return QSizeF(0,0);
+	double f[2];
+	f[0] = fovs.width(); f[1] = fovs.height();
+	if( f[0] <= 0 ) f[0] = f[1];
+	if( f[1] <= 0 ) f[1] = f[0];
+ 
+	int i = 0, j = 1;
+	if( d[1] > d[0] ){
+		i = 1;
+		j = 0;
+	}
+    double r = double(d[j])/double(d[i]);
+	double s = r * fov2rad( pr[i], f[i] );
+	f[j] = rad2fov( pr[j], s );
+
+	return QSizeF( f[0], f[1] );
+
+
+}
+
+/* new 2D fov from a new value for one axis
+	returns fovs for invalid type or FOV
+   preserves the aspect ratio (unless fov == 0,
+   when return  0, 0 )
+*/
+QSizeF pvQtPic::changeFovAxis( PicType t, QSizeF fovs,
+							   double fov, int axis ){
+	int xp, yp;
+	if( !getxyproj( t, xp, yp ) ) return fovs;
+	if( fov <= 0 ) return fovs;
+	double w = fovs.width(), h = fovs.height();
+	if( w <= 0 || h <= 0 ) return fovs;
+	w = fov2rad( xp, w );
+	h = fov2rad( yp, h );
+	if( axis < 0 ) axis = w >= h ? 0 : 1;
+	double r;
+	if( axis == 0 ){
+		r = fov2rad( xp, fov ) / w;
+		return QSizeF( fov, rad2fov( yp, h * r ) );
+	} else {
+		r = fov2rad( yp, fov ) / h;
+		return QSizeF( rad2fov( xp, w * r ), fov );
+	}
+}
+
+/* new 2D FOV after linear rescaling of an image
+   of a given projection type
+   Returns fovs for invalid type
+*/
+QSizeF pvQtPic::picScale2Fov( PicType t, QSizeF fovs, 
+							  QSizeF scl  // scale factors
+							){
+	int xp, yp;
+	if( !getxyproj( t, xp, yp ) ) return fovs;
+	double w = fov2rad( xp, fovs.width());
+	double h = fov2rad( yp, fovs.height());
+	return QSizeF( rad2fov(xp, w * scl.width()),
+				   rad2fov(yp, h * scl.height()) );
+}
+
+/* new 2D fov from change of projection
+*/
+QSizeF pvQtPic::changeFovType( PicType t, QSizeF fovs, 
+							   PicType twas ){
+	int xp, yp;
+	if( !getxyproj( twas, xp, yp ) ) return fovs;
+	double xr = fov2rad( xp, fovs.width() ),
+		   yr = fov2rad( yp, fovs.height() );
+	if( !getxyproj( t, xp, yp ) ) return fovs;
+	return QSizeF( rad2fov( xp, xr ),
+				   rad2fov( yp, yr ) );
+}
+
+
+/**  Constructor  **/
+
+pvQtPic::pvQtPic( pvQtPic::PicType t )
 {
 	picTypes = new pictureTypes();
 	if( !setType( t ) ) setType( nil );
 }
+
 
 bool pvQtPic::setType( pvQtPic::PicType t )
 {	
@@ -121,52 +251,23 @@ bool pvQtPic::setType( pvQtPic::PicType t )
    Sets xproj, yproj accoding to axis projection type
  */  
  	
-  	lockfovs = false;
-  	xproj = yproj = 0;	// default rectilinear projection
-  	
-  	switch( t ){
-  	case nil:	// No picture
-  		maxfaces = 0;
-  		facedims = QSize(0,0);
-  		lockfovs = true;
-  		break;
-  	case rec:	// A rectilinear image up to 135 x 135 degrees
-  		maxfaces = 1;
-  		facedims = QSize(256,256);
-  		break;
-  	case eqs:	// equisolid angle (fisheye, mirrorball) image
-  		maxfaces = 1;
-  		facedims = QSize(256,256);
-  		xproj = yproj = 2;
-  		break;
-  	case eqa:	// equal angle spherical image
-  		maxfaces = 1;
-  		facedims = QSize(256,256);
-  		xproj = yproj = 1;
-  		break;
-  	case cyl:	// A cylindrical panorama
-  		maxfaces = 1;
-  		facedims = QSize(512,256);
-  		xproj = 1;
-  		break;
-  	case eqr:	// An equirectangular panorama
-  		maxfaces = 1;
-  		facedims = QSize(512,256);
-  		xproj = yproj = 1;
-  		break;
-  	case cub:	// A cubic panorama (1 to 6 rectilinear images 90x90 degrees)
-   		maxfaces = 6;
-  		facedims = QSize(256,256);
-  		lockfovs = true;
- 		break;
-  	default:
-		type = nil;		// disable API, but preserve
-		return false;	// state for debugging
-	}
+	type = nil;		// disable API
+	ipt = picTypes->picTypeIndex(t);
+	if( ipt < 0 )return false;
+
   // accept the type
 	type = t;
+	lockfovs = type == cub;
+	getxyproj( type, xproj, yproj );
+	facefovs = picTypes->maxFov( ipt );
+	maxfaces = picTypes->picTypeCount( ipt );
+
+  // set default dimensions 
+	facedims = QSize( 512, 512 );
+	double r = facefovs.width() / facefovs.height();
+	if( r < 1 ) facedims.setWidth( 256 );
+	else if( r < 1 ) facedims.setHeight( 256 );
 	picdims = facedims;	// default for empty frames
-	facefovs = picTypes->maxFov( picTypes->picTypeIndex(t) );
 
   // pixel format for face images
 	faceformat = PVQT_PIC_FACE_FORMAT; 
@@ -284,6 +385,20 @@ bool pvQtPic::setFaceSize( QSize dims ){
 	return !picdims.isEmpty();
 }
 
+/* (size at max FOV for current type) / (size at current face FOV).
+   Used to scale texture coordinates for standard display
+*/
+QSizeF  pvQtPic::getTexScale(){
+	QSizeF r(1.0, 1.0);
+	if( type == nil ) return r;	// no projection
+	if(imagedims.isEmpty() ) return r;  // no image
+	if( facefovs == maxfovs ) return r;	// actual == max
+	double w = fov2rad( xproj, facefovs.width());
+	if( w > 0 ) r.setWidth( fov2rad( xproj, maxfovs.width()) / w );
+	double h = fov2rad( yproj, facefovs.height());
+	if( h > 0 ) r.setHeight( fov2rad( yproj, maxfovs.height()) / h );
+	return r;
+}
 
 /* post source image FOVs
   should only be called once, before setFaceImage()
@@ -477,25 +592,8 @@ bool pvQtPic::addimgsize( int i, QSize dims )
 		if( numimgs == 0 ){
 			ok = true;	// first size wins
 			imagedims = dims;
-		  /* make sure image fovs are set:
-			To support commandline, if only imagefovs width is nonzero, 
-			assign it to the longer image axis.
-		    if both 0, use the posted face fovs (strictly a fallback)
-		    if one is 0, compute it from the other and image dimensions
-		  */ 
-			if( imagefovs.height() == 0 
-				&& imagedims.width() < imagedims.height()
-			  ){
-				imagefovs.transpose();
-			}
+		  // make sure image fovs are set:
 		  	if( imagefovs.isNull() ) imagefovs = facefovs;
-		  	else if( imagefovs.width() == 0 ){
-		  		double r = (double)imagedims.width() / (double)imagedims.height();
-		  		imagefovs.setWidth(rad2fov(xproj, r * fov2rad(yproj, imagefovs.height())));
-	  		} else if( imagefovs.height() == 0 ){
-		  		double r = (double)imagedims.height() / (double)imagedims.width();
-	  			imagefovs.setHeight(rad2fov( yproj, r * fov2rad( xproj, imagefovs.width())));
-  			}
 		} else {
 			ok = dims == imagedims;
 		}

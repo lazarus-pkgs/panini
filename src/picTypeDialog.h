@@ -51,16 +51,16 @@ public:
 	
 	int chosenType();
 	QSizeF getFOV();
-	
+
 signals:
 	void picTypeSelected( int t );
-private slots:
-	void on_fovBox_valueChanged( double w );
+	void hFovChanged( double h );
+	void vFovChanged( double v );
+
 private:
 	QSize	dims;
 	QSizeF  minfov, maxfov, thefov;
-	bool ylong;	// true if height > width
-	
+
 };
 
 #endif	//ndef PICTYPEDIALOG_H

@@ -44,6 +44,9 @@ public:
 public slots:
 	void showStatus( QString msg );
 	void showTitle( QString msg );
+	void showProj( QString name );
+	void showFov( QSizeF fovs );
+
 signals:
 	void step_pan( int d );
 	void step_tilt( int d );

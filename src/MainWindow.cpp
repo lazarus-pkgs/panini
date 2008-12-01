@@ -96,6 +96,11 @@ if(ok) ok =
 	connect(actionReset, SIGNAL(triggered()),
 		    this, SLOT(resetView()) );
 
+// Add permanent status bar fields
+	statusbar->addPermanentWidget( vfovLabel );
+	statusbar->addPermanentWidget( hfovLabel );
+	statusbar->addPermanentWidget( projLabel );
+	statusBar()->showMessage(tr("Ready"));
 
 if(ok){
 	glwindow = new GLwindow(this);
@@ -104,9 +109,7 @@ if(ok){
 }
 
   if( !ok ) qFatal("MainWindow setup failed");
-  
-	statusBar()->showMessage(tr("Ready"));
-
+ 
 
 }
 
@@ -235,4 +238,15 @@ void MainWindow::on_actionPT_script_triggered(){
 */
 void MainWindow::on_actionAbout_pvQt_triggered(){
 	emit about_pvQt();
+}
+
+/* Display projection and FOV 
+*/
+void MainWindow::showProj( QString name ){
+	projLabel->setText(QString("iproj %1").arg(name));
+}
+
+void MainWindow::showFov( QSizeF f ){
+	hfovLabel->setText(QString("hfov %1").arg(f.width(), 0, 'f', 1));
+	vfovLabel->setText(QString("vfov %1").arg(f.height(), 0, 'f', 1));
 }

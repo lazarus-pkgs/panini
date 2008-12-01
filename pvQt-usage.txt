@@ -1,4 +1,4 @@
-How to use pvQt version 0.4.xx   16 November 2008
+How to use pvQt version 0.5.xx   22 November 2008
 
 pvQt is a viewer for panoramic and wide angle pictures that runs on Linux, Windows and Apple OSX.  It can load all the common photo and panoramic formats from ordinary image files or QuickTime VR (.mov) files.  Like other viewers, it shows pictures in rectilinear perspective, but can also display extremely wide angle views, and a range of intermediate perspectives.  It can do this because it "paints" pictures on a 3D sphere -- the "panosphere" -- which you view from the inside in true perspective.
 
@@ -46,38 +46,57 @@ When you start pvQt from the command line, you can optionally specify the first 
 The first command line argument can be a 4 letter picture type name, one of:
 	proj	PanoTools script or project
 	qtvr	QuickTime VR panorama (cubic or cylindrical)
-	rect	Normal lens photo
-	fish	Fisheye lens or "mirror ball" photo
-	sphr	Equal angle spherical panorama
+	cube	1 to 6 rectilinear cube face images 
+	rect	Rectilinear (normal lens) projection 
+	fish	Fisheye lens or mirror ball projection
+	sphr	Equal angle spherical projection
+	ster	Stereographic (super wide) projection
 	cyli	Cylindrical panorama
 	equi	Equirectangular panorama
-	cube	1 to 6 Cube face images
-The proj and qtvr type names are rarely needed, because the file name extension will normally indicate the file type, and the file itself defines the picture type.  So for those types you can just give a file name.  If you do specify one of these types and don't give a file name, pvQt will ask for the file name before it displays anything.
+	merc	Mercator panorama
+	
+The first 3 names are rarely needed, because project and qtvr files are normally recognized by their name extensions, and we ususally give more than one file name for cubic pictures.  If you do specify one of these types and don't give a file name, pvQt will ask for the file name before it displays anything.
 
-For the other picture types, except cube, you need to specify the angular size; so the next argument can be the field of view, in degrees, as a floating point number.  This is always the fov of the longer image axis, if the image is not square.  The default fov is the largest legal fov for the type.
+For the other picture types, you need to specify the angular size; so the next argument can be the field of view, in degrees, as a floating point number.  This is always the fov of the longer image axis, if the image is not square.  The default fov is the largest legal fov for the type.
 
-The last thing on the command line is one or more file names.  pvQt can read most of the common image file formats, identified by the conventional file name extensions.
+The last thing on the command line is a file name, or up to six file names for a cubic panorama.  pvQt can read tiff, jpeg and png image files, identified by the conventional file name extensions.
 
-If you give only an image file name on the command line, pvQt will pop a dialog asking for both the picture type and major field of view.  If you give more than one name, it will assume they are cube face images (to show a single cube face you must give the type name).  On Windows and Mac you can drag files onto the pvQt program icon to generate a files-only command line.
+If you give only an image file name on the command line, pvQt will 
+assume it is a rectilinear panorama if its width is exactly twice its height; otherwise it will pop a dialog asking for both the picture type and major field of view.  If you give more than one name, it will assume they are cube face images (to show a single cube face you must give the type name).  On Windows and Mac you can drag files onto the pvQt program icon to generate a files-only command line.
 
 If you omit the file name, pvQt will pop a file selector dialog so you can choose the file(s) to be displayed.  If the picture type is rect, fish, cyli or equi, and you did not specify a fov on the command line, it will then ask you to specify the field of view.
 
-There are two special cases.  If the command line is empty, pvQt displays a wire frame model of the panosphere without asking for a picture specification.  If you give just an image type name, pvQt displays an image consisting of labelled empty frames (just a "front" frame for most picture types; or six cube faces).  Some day you will be able to load images by dragging them into those frames.
+If the command line is empty, pvQt displays a wire frame model of the panosphere without asking for a picture specification.  If you give just a picture type name, pvQt displays an image consisting of labelled empty frames (just a "front" frame for most picture types; or six cube faces).  You can then load image files by dragging them into the empty frames -- this is mainly useful for cubic panoramas.
 
 PICTURE MENU
 
 The Picture menu lets you select a picture type, then pvQt asks for files and fov.  If you cancel the file selector dialog, empty frames will be displayed.  If you cancel the fov dialog, the selected file will not be loaded and the previous picture will remain.
 
-The "rect" picture type can display any kind of image, much as an ordinary image processing program would.  Just accept the default fov. 
+You can use the "rect" picture type to display any kind of image, much as an ordinary image processing program would.  There is no need to specify an FOV in that case.
 
-The "fish" picture type uses the equisolid angle (also know as "mirror ball")
- projection, a classical panoramic format that is approximated by most modern fisheye lenses.  So you can use "fish" to display mirror sphere photos and computed panoramas up to 360 degrees in diameter.
+The "fish" picture type uses the equisolid angle (also know as mirror sphere) projection, a classical panoramic format that is approximated by most modern fisheye lenses.  So you can use "fish" to display mirror sphere photos and computed panoramas up to 360 degrees in diameter.
 
-The "sphr" picture type uses the equal-angle spherical projection.  Some fisheye lenses approximate this projection, and many stitchers can generate it.
+The "sphr" picture type uses the equal-angle spherical projection.  Most stitchers can generate this projection, and some older or more technical fisheye lenses approximate it.
 
-You can load 1 to 6 image files for the "cube" picture type.  They must be square images of the same size, and their sorted names must fall in the conventional cube face order: front, right, back, left, top, bottom.  So if you have names like foo_front.tif, foo_right.tif,..., you will have to change them to something like foo_1.tif, foo_2.tif,....  Later when drag and drop and PT scripts are implemented, you will be able to load such files without renaming them.  If you give fewer than 6 cube face files, pvQt will display empty frames for the missing ones.  This applies to nonexistent or unreadable files, too, so if you wanted to show 3 images on the left, front, and right cube faces, you could (on the command line) insert a dummy file name for the back face between the right and left ones, or make an empty file with that name and select it along with the real image files.
+You can load 1 to 6 image files for the "cube" picture type.  They must be square images o the same size, and their sorted names must fall in the conventional cube face order: front, right, back, left, top, bottom.  So if you have names like foo_front.tif, foo_right.tif,..., you would have to change them to something like foo_1.tif, foo_2.tif,....  If you give fewer than 6 cube face files, pvQt will display empty frames for the missing ones.  Nonexistent or unreadable files will also generate empty frames.
+
+Version 0.5 lets you load cube face images by dragging them into empty frames.  All must be square, but the sizes may vary.
 
 When a picture is loaded, the pvQt window's title bar shows the file name, picture type and displayed size in megapixels, which will be smaller than the source image size if there is not enough OpenGL texture memory to hold the full image.  In case loading or display fails, the title bar will show an error message instead.
+
+PROJECTION
+
+The filed image is supposed to be a projection of the sphere onto the plane according to some mathematical rule; pvQt uses the rules it knows to paint the image back onto the sphere.  Selecting a picture type selects a projection, however all but the cubic projection are actually interchangeable -- pvQt will happily display the same image according to any of them.  The result will only be a "correct" view if pvQt is using the same projection that was used to make the image; but if not, it may still be an intersting picture.
+
+So in version 0.5 the "P" key lets you cycle through the non-cubic projections without having to reload the image.  The "End" key restores the projection that was set when the image was loaded. 
+
+FIELD OF VIEW
+
+The angular size, or field of view of an image determines how much of the surface of the panosphere it occupies.  Each projection has a maximum feasible FOV, which is the default, however you can specify a smaller FOV for any non-cubic picture.
+
+Just as with the projections themselves, it is perfectly feasible to change the apparent FOVs in any non cubic projection, without reloading the image.  And the FOVs along the rows and columns of the image can vary indepently (they are initially locked together via the image dimensions).  Version 0.5 lets you adjust them with the mouse by holding down the Alt key and the right mouse button.  The "End" key restores the original FOVs.
+
+Changing the FOVs not only changes the apparent size of the image (which can be undone with the zoom control), but also alters the perspective, providing another route to possibly interesting pictures.
 
 RELEASE INFORMATION
 
