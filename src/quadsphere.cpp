@@ -71,7 +71,7 @@ static char msg[80];
 
 /* texcoord utilities
 */
-const float ninv = -0.1, pinv = 1.1;
+const float ninv = 0, pinv = 1;
 #define CLIP( x ) ( x < ninv ? ninv : x > pinv ? pinv : x )
 #define INVAL( t ) (t > 0 ? pinv : ninv )
 #define EVAL( t ) ( t < 0.5 ? t < 0 ? t : 0 : t > 1 ? t : 1 ) 
@@ -136,7 +136,7 @@ quadsphere::quadsphere( int divs ){
 	vertpnts = 6 * ppf + dups;	// total vertices
 	linewrds = 24 * qpf;
 	quadwrds = linewrds;
-	nwords =  15 * vertpnts + linewrds + quadwrds;
+	nwords =  (3 + 2 * Nprojections) * vertpnts + linewrds + quadwrds;
 	words = new float[ nwords ];
 	if( words == 0 ){
 		errmsg = "insufficient memory";
@@ -144,14 +144,17 @@ quadsphere::quadsphere( int divs ){
 	}
 // set pointers to arrays
 	verts = words;
-	angls = verts + 3 * vertpnts;
-	rects = angls + 2 * vertpnts;
-	fishs = rects + 2 * vertpnts;
-	cylis = fishs + 2 * vertpnts;
-	equis = cylis + 2 * vertpnts;
-	lineidx = (unsigned int *)(equis + 2 * vertpnts);
+	TCs = verts + 3 * vertpnts;
+	lineidx = (unsigned int *)(TCs + Nprojections * 2 * vertpnts);
 	quadidx = lineidx + linewrds;
-
+// local TC pntrs
+	float *	rects = (float *)texCoords("rect");
+	float * fishs = (float *)texCoords("fish");
+	float * cylis = (float *)texCoords("cyli");
+	float * equis = (float *)texCoords("equi");
+	float * sters = (float *)texCoords("ster");
+	float * mercs = (float *)texCoords("merc");
+	float * angls = (float *)texCoords("sphr");
 
 /* Build Vertex arrays
 	+Z face is computed from cube corners using slerp;
@@ -329,30 +332,52 @@ quadsphere::quadsphere( int divs ){
 	int i = pictypes.picTypeIndex( pvQtPic::rec );
 	QSizeF fovs = pictypes.maxFov( i );
 	double amaxrect = DEG2RAD(0.5 * fovs.width());
+	double cminrect = cos( amaxrect );
 	double tmaxrect = tan( amaxrect );
-	double amaxsph = DEG2RAD(0.5 * 365 );
-	double amaxfish = DEG2RAD(0.5 * 365 );
+	double amaxcyl = DEG2RAD( 80 );
+	double amaxsph = DEG2RAD( 180 );
+	double amaxfish = DEG2RAD( 180 );
+	double amaxmerc = DEG2RAD( 80 );
+	double cminmerc = cos( amaxmerc );
+	double tmaxmerc = log( tan(amaxmerc) + 1.0 / cminmerc );
+	double amaxster = DEG2RAD( 155 );
+	double tmaxster = tan( 0.5 * amaxster );
 
 	ps = verts;
 	float * pr = rects,
 		  * pf = fishs,
 		  * pc = cylis,
 		  * pe = equis,
-		  * pa = angls;
+		  * pa = angls,
+		  * pm = mercs,
+		  * pt = sters;
   // loop over all vertices
 	for( r = 6 * ppf; r > 0; --r ){
-	  /* angles from the axes
-	    xa is in [-Pi:Pi], ya and za in[0:Pi]
-	  */
+  /* angles
+    Viewing 0->+Z, X left, Y up
+    xa is angle from +Z in XZ plane [-Pi:Pi],
+	ya is angle out of XZ plane [-Pi/2 : Pi/2],
+	za is angle away from +Z [0:Pi]
+	Most TCs are computed from their sines and cosines,
+	to minimize numerical error.  We use the angles
+	themselves for 'angle' TCs and some range tests
+  */
 		double xa = -atan2(ps[0], ps[2]), // horiz from +Z
 			   ya = acos(ps[1]), // vert from -Y
 			   za = acos(ps[2]);  // radial from +Z
+
+		double  sxa = -ps[0],	// sin(xa)
+				cxa = ps[2],	// cos(xa)
+				sya = ps[1],	// sin(ya)
+				cya = sqrt( ps[0] * ps[0] + ps[2] * ps[2] ),
+				sza = sqrt( ps[0] * ps[0] + ps[1] * ps[1] ),
+				cza = ps[2];
+
 	  // direction for radial fns (0: invalid)
-		s = sqrt(ps[0]*ps[0] + ps[1]*ps[1]);
 		double sx = 0, sy = 0;
-		if( s >= 1.0e-4 ){
-			sx = -ps[0] / s;
-			sy = -ps[1] / s;
+		if( sza >= 1.0e-4 ){
+			sx = sxa / sza;
+			sy = -sya / sza;
 		}
 
 	  // rectilinear
@@ -360,7 +385,7 @@ quadsphere::quadsphere( int divs ){
 			pr[0] = INVAL( sx );
 			pr[1] = INVAL( sy );
 		} else {
-		  s = 0.5 * tan( za ) / tmaxrect;
+		  s = 0.5 * (sza/cza) / tmaxrect;
 		  double x = CLIP( 0.5 + s * sx ), 
 			     y = CLIP( 0.5 + s * sy );
 		  pr[0] = float( x );
@@ -372,7 +397,7 @@ quadsphere::quadsphere( int divs ){
 			pf[0] = INVAL( xa );
 			pf[1] = INVAL( ya - 0.5 * Pi );
 		} else {
-			s = 0.5 * sin( 0.5 * za );
+			s = 0.5 * sqrt(0.5 * ( 1 - cza ));
 			pf[0] = float(CLIP(0.5 + s * sx) );
 			pf[1] = float(CLIP(0.5 + s * sy) );
 		}
@@ -383,14 +408,13 @@ quadsphere::quadsphere( int divs ){
 
 	  // cylindrical
 		s = ya - 0.5 * Pi;
-		if( fabs( s ) > amaxrect ){
+		if( fabs(s) > amaxcyl ){
 			pc[0] = INVAL( xa );
 			pc[1] = INVAL( s );
 		} else {
 			pc[0] = pe[0];
-			pc[1] = float(CLIP(0.5 + 0.5 * tan(s) / tmaxrect));
+			pc[1] = float(CLIP(0.5 - 0.5 * (sya/cya) / tmaxrect));
 		}
-
 
 	  // equiangular sphere
 		if( za > amaxsph ){
@@ -402,9 +426,29 @@ quadsphere::quadsphere( int divs ){
 			pa[1] = float( CLIP(0.5 + s * sy) );
 		}
 
+	  // mercator
+		pm[0] = pe[0];
+		if( fabs(cya) < cminmerc ) pm[1] = INVAL( s );
+		else {
+			s = log((sya + 1) / cya);
+			pm[1] = float(CLIP( s / tmaxmerc ));
+		}
+
+	  // stereographic
+		if( za > amaxster ){
+			pt[0] = INVAL( sx );
+			pt[1] = INVAL( sy );
+		} else {
+			s = tan( 0.5 * za ) / tmaxster;
+			pt[0] = float(CLIP(0.5 + s * sx));
+			pt[1] = float(CLIP(0.5 + s * sy));
+		}
+
+
 	  // next point
 		ps += 3; 
-		pr += 2; pf += 2; pc += 2; pe += 2; pa += 2;
+		pr += 2; pf += 2; pc += 2; pe += 2; 
+		pa += 2; pm += 2; pt += 2;
 	}
 
   /* Fix up the wrap seam
@@ -596,20 +640,27 @@ quadsphere::~quadsphere(){
 	if( words ) delete[] words;
 }
 
+const float * quadsphere::texCoords( const char * proj ){
+	int i = pictypes.picTypeIndex( proj );
+	if( i < 0 || i >= Nprojections ) return 0;
+	return TCs + i * 2 * vertpnts;
+}
+
+unsigned int quadsphere::texCoordOffset( const char * proj ){
+	const float * p = texCoords( proj );
+	if( p == 0 ) return 0;
+	return (char *)p - (char *)verts;
+}
+
 const float * quadsphere::texCoords( pvQtPic::PicType proj ){
-	switch( proj ){
-	default: return 0;
-	case pvQtPic::eqa: return angls;
-	case pvQtPic::rec: return rects;
-	case pvQtPic::eqs: return fishs;
-	case pvQtPic::cyl: return cylis;
-	case pvQtPic::eqr: return equis;
-	}
+	int i = pictypes.picTypeIndex( proj );
+	if( i < 0 || i >= Nprojections ) return 0;
+	return TCs + i * 2 * vertpnts;	
 }
 
 unsigned int quadsphere::texCoordOffset( pvQtPic::PicType proj ){
 	const float * p = texCoords( proj );
-	if( p == 0 ) p = angls;
+	if( p == 0 ) return 0;
 	return (char *)p - (char *)verts;
 }
 

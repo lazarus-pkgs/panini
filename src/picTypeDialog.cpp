@@ -1,4 +1,4 @@
-/* picTypeDialog.cpp  for pvQt 06Oct2008 TKS
+/* picTypeDialog.cpp  for pvQt 0.5  24 Nov 2008 TKS
 */
 #include "picTypeDialog.h"
 
@@ -7,12 +7,17 @@ picTypeDialog::picTypeDialog( QWidget * parent)
 {
 	setupUi( this );
 	setDims( QSize(0,0) );
+	thefov = QSizeF( 360, 360 );
 	setMinFOV( QSizeF( 5, 5 ));
 	setMaxFOV( QSizeF( 360, 360 ));
-	setFOV( QSizeF( 360, 360 ));
 	
 	connect( typesBox, SIGNAL(currentIndexChanged( int )),
 			this, SIGNAL( picTypeSelected( int )) );
+
+	connect ( hfovBox, SIGNAL(valueChanged(double)),
+			  this, SIGNAL(hFovChanged(double)));
+	connect ( vfovBox, SIGNAL(valueChanged(double)),
+			  this, SIGNAL(vFovChanged(double)));
 }
 
 void picTypeDialog::setNameLabel( QString name ){
@@ -23,6 +28,36 @@ void picTypeDialog::setPicTypes( QStringList types ){
 	typesBox->addItems( types );
 }
 
+void picTypeDialog::setDims( QSize wh ){
+	dims = wh;
+	widPixels->setText( QString::number( wh.width()));
+	hgtPixels->setText( QString::number( wh.height()));
+}
+
+void picTypeDialog::setMinFOV( QSizeF fovs ){
+	minfov = fovs;
+	hfovBox->setMinimum( minfov.width() );
+	vfovBox->setMinimum( minfov.height() );
+	setFOV( thefov );
+}
+
+void picTypeDialog::setMaxFOV( QSizeF fovs ){
+	maxfov = fovs;
+	hfovBox->setMaximum( maxfov.width() );
+	vfovBox->setMaximum( maxfov.height() );
+	setFOV( thefov );
+}
+
+void picTypeDialog::setFOV( QSizeF fovs ){
+	thefov = fovs.expandedTo(minfov).boundedTo(maxfov);
+	hfovBox->setValue( thefov.width() );	
+	vfovBox->setValue( thefov.height() );
+}
+
+QSizeF picTypeDialog::getFOV(){
+	return thefov;
+}
+
 void picTypeDialog::selectPicType( int t, bool lock ){
 	typesBox->setCurrentIndex( t );
 	typesBox->setEnabled( !lock );
@@ -30,50 +65,6 @@ void picTypeDialog::selectPicType( int t, bool lock ){
 
 int picTypeDialog::chosenType(){
 	return typesBox->currentIndex();
-}
-
-void picTypeDialog::setMinFOV( QSizeF fovs ){
-	minfov = fovs;
-	fovBox->setMinimum(  ylong ? minfov.height() : minfov.width() );
-	setFOV( thefov );
-}
-
-void picTypeDialog::setMaxFOV( QSizeF fovs ){
-	maxfov = fovs;
-	fovBox->setMaximum(  ylong ? maxfov.height() : maxfov.width() );
-	setFOV( thefov );
-}
-
-void picTypeDialog::setFOV( QSizeF fovs ){
-	thefov = fovs.expandedTo(minfov).boundedTo(maxfov);
-	fovBox->setValue( ylong ? thefov.height() : thefov.width() );	
-}
-
-/** Slot: record size changes **/
-void picTypeDialog::on_fovBox_valueChanged( double w ){
-	if( ylong ){
-		if( w == thefov.height() ) return;
-		thefov.setHeight( w );
-	} else {
-		if( w == thefov.width() ) return;
-		thefov.setWidth( w );
-	}
-}
-
-void picTypeDialog::setDims( QSize wh ){
-	dims = wh;
-	widPixels->setText( QString::number( wh.width()));
-	hgtPixels->setText( QString::number( wh.height()));
-	ylong = wh.height() > wh.width();
-}
-
-QSizeF picTypeDialog::getFOV(){
-	if( ylong ){
-		thefov.setWidth( 0 );
-	}  else {
-		thefov.setHeight( 0 );
-	}
-	return thefov;
 }
 
 

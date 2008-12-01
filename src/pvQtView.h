@@ -102,9 +102,11 @@ public:
 	 void picChanged();
 
  signals:
-	 void reportView( QString msg );
-	 void OGLerror( QString msg );
-	 void reportTurn( double deg );
+	void reportView( QString msg );
+	void OGLerror( QString msg );
+	void reportTurn( double deg );
+	void reportFov( QSizeF fovs );
+	void reportProj( QString name );
 
  protected:
      void initializeGL();
@@ -113,6 +115,7 @@ public:
      void mousePressEvent(QMouseEvent *pme );
      void mouseMoveEvent(QMouseEvent *pme );
 	 void mouseReleaseEvent( QMouseEvent *pme );
+	 void mouseDoubleClickEvent( QMouseEvent *pme );
 private slots:
 	 void mTimeout();
  private:
@@ -141,11 +144,14 @@ private slots:
      int ispin, spinstep;
      int izoom, zoomstep;
 	 int idist, diststep;
+	 int ihfov, ivfov;
 
 	int mx0, my0, mx1, my1;	// mouse coordinates
 	Qt::MouseButtons mb;
+	Qt::KeyboardModifiers mk;
 	QTimer mTimer;
 
+	void setTexMag( QSizeF mags );
 
   // display support
 	 void setPicType( pvQtPic::PicType pt );
@@ -153,6 +159,7 @@ private slots:
 	 void updatePic();
 	 pvQtPic  * thePic;
 	 pvQtPic::PicType	picType;
+	 int	ipicType;	// index of picType
   // display lists for screens
      void makeSphere( GLuint list );
 	 GLuint theScreen;	// current screen list
@@ -180,6 +187,12 @@ private slots:
 	quadsphere  * pqs;
 	bool QS_BUF;	// put quadsphere data in OGL buffers
 	double xtexmag, ytexmag;  // tex coord scale factors
+
+	pictureTypes pictypes;
+	QSizeF curr_fovs;	// current
+	pvQtPic::PicType curr_pt;
+	int		curr_ipt;	// index of curr_pt
+
 };
 
 #endif //ndef PVQTVIEW_H

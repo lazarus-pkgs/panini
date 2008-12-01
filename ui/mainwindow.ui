@@ -12,7 +12,68 @@
   <property name="windowTitle" >
    <string>pvQt</string>
   </property>
-  <widget class="QWidget" name="centralwidget" />
+  <widget class="QWidget" name="centralwidget" >
+   <widget class="QLabel" name="projLabel" >
+    <property name="geometry" >
+     <rect>
+      <x>150</x>
+      <y>150</y>
+      <width>61</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="frameShape" >
+     <enum>QFrame::Panel</enum>
+    </property>
+    <property name="frameShadow" >
+     <enum>QFrame::Sunken</enum>
+    </property>
+    <property name="text" >
+     <string> proj: cube</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="hfovLabel" >
+    <property name="geometry" >
+     <rect>
+      <x>230</x>
+      <y>150</y>
+      <width>61</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="frameShape" >
+     <enum>QFrame::Panel</enum>
+    </property>
+    <property name="frameShadow" >
+     <enum>QFrame::Sunken</enum>
+    </property>
+    <property name="text" >
+     <string>hfov 360.0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="vfovLabel" >
+    <property name="enabled" >
+     <bool>true</bool>
+    </property>
+    <property name="geometry" >
+     <rect>
+      <x>300</x>
+      <y>150</y>
+      <width>61</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="frameShape" >
+     <enum>QFrame::Panel</enum>
+    </property>
+    <property name="frameShadow" >
+     <enum>QFrame::Sunken</enum>
+    </property>
+    <property name="text" >
+     <string>vfov 180.0</string>
+    </property>
+   </widget>
+  </widget>
   <widget class="QMenuBar" name="menubar" >
    <property name="geometry" >
     <rect>

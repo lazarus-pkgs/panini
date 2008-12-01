@@ -32,6 +32,7 @@ GLwindow::GLwindow (QWidget * parent )
 
 	for(int i = 0; i < NpictureTypes; i++ ){
 		lastTurn[i] = 0;
+		lastFOV[i] = pictypes.maxFov( i );
 	}
 
   ok = (glview != 0 && pvpic != 0 );
@@ -85,8 +86,26 @@ GLwindow::GLwindow (QWidget * parent )
 	connect( &ptd, SIGNAL(picTypeSelected( int )),
 			 this, SLOT(picTypeChanged( int )) );
   if(ok) ok = 
+	connect( &ptd, SIGNAL(hFovChanged( double )),
+			 this, SLOT(hFovChanged( double )) );
+  if(ok) ok = 
+	connect( &ptd, SIGNAL(vFovChanged( double )),
+			 this, SLOT(vFovChanged( double )) );
+  if(ok) ok = 
 	connect( glview, SIGNAL(OGLerror( QString )),
 			 this, SLOT(OGLerror( QString )) );
+  if(ok) ok = 
+	connect( this, SIGNAL(showProj( QString )),
+			 parent, SLOT(showProj( QString )) );
+  if(ok) ok = 
+	connect( this, SIGNAL(showFov(QSizeF)),
+			 parent, SLOT(showFov(QSizeF)) );
+  if(ok) ok = 
+	connect( glview, SIGNAL(reportProj( QString )),
+			 this, SIGNAL(showProj( QString )) );
+  if(ok) ok = 
+	connect( glview, SIGNAL(reportFov(QSizeF)),
+			 this, SIGNAL(showFov(QSizeF)) );
   if(!ok) {
 	  qFatal("GLwindow setup failed");
   }
@@ -140,26 +159,23 @@ void GLwindow::newPicture( const char * type ){
 	files are handled by subroutines.
 */
 bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
-	QString errmsg("(no error)");
+	QString errmsg("(no image file)");
 	ipt = pictypes.picTypeIndex( tnm );
 	if( ipt < 0 ) return false;	// no such pic type
+	picType = pictypes.PicType( ipt );
 	int n = pictypes.picTypeCount( ipt );
 	int c = fnm.count();
 	bool ok = false, loaded = false;
-	errmsg = tr("invalid picture type");
 
-	pvQtPic::PicType pictype = pictypes.PicType( tnm );
-	switch( ipt ){
-	case 0:	// proj
+	if( !strcmp( tnm, "proj" )){
 		qCritical("%s -- to be implemented", tnm );
-		break;
-	case 1:	// qtvr
-		if( c == 1 ) ok = loaded = QTVR_file( fnm[0] );
-		if(!ok) errmsg = tr("QTVR load failed");
-		break;
-	default:
-		ok = pvpic->setType( pictype );
-		break;
+	} else if( !strcmp( tnm, "qtvr" )){
+		if( c > 0 ){
+			ok = loaded = QTVR_file( fnm[0] );
+			if(!ok) errmsg = tr("QTVR load failed");
+		} 
+	} else {
+		ok = pvpic->setType( picType );
 	}
 
 	if( ok ) {
@@ -179,20 +195,20 @@ bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 		ok = glview->picOK( errmsg );	// get any OGL error
 		glview->turnAbs( lastTurn[ipt] );
 	}
-  // put image info or error message in window title
+  // put image name & size or error message in window title
 	if( ok ){
 		QString msg = "  pvQt  ";
 		if( c > 0 ){
 			msg += QFileInfo(fnm[0]).fileName();
 		} else 	msg += tr("(no image file)");
-		msg += QString("  ") + QString(tnm) + QString(" at ");
+		msg += QString("  ") + QString(" at ");
 		QSize pd = pvpic->PictureSize();
 		double m = pvpic->NumImages();
 		m *= pd.width(); m *= pd.height(); m *= 1.0e-6;
 		msg += QString().setNum( m, 'f', 2 ) + QString(" Mpixels");
 		emit showTitle( msg );
 	} else {
-		QString msg = "  pvQt  ERROR: " + errmsg;
+		QString msg = "  pvQt  error: " + errmsg;
 		emit showTitle( msg );
 	}
 
@@ -243,9 +259,7 @@ bool GLwindow::QTVR_file( QString name ){
 	or a null pointer with size = 0,0
 */
 const char * GLwindow::askPicType(  QStringList files, 
-									QSizeF & thefov,
 									const char * ptype ){
-	thefov = QSizeF(0,0); // failure size
 	int nf = files.count();
 	if( nf < 1 ) return 0;
 // fail if not a readable image file
@@ -255,43 +269,71 @@ const char * GLwindow::askPicType(  QStringList files,
 		return 0;
 	}
 // get and show image size
-	QSize dims = ir.size();
-	ptd.setDims( dims );
+	picDim = ir.size();
+	ptd.setDims( picDim );
 // show file name
 	if( nf == 1 ) ptd.setNameLabel( files[0] );
 	else ptd.setNameLabel( files[0] + ",..." );
 // get localized picture type descriptions
 	QStringList desc = pictypes.picTypeDescrs();
-  // remove the project and qtvr picture types
-	desc.removeFirst();
-	desc.removeFirst();
+  // remove the cube, project, and qtvr picture types
+	desc.removeLast();
+	desc.removeLast();
+	desc.removeLast();
   // post the rest to the type selector box
 	ptd.setPicTypes( desc );
 // lock type selection if ptype is valid
   	if( ptype ){
-  		int it = pictypes.picTypeIndex( ptype );
-  		if( it < 2 ) return 0;
-  		ptd.selectPicType( it - 2, true );
- 	}
+  		ipt = pictypes.picTypeIndex( ptype );
+  		if( ipt < 0 ) return 0;
+  		ptd.selectPicType( ipt, true );
+	} else {
+		ipt = 0;
+		ptd.selectPicType( 0, false );
+	}
+	picTypeChanged( ipt );
 // run the dialog
 	if( !ptd.exec() ) return 0;
 // return chosen fov and type name
- 	thefov = ptd.getFOV();
-	return pictypes.picTypeName( ptd.chosenType() + 2 );
+ 	picFov = ptd.getFOV();
+	ipt = ptd.chosenType();
+	return pictypes.picTypeName( ipt );
 }
-// Slot: post FOV limits & default = max when pic type changes
+/* Slots: update pictype dialog on type or FOV change
+  type change: post new fov and limits.  
+  fov change: rescale the other fov resp. type
+*/
 void GLwindow::picTypeChanged( int t ){
-	int it = t + 2;
-	ptd.setMinFOV( pictypes.minFov( it ) );
-	ptd.setMaxFOV( pictypes.maxFov( it ) );
-	if( !lastFOV[it].isValid() ){ 
-		lastFOV[it] = pictypes.maxFov( it );
-	}
-	ptd.setFOV( lastFOV[it] );
-
+	ipt = t;
+	picType = pictypes.PicType( ipt );
+	picFov = pvpic->adjustFov( picType, lastFOV[ipt], picDim );
+	ptd.setMaxFOV( pictypes.maxFov( ipt ) );
+	ptd.setMinFOV( pictypes.minFov( ipt ) );
+	ptd.setFOV( picFov );
 }
 
-/* handle command line (before GUI shows)
+void GLwindow::hFovChanged( double h ){
+	if( fabs(h - picFov.width()) < 0.05 ) return;
+//	picFov = ptd.getFOV();
+	if( ipt < 0 ) picFov.setWidth( h );
+	else {
+		picFov = pvpic->changeFovAxis( picType, picFov, h, 0 );
+	}
+	ptd.setFOV( picFov );
+}
+
+void GLwindow::vFovChanged( double v ){
+	if( fabs(v - picFov.height()) < 0.05 ) return;
+//	picFov = ptd.getFOV();
+	if( ipt < 0 ) picFov.setHeight( v );
+	else {
+		picFov = pvpic->changeFovAxis( picType, picFov, v, 1 );
+	}
+	ptd.setFOV( picFov );
+}
+
+
+/* handle command line
   Always returns true, so program will continue
   even if the command line fails.
   
@@ -319,14 +361,21 @@ bool GLwindow::commandLine( int argc, char ** argv ){
   // see if 1st arg is a picture type name
 	int it = pictypes.picTypeIndex( argv[1] );
 	int ifile = (it < 0 ? 1 : 2 );
-  // if it is an image type, see if 2nd is FOV
-  // display empty frame if there is no 2nd arg
-	if( it > 1 ){
+  // if picture type, load default fov
+	if( it >= 0 ) picFov = pictypes.maxFov( it );
+  // if it is a plain image type, see if 2nd is FOV
+  // ( if so, put full fov in picFov)
+	if( it >= 0  && it < Nprojections ){
+	  // display empty frame if there is no 2nd arg
 		if( argc < 3 ) return loadTypedFiles( argv[1], sl );
+	  // is it an fov?
 		double f = atof( argv[2] );
 		if( f > 5 && f <= 360 ){
+		  // yes
 			++ifile;
-			picFov = QSizeF( f, 0 );
+		  // scale the default fov
+			pvQtPic::PicType pt = pictypes.PicType( it );
+			picFov = pvpic->changeFovAxis( pt, picFov, f );
 		}
 	}
   // list the file names (convert to Unicode)
@@ -363,7 +412,7 @@ bool GLwindow::loadPictureFiles( QStringList names ){
 	}
   // if more thatn one file, assume cube faces
 	if( names.count() > 1 ){
-		picFov = QSizeF( 90, 0 );
+		picFov = QSizeF( 90, 90 );
 		return loadTypedFiles( "cube", names );
 	}
 	
@@ -374,12 +423,16 @@ bool GLwindow::loadPictureFiles( QStringList names ){
 		return 0;
 	}
   // If 2:1 aspect ratio assume eqr
-	QSize dims = ir.size();
-	if( dims.width() == 2 * dims.height() ) 
+	picDim = ir.size();
+	if( picDim.width() == 2 * picDim.height() ){
+		ipt = pictypes.picTypeIndex("equi");
+		picType = pictypes.PicType( ipt );
+		picFov = pictypes.maxFov( ipt );
 		return loadTypedFiles( "equi", names );
+	}
 	
   // ask for picture type and fov
-    return loadTypedFiles( askPicType( names, picFov ), names );
+    return loadTypedFiles( askPicType( names ), names );
 }
 
 /* get a picture with a file selector dialog.
@@ -411,9 +464,9 @@ bool GLwindow::choosePictureFiles( const char * ptnm ){
 	fd.setWindowTitle( title );
   // contruct file extension filter
 	QString filter(tr("All files (*.*)") );
-	if( it == 0 ){
+	if( !strcmp( ptnm, "proj" ) ){
 		filter = tr("Stitcher scripts (*.pts, *.pto)");
-	} else if( it == 1 ){
+	} else if( !strcmp( ptnm, "qtvr" ) ){
 		filter = tr("Quicktime panoramas (*.mov)");
 	} else {
 		filter = tr("Image files") + " (";
@@ -431,19 +484,19 @@ bool GLwindow::choosePictureFiles( const char * ptnm ){
 		if( it < 0 ){  
 		// assume cubic if more than one file
 			if( files.count() > 1 ){
-				picFov = QSizeF(90,0);
+				picFov = QSizeF(90,90);
 				ptnm = "cube";
 			} else {
 			// no type, ask user for type and FOV
-				ptnm = askPicType( files, picFov );
+				ptnm = askPicType( files );
 			}
 		    it = pictypes.picTypeIndex( ptnm );
-	    } else if( picFov.isNull() ){
+	    } else {
 		// post default (= max) angular size for this pic type
 			 picFov = pictypes.maxFov( it );
 		// if variable, ask user for FOV only
 	  		if( pictypes.minFov( it ) != picFov ){
-	  			ptnm = askPicType( files, picFov, ptnm );
+	  			ptnm = askPicType( files, ptnm );
   			}
     	}
 	} else if( it >= 0 ) picFov = pictypes.maxFov( it );

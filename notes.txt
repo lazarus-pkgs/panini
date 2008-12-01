@@ -405,4 +405,14 @@ ok	-- 2:1 images shd default to eqr.
 	-- Save displayed image as jpeg
 	-- Persistent settings for control styles, default FOVs,....
 	-- Read PT projects (save too??)
+
+22 Nov 2008
+
+	Adding stereographic and mercator projections.
+	pvQtPic needs 2 new projection types to handle these.
+	quadsphere now has ASCII projection names that match the 
+	plain file picture type names.  Should we eliminate
+	pvQtPic types in favor of these?
+	GLwindow understands the new names, "ster" and "merc".
+	Usage shows them.
 	

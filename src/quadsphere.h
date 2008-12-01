@@ -1,7 +1,7 @@
 /* quadsphere.h		for pvQt	04 Nov 2008 TKS
 
-	Arrays of vertices on the unit sphere and of
-	their 2D texture coordinates for 5 projections,
+	Arrays of vertices on the unit sphere and their
+	2D texture coordinates for various projections,
 	plus arrays of linear indices that map the 
 	vertices to line segments and quadrilaterals.
 
@@ -25,19 +25,23 @@
 
 	There are two index arrays, one for quads and one
 	for line segments that form a wireframe drawing of
-	the face.  
+	the sphere.  
 
 	To avoid an interpolation artefact, vertices and
 	texture coordinates that lie on the +/- 180 degree
 	line in the YZ plane are duplicated; one copy gets 
-	the positive and one the negative coordinate.  So
-	there are 2 * divs more vertices than quads.  The
-	extra points are not indexed for line drawing.
+	the positive and one the negative coordinate.  The
+	affected quad indices point to the extra vertices 
+	and TCs needed for this.
 
 	All data are stored in one contiguous block, that
 	could be copied to an OGL data buffer.  The byte 
 	offsets	to and sizes of the various components are 
 	available.
+
+	The first nProj entries int the pictureTypes table 
+	correspond to the supported projections, which can
+	be selected by ASCII names or pvQtPic PicType codes.
  *
  * Copyright (C) 2008 Thomas K Sharpless
  *
@@ -68,13 +72,14 @@ public:
 	errMsg returns 0 if there was no error.
 */
 	const char * errMsg(){ return errmsg; }
-
 // 3D sphere points
 	const float * vertices(){ return verts; }
 	unsigned int vertexOffset(){ return 0; }
 	unsigned int vertexBytes(){ return 3 * vertpnts * sizeof(float); }
 // corresponding texture coordinates [0:1]
+	const float * texCoords( const char * proj );
 	const float * texCoords( pvQtPic::PicType proj );
+	unsigned int texCoordOffset( const char * proj );
 	unsigned int texCoordOffset( pvQtPic::PicType proj );
 	unsigned int texCoordSize(){ return 2 * vertpnts * sizeof(float); }
 // index sequence for line drawing
@@ -93,21 +98,17 @@ public:
 
 private:
 	char * errmsg;
-	pictureTypes pictypes;	// for fov limits
+	pictureTypes pictypes;
   // all memory is allocated in one block
 	float * words;
 	unsigned int nwords;
   // array sizes
-	unsigned int vertpnts;	// in points
+	unsigned int vertpnts;	// vetices and TCs, in points
 	unsigned int linewrds;	// in words
 	unsigned int quadwrds;	// in words
   // array addrs
-	float * verts,
-		  * rects,
-		  * fishs,
-		  * cylis,
-		  * equis,
-		  * angls;
+	float * verts;
+	float * TCs;
 	unsigned int   
 		  *	lineidx,
 		  * quadidx;

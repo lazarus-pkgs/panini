@@ -31,6 +31,7 @@
 
 #define max( a, b ) (a > b ? a : b )
 #define min( a, b ) (a > b ? b : a )
+#define KLIP( x, l, u )  ((x)<(l)?(l):(x)>(u)?(u):(x))
 
 #ifndef Pi
 #define Pi 3.141592654
@@ -39,7 +40,7 @@
 #endif
 
 /**** maximum projection angle at eye ****/ 
-#define MAXPROJFOV  137.5
+#define MAXPROJFOV  140
 
 
 /* C'tor for pvQtView 
@@ -51,8 +52,8 @@
 	 : QGLWidget( QGLFormat( QGL::AlphaChannel ),
 				  parent)
  {
- // set up pan/zoom timer
-	mTimer.setInterval( 60 );
+ // set up mouse control timer
+	mTimer.setInterval( 50 );
 	mTimer.setSingleShot( true );
 	connect( &mTimer, SIGNAL(timeout()),
 		     this, SLOT( mTimeout()) );
@@ -157,44 +158,87 @@ bool pvQtView::OpenGLOK()
      return QSize(400, 400);
  }
  
- /** Mouse controlled pan and zoom  **/
+ /**  Mouse control  **/
+
+void pvQtView::mouseDoubleClickEvent( QMouseEvent * pme ){
+  if( mk == Qt::ShiftModifier ){ 
+	int i = curr_ipt;
+	if( i < Nprojections ){
+		if( ++i == Nprojections ) i = 0;
+		pvQtPic::PicType pt = pictypes.PicType( i );
+		curr_fovs = thePic->changeFovType( picType, thePic->PictureFOV(), pt );
+		curr_pt = pt;
+		curr_ipt = i;
+		makeSphere( theScreen );		// set & display proj
+		setTexMag( QSizeF(xtexmag, ytexmag));	// display fovs
+		updateGL();
+	 }
+  }
+}
 
 void pvQtView::mousePressEvent( QMouseEvent * pme ){
 	mx1 = mx0 = pme->x();
 	my1 = my0 = pme->y();
 	mb = pme->buttons();
+	mk = pme->modifiers();
 	mTimer.start();
 }
 
 void pvQtView::mouseMoveEvent( QMouseEvent * pme ){
 	mx1 = pme->x();
 	my1 = pme->y();
+	mb = pme->buttons();
+	mk = pme->modifiers();
 }
 
 void pvQtView::mouseReleaseEvent( QMouseEvent * pme ){
 	mx1 = mx0 = pme->x();
 	my1 = my0 = pme->y();
 	mb = pme->buttons();
-	mTimer.stop();
+	mk = pme->modifiers();
+	if( mb == 0 ) mTimer.stop();
 }
 
 void pvQtView::mTimeout(){
 
-  // wait til previous draw done
+	if( mb == 0 ) return;
+
+  // wait til previous draw done?
 	makeCurrent();
-	glFinish();	
+//	glFinish();	
 
 	int dx = (mx1 - mx0) / 3,
 		dy = (my0 - my1) / 3;
+
 	if( mb == Qt::LeftButton ){
-		ipan += dx ;
-		panAngle = normalizeAngle( ipan, 1, minpan, maxpan );
-		itilt += dy;
-		tiltAngle = normalizeAngle( itilt, 1, mintilt, maxtilt );
-	} else {
-		izoom -= dy;
-		setFOV( normalizeAngle( izoom, 1, minFOV, maxFOV ) );
+		if( mk == Qt::NoModifier ){
+		// adjust yaw & pitch
+			ipan += dx;
+			panAngle = normalizeAngle( ipan, 1, minpan, maxpan);
+			itilt += dy;
+			tiltAngle = normalizeAngle( itilt, 1, mintilt, maxtilt);
+		} else if( mk == Qt::ShiftModifier ){
+		// adjust texture magnification
+			ihfov = KLIP( ihfov - dx, 0, 4000);
+			ivfov = KLIP( ivfov - dy, 0, 4000);
+			setTexMag( QSizeF( 1.0 + 0.00225 * ihfov, 1.0 + 0.0025 * ivfov ));
+		} else if( mk == Qt::ControlModifier ){
+		}
+	} else if ( mb & Qt::RightButton ){
+		if( mk == Qt::NoModifier ){
+			if( mb & Qt::LeftButton ){
+			// if both buttons x adjusts eye
+				idist -= dx;
+				setDist( idist );
+			}
+			// Y adjusts zoom
+			izoom -= dy;
+			setFOV( normalizeAngle( izoom, 1, minFOV, maxFOV ) );
+		} else if( mk == Qt::ShiftModifier ){
+		} else if( mk == Qt::ControlModifier ){
+		}
 	}
+
 	updateGL();
 	showview();
 
@@ -264,7 +308,9 @@ void pvQtView::mTimeout(){
   /**  preset views  **/
   
  void pvQtView::reset_view(){
+	setPicType( picType );
  	initView();
+	makeSphere( theScreen );
  	updateGL();
  	showview();
 }
@@ -277,14 +323,14 @@ void pvQtView::mTimeout(){
  }
  
  void pvQtView::full_frame(){
-	setDist( 100 );
+	setDist( 1000 );
 	setZoom( int(16 * maxFOV) );
 	updateGL();
 	showview();
  }
  
  void pvQtView::super_fish(){
-	setDist( 110 );
+	setDist( 1080 );
 	setZoom( int(16 * maxFOV) );	// maximize FOV
 	updateGL();
 	showview();
@@ -312,7 +358,7 @@ void pvQtView::turnAbs( double deg ){
  
  void pvQtView::showview(){
 	 QString s;
-	 s.sprintf("Yaw %.1f  Pitch %.1f  Roll %.1f  Eye %.1f  vFOV %.1f",
+	 s.sprintf("Yaw %.1f  Pitch %.1f  Roll %.1f  Eye %.2f  vFOV %.1f",
 		 panAngle, tiltAngle, spinAngle, eyeDistance, vFOV );
 	 emit reportView( s );
  }
@@ -365,17 +411,20 @@ void pvQtView::initView()
  /* set the intial view parameters and the
 	default user step increments 
 */
-	 eyeDistance = 0.0; // spherical projection
-	 minDist = 0.0; maxDist = 1.1;	// fixed limits
-	 idist = 0; diststep = 10;	// % of radius
+	eyeDistance = 0.0; // spherical projection
+	minDist = 0.0; maxDist = 1.1;	// fixed limits
+	idist = 0; diststep = 10;	// % of radius
 
-     minFOV = 10.0;  maxFOV = MAXPROJFOV;
-     zoomstep = 40;	// 2.5 degrees in FOV
-	 izoom = 90 * 16;
-	 setFOV(90);
+	minFOV = 10.0;  maxFOV = MAXPROJFOV;
+ 	zoomstep = 40;	// 2.5 degrees in FOV
+	izoom = 90 * 16;
+	setFOV(90);
 
-     panstep = tiltstep = spinstep = 32;	// 2 degrees
-	 home_view();	// zero rotations
+	panstep = tiltstep = spinstep = 32;	// 2 degrees
+ 	panAngle = tiltAngle = spinAngle = 0;
+	ipan = itilt = ispin = 0;
+	ihfov = ivfov = 0;
+
 }
 
 void pvQtView::setFOV( double newvfov ){
@@ -398,10 +447,10 @@ void pvQtView::setDist( int id ){
 	Post new vFOV limits.
 	Then update the screen.
 */
-	double d = id / 100.0;
+	double d = id / 1000.0;
 	if( d < minDist ) d = minDist;
 	if( d > maxDist ) d = maxDist;
-	idist = int( 100 * d );
+	idist = int( 1000 * d );
 	eyeDistance = d;
 
 	double m = MAXPROJFOV * (d > 1 ? 2 : d + 1 );
@@ -414,9 +463,9 @@ void pvQtView::setDist( int id ){
  {
      panAngle = normalizeAngle(angle, panstep, minpan, maxpan);
      if (angle != ipan) {
-         ipan = angle;
-         updateGL();
-		 showview();
+        ipan = angle;
+        updateGL();
+	showview();
      }
  }
 
@@ -424,9 +473,9 @@ void pvQtView::setDist( int id ){
  {
      tiltAngle = normalizeAngle(angle, tiltstep, mintilt, maxtilt);
      if (angle != itilt) {
-         itilt = angle;
-         updateGL();
-		 showview();
+        itilt = angle;
+        updateGL();
+	showview();
      }
  }
 
@@ -434,9 +483,9 @@ void pvQtView::setDist( int id ){
  {
      spinAngle = normalizeAngle(angle, spinstep, -180, 180);
      if (angle != ispin) {
-         ispin = angle;
-         updateGL();
-		 showview();
+	ispin = angle;
+        updateGL();
+	showview();
      }
  }
 
@@ -513,12 +562,10 @@ bool pvQtView::OGLok( const char * label ){
 	theScreen = glGenLists(1);
 
   // make wireframe panosphere
+	textgt = 0;
 	makeSphere( theScreen );
 
-  // clear the picture type specific state
-	 setPicType( pvQtPic::nil );
-   
- }
+}
 
 /* find the largest feasible texture dimensions
   proportional to and not larger than a given pair
@@ -555,16 +602,23 @@ bool pvQtView::OGLok( const char * label ){
 */
  void pvQtView::setPicType( pvQtPic::PicType pt )
  {
-	picType = pt;
+	picType = pt;	// official
+	ipicType = pictypes.picTypeIndex( picType );
 
 	minpan = -180; maxpan = 180;
 	mintilt = -180; maxtilt = 180;
+	xtexmag = ytexmag = 1.0;
+
+	curr_pt = picType;
+	curr_ipt = ipicType;
+	if( curr_pt >= 0 ){
+		curr_fovs = thePic->PictureFOV();
+		setTexMag( thePic->getTexScale() );
+	} else curr_fovs = QSizeF(0, 0);
 
 	makeCurrent();	// get OGL's attention
-
 	if(textgt){
 		glDisable( textgt ); 
-//		glDeleteTextures( 1, &texname );
 		texname = 0;
 		textgt = 0;
 	}
@@ -577,7 +631,6 @@ bool pvQtView::OGLok( const char * label ){
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_NORMAL_ARRAY);
-	xtexmag = ytexmag = 1.0;
 
 	if( picType == pvQtPic::cub ){
 	/* for cube map, generate texture coords from normals */
@@ -595,27 +648,6 @@ bool pvQtView::OGLok( const char * label ){
 		textgt = GL_TEXTURE_2D;
 		texname = texnms[0];
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-      // texture wrap mode; pan/tilt limits	  
-		GLuint sclamp, tclamp;
-		sclamp = tclamp = GL_CLAMP_TO_BORDER;
-		QSizeF pv = thePic->PictureFOV();
-		if( pv.width() >= 360 ) sclamp = GL_CLAMP_TO_EDGE;
-		else {
-			double d = 0.5 * pv.width();
-////			minpan = -d; maxpan = d;
-		}
-		if( pv.height() >= 180 ) tclamp = GL_CLAMP_TO_EDGE;
-		else {
-			double d = 0.5 * pv.height();
-////			mintilt = -d; maxtilt = d;
-		}
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, sclamp);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, tclamp);
-	// texture coordinate scaling
-		QSizeF sr = thePic->fovSizeRatios();
-		xtexmag = sr.width();
-		ytexmag = sr.height();
-		if( xtexmag < 1.0 ) xtexmag = 1.0;
 	 // black border color for 2D textures
 		float bord[4] = { 0, 0, 0, 1 };
 		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, bord);
@@ -624,6 +656,24 @@ bool pvQtView::OGLok( const char * label ){
 	}
  }
 
+/* set working texture coordinate magnifications,
+  and report the corresponding apparent FOV
+*/
+void pvQtView::setTexMag( QSizeF mags ){
+	double xmag = mags.width(),
+		   ymag = mags.height();
+	if( xmag < 1.0 ) xmag = 1.0;
+	else if( xmag > 10.0 ) xmag = 10.0;
+	if( ymag < 1.0 ) ymag = 1.0;
+	else if( ymag > 10.0 ) xmag = 10.0;
+	xtexmag = xmag;
+	ytexmag = ymag;
+  // report the apparent image FOV
+	QSizeF rats(1.0 / xtexmag, 1.0 / ytexmag);
+	curr_fovs = thePic->picScale2Fov( curr_pt, thePic->PictureFOV(), rats );
+	emit reportFov( curr_fovs );
+}
+
  /**  Display a Frame  **/
 
  void pvQtView::paintGL()
@@ -631,10 +681,20 @@ bool pvQtView::OGLok( const char * label ){
  // abort if the OpenGL version is insufficient
 	if( !OGLisOK ) return;
  	
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	if( textgt ){
-//		glBindTexture( textgt, texname );
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	if( textgt ){	//there is a picture...
+		glBindTexture( textgt, texname );
 		glEnable( textgt );
+	}
+  // 2D texture border mode
+	if( textgt ==  GL_TEXTURE_2D ){
+		GLuint sclamp, tclamp;
+		sclamp = tclamp = GL_CLAMP_TO_BORDER;
+		if( curr_fovs.width() >= 360 ) sclamp = GL_CLAMP_TO_EDGE;
+		if( curr_fovs.height() >= 180 ) tclamp = GL_CLAMP_TO_EDGE;
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, sclamp);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, tclamp);
 	}
 
 // set texture rotation and scaling
@@ -690,6 +750,7 @@ bool pvQtView::OGLok( const char * label ){
 	Width = width; Height = height;
 	portAR = (double)Width / (double)Height;
 
+	updateGL();
  	showview();  // displays settings
  }
  
@@ -703,10 +764,12 @@ void pvQtView::makeSphere( GLuint list )
 		glNewList(list, GL_COMPILE);
 		  glVertexPointer( 3, GL_FLOAT, 0, pqs->vertices());
 		  glNormalPointer( GL_FLOAT, 0, pqs->vertices());
-		  glTexCoordPointer( 2, GL_FLOAT, 0, pqs->texCoords( picType ));
+		  glTexCoordPointer( 2, GL_FLOAT, 0, pqs->texCoords( curr_pt ));
 		  glDrawElements(GL_QUADS, pqs->quadIndexCount(), 
 			  GL_UNSIGNED_INT, pqs->quadIndices() );
 		glEndList();
+	 // report the projection used
+		emit reportProj(QString( pictypes.picTypeName( curr_pt )));
 	} else {
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glNewList(list, GL_COMPILE);
@@ -714,11 +777,13 @@ void pvQtView::makeSphere( GLuint list )
 		  glDrawElements(GL_LINES, pqs->lineIndexCount(), 
 			  GL_UNSIGNED_INT, pqs->lineIndices());
 		glEndList();
+	 // report the projection used
+		emit reportProj(QString("none"));
 	}
  }
 
 
-/* set up screen and texture maps for a picture
+/* Load a picture
   pass pic == 0 to just clear all picture state
   
   fails if it can't negotiate a feasible texture size
@@ -751,6 +816,9 @@ bool pvQtView::setupPic( pvQtPic * pic )
   // set up OGL for the picture type
 	setPicType( picType );
 
+  // reinitialize viewing parameters
+	initView();
+
   // reset error status
     picok = true;
  	errmsg = tr("no error");
@@ -768,10 +836,12 @@ bool pvQtView::setupPic( pvQtPic * pic )
 	case pvQtPic::rec:
 	case pvQtPic::eqs:
 	case pvQtPic::eqa:
+	case pvQtPic::stg:
 		maxdims = maxTex2Dsqr;
 		break;
 	case pvQtPic::cyl:
 	case pvQtPic::eqr:
+	case pvQtPic::mrc:
 		maxdims = maxTex2Drec;
 		break;
 	case pvQtPic::cub:
@@ -782,7 +852,7 @@ bool pvQtView::setupPic( pvQtPic * pic )
 	thePic->fitFaceToImage( maxdims );
 
 /**  Load texture images  **/
-
+	makeCurrent();
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);  // QImage row alignment
 
 	if( picType == pvQtPic::cub ){
@@ -804,15 +874,11 @@ bool pvQtView::setupPic( pvQtPic * pic )
 				p->width(), p->height(), 0,
 				GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV,
 				p->bits() );
-//// DEBUG //// p->save("dbg-pvQt-teximg.jpg");
 			delete p;
 			if( !OGLok("load 2D") ) return false;
 		}
 	}
 
-  // rebuild the display list
-	makeSphere( theScreen );
-	
   // reset the view and display
 	reset_view();
 

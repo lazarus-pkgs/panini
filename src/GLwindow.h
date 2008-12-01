@@ -37,11 +37,18 @@ public:
 	bool commandLine( int argc, char ** argv );
 signals:
 	void showTitle( QString msg );
+	void showProj( QString name );
+	void showFov( QSizeF fovs );
 
 public slots:
+  // from mainwindow
 	void newPicture( const char * type );
-	void picTypeChanged( int t );
 	void about_pvQt();
+ // from picType dialog...
+	void picTypeChanged( int t );
+	void hFovChanged( double h );
+	void vFovChanged( double v );
+  // from pvQtView...
 	void OGLerror( QString msg);
 	void reportTurn( double deg );
 	
@@ -54,20 +61,21 @@ private:
 	bool loadPictureFiles( QStringList names );
 	const QStringList picTypeDescrs();
 	const char * askPicType( QStringList files, 
-							 QSizeF & size,
 							 const char * ptyp = 0 );
 	bool loadTypedFiles( const char * type, QStringList files );
 
 	pvQtAbout aboutbox;
 
 	picTypeDialog ptd;
-	QSizeF picFov;
 	pvQtView * glview;	// display widget
 	pvQtPic * pvpic;	// picture maker
 	bool ok;	// true if created w/o error
 	pictureTypes pictypes;
 
 	int ipt;	// current picture type index, or -1
+	pvQtPic::PicType picType;
+	QSizeF picFov;	// current FOV
+	QSize  picDim;	// current size
 	QSizeF lastFOV[NpictureTypes];
 	double lastTurn[NpictureTypes];
 

@@ -82,12 +82,14 @@ public:
 */
 typedef enum {
   nil = 0,		// No picture
+  cub,		// cubic (1 to 6 rectilinear cube face images)
   rec,		// rectilinear
   eqs,		// equal solid angle
   eqa,		// equal angle
   cyl,		// cylindrical
   eqr,		// equirectangular
-  cub,		// cubic (1 to 6 rectilinear cube face images)
+  stg,		// stereographic
+  mrc		// mercator
  } PicType;
  
 /* cube face IDs
@@ -116,14 +118,29 @@ enum{
  pvQtPic( PicType type = nil );
  
 /* utility functions to interconvert pixels and angles
-	proj indicates the projection function:
-		0: rectilinear, 1: equal-angle
-	The next 2 arguments calibrate the relationship;
-	4th arg is the quantity to be converted.
-  fovs are in degrees.  They represent the full width or height 
-  of an image, so the calibration actually is fov/2 <=> pix/2.
+  proj is an axis projection type code, from getxyproj().
 */
-int 	scalepix( int proj, int pix, double fov, double tofov );
+ bool getxyproj( PicType t, int & xproj, int & yproj );
+// radius / fl from full fov
+ double fov2rad( int proj, double fov );
+// full fov from radius / fl 
+ double rad2fov( int proj, double rad );
+// new dimension from change in fov
+ int  scalepix( int proj, int pix, 
+				double fov, double tofov );
+// new fov from change in dimension
+ double scalefov( int proj, double fov, 
+				  int pix, int topix );
+// adjust a 2D FOV to match image dimensions
+// The larger axis fov sets the scale.  If the other is
+// zero, the nonzero fov goes with the longer dimension
+ QSizeF adjustFov( PicType t, QSizeF fovs, QSize dims );
+// new 2D fov from change in one angle 
+ QSizeF changeFovAxis( PicType t, QSizeF fovs, double fov, int axis = -1 );
+// new 2D fov from rescaling of dimensions
+ QSizeF picScale2Fov( PicType t, QSizeF fovs, QSizeF scls );
+// new 2D fov from a change of pictype
+ QSizeF changeFovType( PicType t, QSizeF fovs, PicType twas );
 
 /* Functions that return displayable images or info about them
 */
@@ -132,10 +149,11 @@ int 	scalepix( int proj, int pix, double fov, double tofov );
  int 	 NumImages();	// number of faces that have source images
 // overall size of texture image(s)
  QSize   FaceSize(){ return facedims; }
+ QSizeF  FaceFOV(){ return facefovs; }
 // size of source image
  QSize   ImageSize(){ return imagedims; }
  QSizeF  ImageFOV(){ return imagefovs; }
-// size of displayed image
+// size of displayed image (maybe cropped/padded)
  QSize	 PictureSize(){ return picdims; }
  QSizeF  PictureFOV();
  
@@ -169,9 +187,12 @@ int 	scalepix( int proj, int pix, double fov, double tofov );
 
 // to be called only from pvQtView, to set displayed size...
  bool setFaceSize( QSize dims );	// arbitrary dimensions
- bool fitFaceToImage( QSize maxdims, bool pwr2 = false );	
-// linear ratios of size at max FOV to size at actual FOV
- QSizeF  fovSizeRatios();	
+ bool fitFaceToImage( QSize maxdims, bool pwr2 = false );
+
+// texcoord scale factors to give correct display FOV
+ QSizeF  getTexScale();
+// Apparent FOV for arbitrary projection and texcoord scale
+ QSizeF  texScale2Fov( QSizeF scl, PicType t );
  
 // to be called only from app:
  bool setType( PicType pt ); 		// clears, sets all defaults
@@ -197,6 +218,7 @@ int 	scalepix( int proj, int pix, double fov, double tofov );
 private:
 	pictureTypes * picTypes;	// for max fovs
 	PicType type;
+	int ipt;	// pictureTypes index of type
 	int maxfaces;	// 1, 2, or 6
 	int numimgs;	// no. of faces with source images
 	int numsizes;	// no. of faces with valid source sizes
@@ -247,8 +269,11 @@ private:
 };
 
 /* Picture types visble to the user
+  The first Nprojections of them correspond to projections
+  supported by quadsphere (does not include cubic)
 */
-#define NpictureTypes 8
+#define NpictureTypes 10
+#define Nprojections  7
 
 class pictureTypes :
 	public QObject
@@ -263,8 +288,9 @@ public:
   picture type names and pvQtPic::picType codes can be
   interconverted.
 */
-  // picType code from picture type name (nil if not valid)
+  // PicType code (nil if not valid)
 	pvQtPic::PicType PicType( const char * name );
+	pvQtPic::PicType PicType( int index );
 
   // table index from key
 	int picTypeIndex( pvQtPic::PicType t );	// subset only
@@ -272,6 +298,7 @@ public:
 
   // attributes
 	const char * picTypeName( int index );
+	const char * picTypeName( pvQtPic::PicType t );
 	int picTypeCount( const char * name );
 	int picTypeCount( int index );
 	QString picTypeDescr( const char * name );
