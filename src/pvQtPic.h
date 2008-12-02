@@ -62,6 +62,11 @@
     FaceImage() -- to get the final texture image(s)
 	PictureFOV() -- to get pan and tilt limits
 
+  For cubic pictures only, you can call setFaceImage() even
+  after the picture is displayed, to add, replace or delete 
+  face images.   To delete a face, pass a null QImage *.
+  To add or replace one, call any of the overloads.  The
+  new images will be shown at the exisiting face dimensions. 
  */
 
 #ifndef __PVQTPIC_H__
@@ -168,8 +173,10 @@ enum{
  QColor		getBorder( PicFace face = front );
  QColor		getFill( PicFace face = front );
  
-// normally called only from pvQtVew:
+// normally called only from pvQtView:
  QImage * FaceImage( PicFace face = front );  // get face image
+// a face image filled with the border color
+ QImage * FaceEmpty( PicFace face = front );
 
 /* programmed setup fns return true: success, false: failure.
   
@@ -219,9 +226,8 @@ private:
 	pictureTypes * picTypes;	// for max fovs
 	PicType type;
 	int ipt;	// pictureTypes index of type
-	int maxfaces;	// 1, 2, or 6
+	int maxfaces;	// 0 to 6
 	int numimgs;	// no. of faces with source images
-	int numsizes;	// no. of faces with valid source sizes
   // display image and face properties
   	QImage::Format faceformat;
 	QSize		imagedims;	// source image

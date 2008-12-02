@@ -28,7 +28,7 @@ GLwindow::GLwindow (QWidget * parent )
 : QWidget(parent)
 {
 	glview = new pvQtView(this);
-	pvpic = new pvQtPic( pvQtPic::cub );
+	pvpic = new pvQtPic( );
 
 	for(int i = 0; i < NpictureTypes; i++ ){
 		lastTurn[i] = 0;
@@ -109,7 +109,48 @@ GLwindow::GLwindow (QWidget * parent )
   if(!ok) {
 	  qFatal("GLwindow setup failed");
   }
+  // enable image file dropping
+	setAcceptDrops( true );
 
+}
+
+void GLwindow::dragEnterEvent(QDragEnterEvent *event)
+{
+	if (event->mimeData()->hasUrls())
+		event->acceptProposedAction();
+}
+
+void GLwindow::dropEvent(QDropEvent *event)
+{
+  // only accept copy action
+
+  // get the urls
+	QList<QUrl> urls(event->mimeData()->urls());
+	int n = urls.count();
+  // list exisiting local files
+	QStringList paths;
+	for( int i = 0; i < n; i++ ){
+		QString path = urls[i].toLocalFile();
+		QFile tf( path );
+		if( tf.exists()) paths += path;
+	}
+	n = paths.count();
+	if( n > 0 ){
+		bool ok;
+		if( pvpic->Type() == pvQtPic::cub && n == 1 ){
+		// add or replace one cube face
+			QPoint pnt = event->pos();
+			pvQtPic::PicFace pf = glview->pickFace( pnt );
+////	qCritical("pos (%d,%d) face %d", pnt.x(), pnt.y(), int(pf) );
+			ok = pvpic->setFaceImage( pf, paths[0] );
+////		qCritical("setFaceImage = %d", ok );
+			if( ok ) glview->newFace( pf );
+			else ok = loadPictureFiles( paths );
+		} else {
+			ok = loadPictureFiles( paths );
+		}
+		if( ok ) event->acceptProposedAction();
+	}
 }
 
 // Relay an OpenGL error report to main
@@ -276,8 +317,7 @@ const char * GLwindow::askPicType(  QStringList files,
 	else ptd.setNameLabel( files[0] + ",..." );
 // get localized picture type descriptions
 	QStringList desc = pictypes.picTypeDescrs();
-  // remove the cube, project, and qtvr picture types
-	desc.removeLast();
+  // remove the project and qtvr picture types
 	desc.removeLast();
 	desc.removeLast();
   // post the rest to the type selector box

@@ -25,6 +25,7 @@ void picTypeDialog::setNameLabel( QString name ){
 }
 
 void picTypeDialog::setPicTypes( QStringList types ){
+	typesBox->clear();
 	typesBox->addItems( types );
 }
 
