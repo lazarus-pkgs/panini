@@ -272,13 +272,13 @@ bool pvQtPic::setType( pvQtPic::PicType t )
   // pixel format for face images
 	faceformat = PVQT_PIC_FACE_FORMAT; 
   // no face images assigned
-	numimgs = numsizes = 0;
+	numimgs = 0;
   // angular size limits
   	maxfovs = facefovs;
   	if( lockfovs ) minfovs = facefovs;
 	else minfovs = QSizeF( 10, 10 );
   // clear source image info; set empty face style
-	imagedims = QSize(0,0);
+	picdims = QSize(0,0);
 	imagefovs = QSizeF(0,0);
 	for( int i = 0; i < 6; i++ ){
 		accept[i] = false;
@@ -483,7 +483,7 @@ bool pvQtPic::setFaceImage( pvQtPic::PicFace face, QImage * img )
 		return true;
 	}
 	
-	if( kinds[i] != 0 ) return false;
+	if( type != cub && kinds[i] != 0 ) return false;
 	
 	kinds[i] = QIMAGE_KIND;
 	addrs[i] = img;
@@ -501,8 +501,7 @@ bool pvQtPic::setFaceImage( pvQtPic::PicFace face,
 	if( type == nil ) return false;
 	if( face < front || face >= PicFace(maxfaces) ) return false;
 	int i = int(face);
-
-	if( kinds[i] != 0 ) return false;
+	if( type != cub && kinds[i] != 0 ) return false;
 
 	kinds[i] = RASTER_KIND;
 	addrs[i] = addr;
@@ -519,7 +518,7 @@ bool pvQtPic::setFaceImage( pvQtPic::PicFace face, QString path )
 	if( face < front || face >= PicFace(maxfaces) ) return false;
 
 	int i = int(face);
-	if( kinds[i] != 0 ) return false;
+	if( type != cub && kinds[i] != 0 ) return false;
 	
 	QImageReader ir( path );
 	if( !ir.canRead() ) return false;
@@ -540,7 +539,8 @@ bool pvQtPic::setFaceImage( pvQtPic::PicFace face, QUrl url )
 	if( type == nil ) return false;
 	if( face < front || face >= PicFace(maxfaces) ) return false;
 	int i = int(face);
-	
+	if( type != cub && kinds[i] != 0 ) return false;
+ 	
 	kinds[i] = URL_KIND;
 	addrs[i] = 0;
 	formats[i] = 0;
@@ -561,47 +561,47 @@ bool pvQtPic::setFaceImage( pvQtPic::PicFace face, QUrl url )
 }
 
 /* common final stage of assigning an image to a face.
-   called by all setFaceImage() overloads to post
-   image and display face size data.
+   called by all setFaceImage() overloads.
 
   All available info on image has been posted to face i
-  except for its size (idims[i]) which should be (0,0) to
-  show that this face doesn't have an image.  
-  
-  imgefovs must contain at least one of the angular 
-  dimensions of the image (if the other is 0, it will be 
-  set according to the image dimensions).
-  
+  except for its size (idims[i]).  
   Argument dims must hold the actual image dimensions.
   
   Argument i must be a valid face index [0:5].
  
-  Returns true if the image is accepted.
+  Returns true if the image is accepted, and keeps count
+  of accepted images in numimgs.
   
-  Counts accepted images in numimgs.
+  Sets imagedims to the minimum enclosing rectangle
+  of all accepted images.
   
-  Sets imagedims to the first accepted image size, and
-  facedims to the size of a face (of the required shape)
-  big enough to hold that image; and may set facefovs too.
- 
+  All cube face images must be square, but can be different
+  sizes.
+  
 */
 bool pvQtPic::addimgsize( int i, QSize dims )
 {
 	bool ok = false;
-	if( numimgs < maxfaces && idims[i].isEmpty() ){	
-		if( numimgs == 0 ){
-			ok = true;	// first size wins
-			imagedims = dims;
-		  // make sure image fovs are set:
-		  	if( imagefovs.isNull() ) imagefovs = facefovs;
-		} else {
-			ok = dims == imagedims;
-		}
-		idims[i] = dims;	
-		if( ok ) ++numimgs;
-	} 
-	accept[i] = ok;
-	return ok;
+	if( accept[i] ){	// replace existing
+		--numimgs; 
+		accept[i] = false;
+	}
+	if( type != cub ){
+		if( i != 0 ) return false;
+	} else {
+		if( dims.width() != dims.height()) return false;
+	}
+	if( numimgs == 0 ){ // first image..
+		imagedims = dims;
+	  // ?? make sure image fovs are set:
+	  	if( imagefovs.isNull() ) imagefovs = facefovs;
+	} else {
+		imagedims = dims.expandedTo(imagedims);
+	}
+	idims[i] = dims;	
+	++numimgs;
+	accept[i] = true;
+	return true;
 }
 
 
@@ -660,7 +660,7 @@ QColor	pvQtPic::getFill( PicFace face )
   
   FaceImage() delivers a displayable image, which it gets
   by calling a reader for the appropriate source.  Readers
-  return temp images of size imagedims in the native pixel
+  return temp images of size picdims in the native pixel
   format of the source; FaceImage makes the final image and
   may delete the temp one.  
   
@@ -749,6 +749,19 @@ QImage * pvQtPic::loadEmpty( int i )
 	qp.setFont(QFont("Arial", pts));
 	qp.drawText( box, Qt::AlignCenter, labels[i] );
 
+	return pim;
+}
+
+// an image filled with the border color for a face
+// returns null pointer for invalid face 
+QImage * pvQtPic::FaceEmpty( PicFace face ){
+	if( type == nil ) return 0;
+	if( face < front || face >= PicFace(maxfaces) ) return 0;
+	QImage * pim = new QImage( facedims, faceformat );
+	QPainter qp( pim );
+	QRect box( pim->rect() );
+	QBrush brush( borders[int(face)] );
+	qp.fillRect( box, brush );
 	return pim;
 }
 

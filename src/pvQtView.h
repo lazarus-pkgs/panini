@@ -74,7 +74,13 @@ public:
 	 	 errMsg = errmsg; 
 	 	 return picok;
 	 }
-	 
+
+   /* Identify image face that contains a screen pixel
+	pnt is in viewport mouse coordinates (ulc origin)
+	returns front if pic type is not cubic
+   */
+	 pvQtPic::PicFace pickFace( QPoint pnt );
+
  public slots:
 /* Angles passed from/to GUI are integers in 16ths of a degree,
    so they can be reliably checked for equality.  The zoom angle 
@@ -99,7 +105,8 @@ public:
 	 void turn90( int d ) ;	// turn picture incremental
 	 void turnAbs(double deg);	// tun absolute
   // update display of current picture
-	 void picChanged();
+	 void picChanged(); // from scratch
+	 void newFace( pvQtPic::PicFace face ); // one cube face
 
  signals:
 	void reportView( QString msg );
@@ -166,7 +173,7 @@ private slots:
   // textures
 	 GLenum textgt;	// current target (2D or cube)
 	 GLuint texname; // current texture object
-	 GLuint texnms[2];	// bund handles: 0: 2d, 1: cube
+	 GLuint texnms[2];	// bound textures: 0: 2d, 1: cube
   // OpenGL capabilities
 	bool OGLisOK;	// is usable
 	bool OGLv20;	// is version 2.0 or better

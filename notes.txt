@@ -416,3 +416,52 @@ ok	-- 2:1 images shd default to eqr.
 	GLwindow understands the new names, "ster" and "merc".
 	Usage shows them.
 	
+02 Dec 2008
+
+	Yesterday I got most of the bugs out of the "free proj
+	and fov" codes, and committed SVN 60 as a checkpoint.
+	with note that it still needs...
+	...correct TCs for merc and ster (and testing)
+	...merc and ster on picture menu
+	...Mouse Modes help dialog
+	...sphere point pick
+	...drag_n_drop
+	...angle display
+	
+	Today I added basic d-n-d (local files only) to GLwindow.  
+	It works fine, same as files-only commandline.  Would now
+	like to implement drag-to-cube-frame.  This needs 3 things:
+	add "cube faces" to the types selectable in pic/fov box;
+	a means of picking faces with mouse; means to incrementally
+	add cube face images to (and remove them from) the picture.
+	
+	At present pvQtPic does not allow replacing face images.  
+	It should only be legal for cubic pic type, and should
+	provide "erase" as well as add.  pvQtView will need a
+	slot that makes it load a single new cube face from the
+	already-connected pvQtPic.  It will also need a set of
+	persistent objects to hold the texture images. 
+	
+	A bit of study suggests that the "OGL" way to pick empty 
+	frames is to fill them with distinct colors, render all of
+	them to an invisble buffer, and check the pixel at the 
+	cursor position. 
+	
+	A preferable alternative would be to map the viewport back 
+	to the panosphere. OGL understandably does not cater for 
+	inverse viewing transformations.  In this case it would 
+	be feasible; but it seems likely to take a bit more R&D
+	effort than I want to expend before 0.5, so I'll try the
+	pixel map method first.
+	
+	The main issue is how to do this without destroying the
+	loaded images or making the screen flash, and switch back 
+	to image display afterward.  Requires a	"back" buffer; 
+	persistent texture objects to hold the images; and a way 
+	to render without swapping.  The empty frame images can
+	be very small so we can generate them as needed.  They
+	must be distinct from the ones shown to the user.
+	
+	  
+	
+	

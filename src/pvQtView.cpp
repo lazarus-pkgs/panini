@@ -162,6 +162,7 @@ bool pvQtView::OpenGLOK()
 
 void pvQtView::mouseDoubleClickEvent( QMouseEvent * pme ){
   if( mk == Qt::ShiftModifier ){ 
+  // cycle thru 2D projection types
 	int i = curr_ipt;
 	if( i < Nprojections ){
 		if( ++i == Nprojections ) i = 0;
@@ -225,7 +226,8 @@ void pvQtView::mTimeout(){
 		} else if( mk == Qt::ControlModifier ){
 		}
 	} else if ( mb & Qt::RightButton ){
-		if( mk == Qt::NoModifier ){
+		if( mk == Qt::ControlModifier ){
+		} else {
 			if( mb & Qt::LeftButton ){
 			// if both buttons x adjusts eye
 				idist -= dx;
@@ -234,8 +236,6 @@ void pvQtView::mTimeout(){
 			// Y adjusts zoom
 			izoom -= dy;
 			setFOV( normalizeAngle( izoom, 1, minFOV, maxFOV ) );
-		} else if( mk == Qt::ShiftModifier ){
-		} else if( mk == Qt::ControlModifier ){
 		}
 	}
 
@@ -483,9 +483,9 @@ void pvQtView::setDist( int id ){
  {
      spinAngle = normalizeAngle(angle, spinstep, -180, 180);
      if (angle != ispin) {
-	ispin = angle;
-        updateGL();
-	showview();
+		ispin = angle;
+		updateGL();
+		showview();
      }
  }
 
@@ -789,18 +789,19 @@ void pvQtView::makeSphere( GLuint list )
   fails if it can't negotiate a feasible texture size
   and format with the pvQtPic
 */
+// texture cube faces in the order pvQtPic uses
+static GLenum cubefaces[6] = {
+	GL_TEXTURE_CUBE_MAP_POSITIVE_Z, // front
+	GL_TEXTURE_CUBE_MAP_POSITIVE_X,	// right
+	GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,	// back
+	GL_TEXTURE_CUBE_MAP_NEGATIVE_X, // left
+	GL_TEXTURE_CUBE_MAP_POSITIVE_Y,	// top
+	GL_TEXTURE_CUBE_MAP_NEGATIVE_Y	// bottom
+};
+
+
 bool pvQtView::setupPic( pvQtPic * pic )
 {
-  // texture cube faces in the order pvQtPic uses
-	static GLenum cubefaces[6] = {
-		GL_TEXTURE_CUBE_MAP_POSITIVE_Z, // front
-		GL_TEXTURE_CUBE_MAP_POSITIVE_X,	// right
-		GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,	// back
-		GL_TEXTURE_CUBE_MAP_NEGATIVE_X, // left
-		GL_TEXTURE_CUBE_MAP_POSITIVE_Y,	// top
-		GL_TEXTURE_CUBE_MAP_NEGATIVE_Y	// bottom
-	};
-
  // abort if the OpenGL version is insufficient
  	if( !OGLisOK ){
  		errmsg = tr("Insufficient OpenGL facilities");
@@ -857,7 +858,7 @@ bool pvQtView::setupPic( pvQtPic * pic )
 
 	if( picType == pvQtPic::cub ){
 		for(int i = 0; i < 6; i++){
-			QImage * p = pic->FaceImage(pvQtPic::PicFace(i));
+			QImage * p = thePic->FaceImage(pvQtPic::PicFace(i));
 			if( p ){
 				glTexImage2D( cubefaces[i], 0, GL_RGBA,
 					p->width(), p->height(), 0,
@@ -868,7 +869,7 @@ bool pvQtView::setupPic( pvQtPic * pic )
 			}
 		}
 	} else {
-		QImage * p = pic->FaceImage(pvQtPic::PicFace(0));
+		QImage * p = thePic->FaceImage(pvQtPic::PicFace(0));
 		if( p ){
 			glTexImage2D( textgt, 0, GL_RGBA,
 				p->width(), p->height(), 0,
@@ -890,4 +891,79 @@ bool pvQtView::setupPic( pvQtPic * pic )
 void pvQtView::updatePic()
 {
 	setupPic( thePic );
+}
+
+/* pick the face that contains a mouse position
+*/
+pvQtPic::PicFace pvQtView::pickFace( QPoint pnt )
+{
+	if( curr_pt != pvQtPic::cub ) return pvQtPic::front;
+  // select the default texture object
+	GLuint svnm = texname;
+	texname = 0;
+	makeCurrent();
+	glBindTexture( textgt, texname );
+  // set required texture parameters
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+//	glEnableClientState(GL_NORMAL_ARRAY);
+	glTexGenf( GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP );
+	glTexGenf( GL_T, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP );
+	glTexGenf( GL_R, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP );
+	glEnable( GL_TEXTURE_GEN_S );
+	glEnable( GL_TEXTURE_GEN_T );
+	glEnable( GL_TEXTURE_GEN_R );
+  // load coded cube face images
+	unsigned int timg[4096];	// 64 x 64
+	for(int i = 0; i < 6; i++ ){
+		memset(timg, i, 4096 * 4 );
+		glTexImage2D( cubefaces[i], 0, GL_RGBA,
+					  64, 64, 0, GL_RGBA,
+					  GL_UNSIGNED_BYTE, timg );
+	}
+  // render to an offscreen buffer
+	GLenum buf = GL_BACK;
+	glDrawBuffer( buf );
+	paintGL();
+  // read pixel at cursor position
+	glReadBuffer( buf );
+	GLint x = pnt.x(),
+		  y = Height - pnt.y();
+	glReadPixels( x, y, 1, 1, GL_RGBA,
+				  GL_UNSIGNED_BYTE, timg );
+  // restore image display texture
+	texname = svnm;
+	glBindTexture( textgt, texname );
+
+  // result is pixel value
+	return pvQtPic::PicFace( 255 - (timg[0] & 0xFF) );
+
+}
+
+/* reload a cube face texture image
+*/
+void pvQtView::newFace( pvQtPic::PicFace face )
+{
+	if( curr_pt != pvQtPic::cub ) return;
+
+	makeCurrent();
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);  // QImage row alignment
+	QImage * p = thePic->FaceImage( face );
+	if( p ){
+		glTexImage2D( cubefaces[int(face)], 0, GL_RGBA,
+			p->width(), p->height(), 0,
+			GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV,
+			p->bits() );
+		delete p;
+	}
+
+	updateGL();
+	showview();
+	
 }

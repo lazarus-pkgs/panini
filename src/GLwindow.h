@@ -64,6 +64,9 @@ private:
 							 const char * ptyp = 0 );
 	bool loadTypedFiles( const char * type, QStringList files );
 
+	void dragEnterEvent(QDragEnterEvent * event);
+	void dropEvent(QDropEvent * event);
+
 	pvQtAbout aboutbox;
 
 	picTypeDialog ptd;

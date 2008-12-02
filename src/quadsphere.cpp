@@ -71,7 +71,7 @@ static char msg[80];
 
 /* texcoord utilities
 */
-const float ninv = 0, pinv = 1;
+const float ninv = -0.01, pinv = 1.01;
 #define CLIP( x ) ( x < ninv ? ninv : x > pinv ? pinv : x )
 #define INVAL( t ) (t > 0 ? pinv : ninv )
 #define EVAL( t ) ( t < 0.5 ? t < 0 ? t : 0 : t > 1 ? t : 1 ) 
