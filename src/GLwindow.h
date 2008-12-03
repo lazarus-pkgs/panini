@@ -44,6 +44,7 @@ public slots:
   // from mainwindow
 	void newPicture( const char * type );
 	void about_pvQt();
+	void save_as();
  // from picType dialog...
 	void picTypeChanged( int t );
 	void hFovChanged( double h );

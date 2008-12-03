@@ -91,21 +91,18 @@
     <addaction name="actionPan_Right" />
     <addaction name="actionTilt_Up" />
     <addaction name="actionTilt_Down" />
-    <addaction name="actionRoll_Left" />
-    <addaction name="actionRoll_Right" />
     <addaction name="separator" />
     <addaction name="actionZoom_In" />
     <addaction name="actionZoom_Out" />
     <addaction name="actionEye_In" />
     <addaction name="actionEye_Out" />
-    <addaction name="actionFull_frame" />
-    <addaction name="actionSuper_wide" />
     <addaction name="separator" />
-    <addaction name="action_Home" />
-    <addaction name="actionReset" />
+    <addaction name="actionHFovUp" />
+    <addaction name="actionHFovDn" />
+    <addaction name="actionVFovUp" />
+    <addaction name="actionVFovDn" />
     <addaction name="separator" />
-    <addaction name="action90_deg_CCW" />
-    <addaction name="action90_deg_CW" />
+    <addaction name="actionSave_as" />
    </widget>
    <widget class="QMenu" name="menuLoad" >
     <property name="title" >
@@ -117,6 +114,8 @@
     <addaction name="actionSpherical" />
     <addaction name="actionCylindrical" />
     <addaction name="actionEquirectangular" />
+    <addaction name="actionStereographic" />
+    <addaction name="actionMercator" />
     <addaction name="actionCube_faces" />
     <addaction name="actionPT_script" />
     <addaction name="separator" />
@@ -127,9 +126,24 @@
      <string>Help</string>
     </property>
     <addaction name="actionAbout_pvQt" />
+    <addaction name="actionMouse_modes" />
+   </widget>
+   <widget class="QMenu" name="menuPresets" >
+    <property name="title" >
+     <string>Presets</string>
+    </property>
+    <addaction name="actionSuper_wide" />
+    <addaction name="actionFull_frame" />
+    <addaction name="action_Home" />
+    <addaction name="actionReset" />
+    <addaction name="action90_deg_CCW" />
+    <addaction name="action90_deg_CW" />
+    <addaction name="actionNext_iProj" />
+    <addaction name="actionPrev_iProj" />
    </widget>
    <addaction name="menuLoad" />
    <addaction name="menu_View" />
+   <addaction name="menuPresets" />
    <addaction name="menuHelp" />
   </widget>
   <widget class="QStatusBar" name="statusbar" />
@@ -146,7 +160,7 @@
     <string>Zoom &amp;in</string>
    </property>
    <property name="shortcut" >
-    <string>PgUp</string>
+    <string>Ctrl+Up</string>
    </property>
   </action>
   <action name="actionZoom_Out" >
@@ -154,7 +168,7 @@
     <string>Zoom &amp;out</string>
    </property>
    <property name="shortcut" >
-    <string>PgDown</string>
+    <string>Ctrl+Down</string>
    </property>
   </action>
   <action name="actionPan_Left" >
@@ -194,7 +208,7 @@
     <string>Roll CW</string>
    </property>
    <property name="shortcut" >
-    <string>Ctrl+Left</string>
+    <string>Shift+Left</string>
    </property>
   </action>
   <action name="actionRoll_Right" >
@@ -202,7 +216,7 @@
     <string>Roll CCW</string>
    </property>
    <property name="shortcut" >
-    <string>Ctrl+Right</string>
+    <string>Shift+Right</string>
    </property>
   </action>
   <action name="actionEye_In" >
@@ -210,7 +224,7 @@
     <string>Eye &amp;near</string>
    </property>
    <property name="shortcut" >
-    <string>Ctrl+PgUp</string>
+    <string>Ctrl+Right</string>
    </property>
   </action>
   <action name="actionEye_Out" >
@@ -218,7 +232,7 @@
     <string>Eye &amp;far</string>
    </property>
    <property name="shortcut" >
-    <string>Ctrl+PgDown</string>
+    <string>Ctrl+Left</string>
    </property>
   </action>
   <action name="actionFullFrame" >
@@ -239,7 +253,7 @@
   </action>
   <action name="actionReset" >
    <property name="text" >
-    <string>Reset &amp;all</string>
+    <string>Reset view</string>
    </property>
    <property name="shortcut" >
     <string>End</string>
@@ -325,6 +339,77 @@
   <action name="actionSpherical" >
    <property name="text" >
     <string>spherical</string>
+   </property>
+  </action>
+  <action name="actionStereographic" >
+   <property name="text" >
+    <string>stereographic</string>
+   </property>
+  </action>
+  <action name="actionMercator" >
+   <property name="text" >
+    <string>mercator</string>
+   </property>
+  </action>
+  <action name="actionHFovUp" >
+   <property name="text" >
+    <string>hFov+</string>
+   </property>
+   <property name="shortcut" >
+    <string>Shift+Right</string>
+   </property>
+  </action>
+  <action name="actionHFovDn" >
+   <property name="text" >
+    <string>hFov-</string>
+   </property>
+   <property name="shortcut" >
+    <string>Shift+Left</string>
+   </property>
+  </action>
+  <action name="actionVFovUp" >
+   <property name="text" >
+    <string>vFov+</string>
+   </property>
+   <property name="shortcut" >
+    <string>Shift+Up</string>
+   </property>
+  </action>
+  <action name="actionVFovDn" >
+   <property name="text" >
+    <string>vFov-</string>
+   </property>
+   <property name="shortcut" >
+    <string>Shift+Down</string>
+   </property>
+  </action>
+  <action name="actionSave_as" >
+   <property name="text" >
+    <string>Save as...</string>
+   </property>
+   <property name="shortcut" >
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actionNext_iProj" >
+   <property name="text" >
+    <string>Next iProj</string>
+   </property>
+   <property name="shortcut" >
+    <string>Shift+PgUp</string>
+   </property>
+  </action>
+  <action name="actionPrev_iProj" >
+   <property name="text" >
+    <string>Prev iProj</string>
+   </property>
+   <property name="shortcut" >
+    <string>Shift+PgDown</string>
+   </property>
+  </action>
+  <action name="actionMouse_modes" >
+   <property name="text" >
+    <string>Mouse modes...</string>
    </property>
   </action>
  </widget>
