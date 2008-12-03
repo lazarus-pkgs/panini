@@ -60,12 +60,15 @@
 
  // post unusable OGL capabilities
  	OGLv20 = OGLisOK = false;
- 	 picok = false;
- 	 errmsg = tr("no picture");
-	 thePic = 0;
-	 theScreen = 0;
-	 textgt = 0;
-	 texname = 0;
+	picType = pvQtPic::nil;
+ 	picok = false;
+ 	errmsg = tr("no picture");
+	thePic = 0;
+	theScreen = 0;
+	textgt = 0;
+	texname = 0;
+	textgt = 0;
+
 
   // create the sphere tables
 	pqs = new quadsphere( 50 );
@@ -162,18 +165,7 @@ bool pvQtView::OpenGLOK()
 
 void pvQtView::mouseDoubleClickEvent( QMouseEvent * pme ){
   if( mk == Qt::ShiftModifier ){ 
-  // cycle thru 2D projection types
-	int i = curr_ipt;
-	if( i < Nprojections ){
-		if( ++i == Nprojections ) i = 0;
-		pvQtPic::PicType pt = pictypes.PicType( i );
-		curr_fovs = thePic->changeFovType( picType, thePic->PictureFOV(), pt );
-		curr_pt = pt;
-		curr_ipt = i;
-		makeSphere( theScreen );		// set & display proj
-		setTexMag( QSizeF(xtexmag, ytexmag));	// display fovs
-		updateGL();
-	 }
+	  step_iproj( 1 );
   }
 }
 
@@ -305,6 +297,37 @@ void pvQtView::mTimeout(){
 	 showview();
  }
 
+ void pvQtView::step_hfov( int dp ){
+	ihfov = KLIP( ihfov - 10 * dp, 0, 4000);
+	setTexMag( QSizeF( 1.0 + 0.00225 * ihfov, 1.0 + 0.0025 * ivfov ));
+	updateGL();
+ }
+
+ void pvQtView::step_vfov( int dp ){
+	ivfov = KLIP( ivfov - 10 * dp, 0, 4000);
+	setTexMag( QSizeF( 1.0 + 0.00225 * ihfov, 1.0 + 0.0025 * ivfov ));
+	updateGL();
+ }
+
+ void pvQtView::step_iproj( int dp ){
+  // cycle thru 2D projection types
+	int i = curr_ipt;
+	if( i < Nprojections && thePic != 0 ){
+		if( dp > 0 ){
+			if( ++i >= Nprojections ) i = 0;
+		} else {
+			if( --i < 0 ) i = Nprojections - 1;
+		}
+		pvQtPic::PicType pt = pictypes.PicType( i );
+		curr_fovs = thePic->changeFovType( picType, thePic->PictureFOV(), pt );
+		curr_pt = pt;
+		curr_ipt = i;
+		makeSphere( theScreen );		// set & display proj
+		setTexMag( QSizeF(xtexmag, ytexmag));	// display fovs
+		updateGL();
+	 }
+ }
+
   /**  preset views  **/
   
  void pvQtView::reset_view(){
@@ -330,7 +353,7 @@ void pvQtView::mTimeout(){
  }
  
  void pvQtView::super_fish(){
-	setDist( 1080 );
+	setDist( 1087 );
 	setZoom( int(16 * maxFOV) );	// maximize FOV
 	updateGL();
 	showview();
@@ -412,7 +435,7 @@ void pvQtView::initView()
 	default user step increments 
 */
 	eyeDistance = 0.0; // spherical projection
-	minDist = 0.0; maxDist = 1.1;	// fixed limits
+	minDist = 0.0; maxDist = 1.087;	// fixed limits
 	idist = 0; diststep = 10;	// % of radius
 
 	minFOV = 10.0;  maxFOV = MAXPROJFOV;
@@ -562,7 +585,6 @@ bool pvQtView::OGLok( const char * label ){
 	theScreen = glGenLists(1);
 
   // make wireframe panosphere
-	textgt = 0;
 	makeSphere( theScreen );
 
 }
@@ -611,7 +633,7 @@ bool pvQtView::OGLok( const char * label ){
 
 	curr_pt = picType;
 	curr_ipt = ipicType;
-	if( curr_pt >= 0 ){
+	if( curr_pt > 0 ){
 		curr_fovs = thePic->PictureFOV();
 		setTexMag( thePic->getTexScale() );
 	} else curr_fovs = QSizeF(0, 0);
@@ -669,9 +691,11 @@ void pvQtView::setTexMag( QSizeF mags ){
 	xtexmag = xmag;
 	ytexmag = ymag;
   // report the apparent image FOV
-	QSizeF rats(1.0 / xtexmag, 1.0 / ytexmag);
-	curr_fovs = thePic->picScale2Fov( curr_pt, thePic->PictureFOV(), rats );
-	emit reportFov( curr_fovs );
+	if( thePic ){
+		QSizeF rats(1.0 / xtexmag, 1.0 / ytexmag);
+		curr_fovs = thePic->picScale2Fov( curr_pt, thePic->PictureFOV(), rats );
+		emit reportFov( curr_fovs );
+	}
 }
 
  /**  Display a Frame  **/

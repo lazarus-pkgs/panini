@@ -53,6 +53,10 @@ signals:
 	void step_zoom( int d );
 	void step_roll( int d );
 	void step_dist( int d );
+	void step_hfov( int d );
+	void step_vfov( int d );
+	void step_iproj( int d );
+	void save_as();
 	void home_view();
 	void reset_view();
 	void super_wide();
@@ -94,11 +98,22 @@ private slots:
 	void on_actionFisheye_triggered();
 	void on_actionSpherical_triggered();
 	void on_actionCylindrical_triggered();
+	void on_actionStereographic_triggered();
+	void on_actionMercator_triggered();
 	void on_actionEquirectangular_triggered();
 	void on_actionCube_faces_triggered();
 	void on_actionPT_script_triggered();
 
-	void on_actionAbout_pvQt_triggered();	
+	void on_actionAbout_pvQt_triggered();
+
+	void on_actionSave_as_triggered();
+	void on_actionNext_iProj_triggered();
+	void on_actionPrev_iProj_triggered();
+	void on_actionHFovUp_triggered();
+	void on_actionHFovDn_triggered();
+	void on_actionVFovUp_triggered();
+	void on_actionVFovDn_triggered();
+
 };
 
 #endif //ndef MAINWINDOW_H

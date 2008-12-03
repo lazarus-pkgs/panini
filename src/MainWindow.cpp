@@ -222,6 +222,14 @@ void MainWindow::on_actionCylindrical_triggered(){
 	emit newPicture( "cyli" );
 }
 
+void MainWindow::on_actionStereographic_triggered(){
+	emit newPicture( "ster" );
+}
+
+void MainWindow::on_actionMercator_triggered(){
+	emit newPicture( "merc" );
+}
+
 void MainWindow::on_actionEquirectangular_triggered(){
 	emit newPicture( "equi" );
 }
@@ -250,3 +258,33 @@ void MainWindow::showFov( QSizeF f ){
 	hfovLabel->setText(QString("hfov %1").arg(f.width(), 0, 'f', 1));
 	vfovLabel->setText(QString("vfov %1").arg(f.height(), 0, 'f', 1));
 }
+
+void MainWindow::on_actionSave_as_triggered(){
+	emit save_as();
+}
+
+void MainWindow::on_actionNext_iProj_triggered(){
+	emit step_iproj( 1 );
+}
+
+void MainWindow::on_actionPrev_iProj_triggered(){
+	emit step_iproj( -1 );
+}
+
+void MainWindow::on_actionHFovUp_triggered(){
+	emit step_hfov( 1 );
+}
+
+void MainWindow::on_actionHFovDn_triggered(){
+	emit step_hfov( -1 );
+}
+
+void MainWindow::on_actionVFovUp_triggered(){
+	emit step_vfov( 1 );
+}
+
+void MainWindow::on_actionVFovDn_triggered(){
+	emit step_vfov( -1 );
+}
+
+

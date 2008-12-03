@@ -53,6 +53,15 @@ GLwindow::GLwindow (QWidget * parent )
 	connect( parent, SIGNAL(step_dist( int )),
 		     glview, SLOT(step_dist( int )));
   if(ok) ok = 
+	connect( parent, SIGNAL(step_hfov( int )),
+		     glview, SLOT(step_hfov( int )));
+  if(ok) ok = 
+	connect( parent, SIGNAL(step_vfov( int )),
+		     glview, SLOT(step_vfov( int )));
+  if(ok) ok = 
+	connect( parent, SIGNAL(step_iproj( int )),
+		     glview, SLOT(step_iproj( int )));
+  if(ok) ok = 
 	connect( parent, SIGNAL(home_view()),
 		     glview, SLOT(home_view()));
   if(ok) ok = 
@@ -67,6 +76,9 @@ GLwindow::GLwindow (QWidget * parent )
   if(ok) ok = 
 	connect( parent, SIGNAL(turn90( int )),
 		     glview, SLOT(turn90( int )));
+  if(ok) ok = 
+	connect( parent, SIGNAL(save_as()),
+		     this, SLOT(save_as()));
   if(ok) ok = 
 	connect( glview, SIGNAL(reportTurn(double)),
 		     this, SLOT(reportTurn(double)));
@@ -540,8 +552,12 @@ bool GLwindow::choosePictureFiles( const char * ptnm ){
   			}
     	}
 	} else if( it >= 0 ) picFov = pictypes.maxFov( it );
-  // fail if still no valid type
-//	if( it < 0 ) return false;
-  // else try to show the picture
+  // try to show the picture
 	return loadTypedFiles( ptnm, files );
+}
+
+
+// save current view
+void GLwindow::save_as() {
+	qCritical("Save view not implemented");
 }

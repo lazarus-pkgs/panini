@@ -72,6 +72,7 @@ int pictureTypes::picTypeIndex( const char * name ){
 	return -1;
 }
 
+// return index of a PicType code (Note nil => proj)
 int pictureTypes::picTypeIndex( pvQtPic::PicType t ){
 	int i;
 	for( i = 0; i < NpictureTypes; i++ ){
