@@ -8,7 +8,8 @@ class pvQtMouseModes
 {
 	Q_OBJECT
 public:
-	pvQtMouseModes( QWidget * parent = 0 ){
+	pvQtMouseModes( QWidget * parent = 0 )
+	: QDialog(parent) {
 		setupUi( this );
 		plainTextEdit->setPlainText( QString( "\
   Key	Buttons	Horizontal	Vertical\n\

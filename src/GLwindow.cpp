@@ -29,6 +29,7 @@ GLwindow::GLwindow (QWidget * parent )
 {
 	glview = new pvQtView(this);
 	pvpic = new pvQtPic( );
+	aboutbox = new pvQtAbout( parent );
 
 	for(int i = 0; i < NpictureTypes; i++ ){
 		lastTurn[i] = 0;
@@ -189,8 +190,8 @@ void GLwindow::about_pvQt(){
 	msg += tr("Vendor: ") + glview->OpenGLVendor() + QString("\n");
 	msg += tr("Video: ") + glview->OpenGLHardware() + QString("\n");
 	msg += tr("Limits: ") + glview->OpenGLLimits();
-	aboutbox.setInfo( msg );
-	aboutbox.show();
+	aboutbox->setInfo( msg );
+	aboutbox->show();
 }
 
 // relay window resize to the GL widget

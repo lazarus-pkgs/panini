@@ -75,7 +75,7 @@ private:
 	GLwindow * glwindow;
 	QString imgFnm;
 	QString projectFnm;
-	pvQtMouseModes mm;
+	pvQtMouseModes * pmm;
 
 private slots:
 	void verify(int i);

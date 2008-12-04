@@ -127,6 +127,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\pvQtMouseModes.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\pvQtPic.h"
 				>
 			</File>

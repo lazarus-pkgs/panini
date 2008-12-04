@@ -54,6 +54,7 @@ MainWindow::MainWindow( QWidget * parent)
 	
 	setupUi( this );
 	resize( 800, 800 );
+	pmm = new pvQtMouseModes( this );
 
 bool ok = true;
 if(ok) ok =
@@ -249,7 +250,7 @@ void MainWindow::on_actionAbout_pvQt_triggered(){
 }
 
 void MainWindow::on_actionMouse_modes_triggered(){
-	mm.show();
+	pmm->show();
 }
 
 /* Display projection and FOV 
