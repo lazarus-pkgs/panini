@@ -138,6 +138,8 @@ signals:
      void mouseMoveEvent(QMouseEvent *pme );
 	 void mouseReleaseEvent( QMouseEvent *pme );
 	 void mouseDoubleClickEvent( QMouseEvent *pme );
+     void wheelEvent(QWheelEvent *event);
+
 private slots:
 	 void mTimeout();
  private:

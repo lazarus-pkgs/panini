@@ -79,7 +79,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>800</width>C
      <height>22</height>
     </rect>
    </property>
@@ -91,8 +91,8 @@
     <addaction name="actionPan_Left" />
     <addaction name="actionTilt_Up" />
     <addaction name="actionTilt_Down" />
-    <addaction name="actionRoll_CW" />
-    <addaction name="actionRoll_CCW" />
+    <addaction name="actionRoll_Right" />
+    <addaction name="actionRoll_Left" />
     <addaction name="separator" />
     <addaction name="actionZoom_In" />
     <addaction name="actionZoom_Out" />
@@ -203,22 +203,6 @@
    </property>
    <property name="shortcut" >
     <string>Down</string>
-   </property>
-  </action>
-  <action name="actionRoll_Left" >
-   <property name="text" >
-    <string>Roll CW</string>
-   </property>
-   <property name="shortcut" >
-    <string>Shift+Left</string>
-   </property>
-  </action>
-  <action name="actionRoll_Right" >
-   <property name="text" >
-    <string>Roll CCW</string>
-   </property>
-   <property name="shortcut" >
-    <string>Shift+Right</string>
    </property>
   </action>
   <action name="actionEye_In" >
@@ -414,7 +398,7 @@
     <string>Mouse modes...</string>
    </property>
   </action>
-  <action name="actionRoll_CW" >
+  <action name="actionRoll_Right" >
    <property name="text" >
     <string>Roll CW</string>
    </property>
@@ -422,7 +406,7 @@
     <string>Alt+Right</string>
    </property>
   </action>
-  <action name="actionRoll_CCW" >
+  <action name="actionRoll_Left" >
    <property name="text" >
     <string>Roll CCW</string>
    </property>

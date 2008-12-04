@@ -479,6 +479,29 @@ ok	-- 2:1 images shd default to eqr.
 	achieve that except to specify more pixels for the
 	render buffer, and set the viewport to that size.
 	Works like a charm!
-	
-	
+
+04 Dec 2008
+
+	Reviewed controls on Linux.  Turns out Ctrl and Alt are
+	not available as mouse modifiers, so revised mode scheme
+	to use only none & Shift.  Also reconnected Roll, which
+	had gotten lost -- had to hand edit the ui XML, because
+	Qt Designer does not delete orphan action declarations
+	( should flame Qt about this).
+
+	Updated mouse help box; set all fonts in About and Mouse
+	to "Sans Serif" family, and made sure all have explicit
+	point sizes (again requiring XML edits ;-|).
+
+	D-n-d basically works, though the following sequence crashes:
+	Start w/o command; select Picture/cube faces; cancel selector;
+	drag in a square image.  Linux shell reports "floating point
+	exception".  Drag in non-square does not crash, nor does
+	starting with non-cube empty frame.  Short debug session
+	suggests this is due to picdims never getting set.
+ -->	Will fix on Windows.
+
+	Will now add scroll wheel zoom then go back to Windows.
+
+
 	
