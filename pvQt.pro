@@ -36,6 +36,8 @@ HEADERS += src/About.h
 SOURCES += src/About.cpp
 HEADERS += src/quadsphere.h
 SOURCES += src/quadsphere.cpp
+FORMS += ui/ShowText.ui
+HEADERS += src/pvQtMouseModes.h
 
 ##  Version  ##
 # major.minor rev numbers are in version0.h

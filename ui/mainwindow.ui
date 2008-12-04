@@ -87,10 +87,12 @@
     <property name="title" >
      <string>&amp;View</string>
     </property>
-    <addaction name="actionPan_Left" />
     <addaction name="actionPan_Right" />
+    <addaction name="actionPan_Left" />
     <addaction name="actionTilt_Up" />
     <addaction name="actionTilt_Down" />
+    <addaction name="actionRoll_CW" />
+    <addaction name="actionRoll_CCW" />
     <addaction name="separator" />
     <addaction name="actionZoom_In" />
     <addaction name="actionZoom_Out" />
@@ -410,6 +412,22 @@
   <action name="actionMouse_modes" >
    <property name="text" >
     <string>Mouse modes...</string>
+   </property>
+  </action>
+  <action name="actionRoll_CW" >
+   <property name="text" >
+    <string>Roll CW</string>
+   </property>
+   <property name="shortcut" >
+    <string>Alt+Right</string>
+   </property>
+  </action>
+  <action name="actionRoll_CCW" >
+   <property name="text" >
+    <string>Roll CCW</string>
+   </property>
+   <property name="shortcut" >
+    <string>Alt+Left</string>
    </property>
   </action>
  </widget>

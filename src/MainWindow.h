@@ -31,6 +31,7 @@
 class GLwindow;
 class QActionGroup;
 class QErrorMessage;
+#include "pvQtMouseModes.h"
 
 class MainWindow :
 	public QMainWindow,
@@ -74,6 +75,8 @@ private:
 	GLwindow * glwindow;
 	QString imgFnm;
 	QString projectFnm;
+	pvQtMouseModes mm;
+
 private slots:
 	void verify(int i);
 	void panLft();
@@ -105,6 +108,7 @@ private slots:
 	void on_actionPT_script_triggered();
 
 	void on_actionAbout_pvQt_triggered();
+	void on_actionMouse_modes_triggered();
 
 	void on_actionSave_as_triggered();
 	void on_actionNext_iProj_triggered();
