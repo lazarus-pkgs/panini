@@ -204,43 +204,56 @@ void pvQtView::mTimeout(){
 
 	int dx = (mx1 - mx0) / 3,
 		dy = (my0 - my1) / 3;
-
+/*  mouse modes
+  Linux doesn't allow Ctrl or Alt as mouse modifiers, so we use
+    none	Lft: Y,P	Rgt: E,Z	Both: ,Z
+    Shift	Lft: R,P	Rgt: hF,vF	Both: ,Z
+*/
 	if( mb == Qt::LeftButton ){
-		if( mk == Qt::NoModifier ){
-		// adjust yaw & pitch
+		if( mk == Qt::NoModifier ){ // yaw, pitch
 			ipan += dx;
 			panAngle = normalizeAngle( ipan, 1, minpan, maxpan);
 			itilt += dy;
 			tiltAngle = normalizeAngle( itilt, 1, mintilt, maxtilt);
-		} else if( mk == Qt::ShiftModifier ){
-		// adjust texture magnification
-			ihfov = KLIP( ihfov - dx, 0, 4000);
-			ivfov = KLIP( ivfov - dy, 0, 4000);
-			setTexMag( QSizeF( 1.0 + 0.00225 * ihfov, 1.0 + 0.0025 * ivfov ));
-		} else if( mk == Qt::AltModifier ){
+		} else if( mk == Qt::ShiftModifier ){	
+		// roll, pitch
 			ispin += dx;
 			spinAngle = normalizeAngle( ispin, 1, -180, 180);
 			itilt += dy;
 			tiltAngle = normalizeAngle( itilt, 1, mintilt, maxtilt);
 		}
-	} else if ( mb & Qt::RightButton ){
-		if( mk == Qt::ControlModifier ){
-		} else {
-			if( mb & Qt::LeftButton ){
-			// if both buttons x adjusts eye
-				idist -= dx;
-				setDist( idist );
-			}
-			// Y adjusts zoom
+	} else if ( mb == Qt::RightButton ){
+		if( mk == Qt::NoModifier ){ 
+		// Eye, Zoom
+			idist -= dx;
+			setDist( idist );
 			izoom -= dy;
 			setFOV( normalizeAngle( izoom, 1, minFOV, maxFOV ) );
-		}
+		} else if( mk == Qt::ShiftModifier ){	// hFov, vFov
+			ihfov = KLIP( ihfov - dx, 0, 4000);
+			ivfov = KLIP( ivfov - dy, 0, 4000);
+			setTexMag( QSizeF( 1.0 + 0.00225 * ihfov, 1.0 + 0.0025 * ivfov ));
+		} 
+	} else if( mb == Qt::LeftButton + Qt::RightButton ){
+		// Y adjusts zoom
+		izoom -= dy;
+		setFOV( normalizeAngle( izoom, 1, minFOV, maxFOV ) );
 	}
 
 	updateGL();
 	showview();
 
 	mTimer.start();
+}
+
+// zoom on scroll wheel
+void pvQtView::wheelEvent(QWheelEvent *event){
+	int d = event->delta();
+	if( d == 0 ){
+	  event->ignore();
+	  return;
+	}
+	step_zoom( d < 0 ? -1 : 1 );
 }
 
 

@@ -70,9 +70,9 @@ void GLview::set_view( int i )
  {
      panAngle = normalizeAngle(angle, -180, 180);
      if (angle != ipan) {
-         ipan = angle;
-         updateGL();
-		 showview();
+        ipan = angle;
+        updateGL();
+	showview();
      }
  }
 
@@ -80,9 +80,9 @@ void GLview::set_view( int i )
  {
      tiltAngle = normalizeAngle(angle, -90, 90);
      if (angle != itilt) {
-         itilt = angle;
-         updateGL();
-		 showview();
+        itilt = angle;
+        updateGL();
+	showview();
      }
  }
 
@@ -90,9 +90,9 @@ void GLview::set_view( int i )
  {
      spinAngle = normalizeAngle(angle, -180, 180);
      if (angle != ispin) {
-         ispin = angle;
-         updateGL();
-		 showview();
+        ispin = angle;
+        updateGL();
+	showview();
      }
  }
 
@@ -100,10 +100,10 @@ void GLview::set_view( int i )
  {
  	double a = normalizeAngle(angle, minFOV, maxFOV);
 	if (angle != izoom) {
-         izoom = angle;
-         setFOV(a);
-         updateGL();
-		 showview();
+        izoom = angle;
+        setFOV(a);
+        updateGL();
+	showview();
      }
  }
 

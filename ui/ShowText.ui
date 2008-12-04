@@ -11,14 +11,14 @@
   </property>
   <property name="font" >
    <font>
-    <family>Lucida Sans Unicode</family>
+    <family>Sans Serif</family>
     <pointsize>10</pointsize>
    </font>
   </property>
   <property name="windowTitle" >
    <string>pvQt  Mouse Modes Help</string>
   </property>
-  <widget class="QPlainTextEdit" name="plainTextEdit" >
+  <widget class="QPlainTextEdit" native="1" name="plainTextEdit" >
    <property name="geometry" >
     <rect>
      <x>10</x>
@@ -27,14 +27,27 @@
      <height>231</height>
     </rect>
    </property>
-   <property name="undoRedoEnabled" >
+   <property name="font" >
+    <font>
+     <family>Sans Serif</family>
+     <pointsize>10</pointsize>
+  </font>
+   </property>
+   <property name="undoRedoEnabled" stdset="0" >
     <bool>false</bool>
    </property>
-   <property name="readOnly" >
+   <property name="readOnly" stdset="0" >
     <bool>true</bool>
    </property>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QPlainTextEdit</class>
+   <extends>QWidget</extends>
+   <header>qplaintextedit.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

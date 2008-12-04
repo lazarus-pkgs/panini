@@ -11,13 +11,14 @@ public:
 	pvQtMouseModes( QWidget * parent = 0 ){
 		setupUi( this );
 		plainTextEdit->setPlainText( QString( "\
-Modifier	Buttons	Horizontal	Vertical\n\
+  Key	Buttons	Horizontal	Vertical\n\
   none	  left	  Yaw	  Pitch\n\
-   Alt	  left	  Roll	  Pitch\n\
-  Shift	  left	  hFov	  vFov\n\
-   any	  right		  Zoom\n\
-   any	  both	  Eye	  Zoom\n\
-  Shift - double click: cycle projections\n\
+  none	  right	  Eye	  Zoom\n\
+  none	  both		  Zoom\n\
+  Shift	  left	  Roll	  Pitch\n\
+  Shift	  right	  hFov	  vFov\n\
+  Shift	  both		  Zoom\n\
+  Shift	  double click: Next Projection\n\
   Scroll wheel: Zoom "));
 	}
 };
