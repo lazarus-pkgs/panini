@@ -502,6 +502,13 @@ ok	-- 2:1 images shd default to eqr.
  -->	Will fix on Windows.
 
 	Will now add scroll wheel zoom then go back to Windows.
+	Done.
+	
+	The picdims bug does not cause a crash here, just fails
+	to load dragged image.  But will fix anyhow..
+	
+	The Help dialogs aren't modal but should close along with
+	main window.  Try making them its children.
 
 
 	
