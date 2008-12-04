@@ -1,0 +1,40 @@
+<ui version="4.0" >
+ <class>MouseModes</class>
+ <widget class="QDialog" name="MouseModes" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>371</width>
+    <height>249</height>
+   </rect>
+  </property>
+  <property name="font" >
+   <font>
+    <family>Lucida Sans Unicode</family>
+    <pointsize>10</pointsize>
+   </font>
+  </property>
+  <property name="windowTitle" >
+   <string>pvQt  Mouse Modes Help</string>
+  </property>
+  <widget class="QPlainTextEdit" name="plainTextEdit" >
+   <property name="geometry" >
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>351</width>
+     <height>231</height>
+    </rect>
+   </property>
+   <property name="undoRedoEnabled" >
+    <bool>false</bool>
+   </property>
+   <property name="readOnly" >
+    <bool>true</bool>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -27,6 +27,8 @@
    #include <GL/glext.h>
    #include <GL/glu.h>
 #endif 
+#include <QGLFramebufferObject>
+
 #include <cmath>
 
 #define max( a, b ) (a > b ? a : b )
@@ -215,7 +217,11 @@ void pvQtView::mTimeout(){
 			ihfov = KLIP( ihfov - dx, 0, 4000);
 			ivfov = KLIP( ivfov - dy, 0, 4000);
 			setTexMag( QSizeF( 1.0 + 0.00225 * ihfov, 1.0 + 0.0025 * ivfov ));
-		} else if( mk == Qt::ControlModifier ){
+		} else if( mk == Qt::AltModifier ){
+			ispin += dx;
+			spinAngle = normalizeAngle( ispin, 1, -180, 180);
+			itilt += dy;
+			tiltAngle = normalizeAngle( itilt, 1, mintilt, maxtilt);
 		}
 	} else if ( mb & Qt::RightButton ){
 		if( mk == Qt::ControlModifier ){
@@ -990,4 +996,37 @@ void pvQtView::newFace( pvQtPic::PicFace face )
 	updateGL();
 	showview();
 	
+}
+
+/* save current view to a file
+  Uses a QGLFrameBufferObject to render view at custom size
+  Default size = screen size
+*/
+bool pvQtView::saveView( QString name, QSize size )
+{
+	int W = size.width(), H = size.height();
+	if( W <= 0 || H <= 0 ){
+		W = Width;
+		H = Height;
+	}
+  // get OGL context, create private frame buffer
+	makeCurrent();	
+	QGLFramebufferObject fbo( W, H );
+	bool ok = fbo.isValid();
+  // try to render and save
+	if( ok && fbo.bind() ){
+	  // temp resize viewport
+		glViewport(0, 0, W, H);
+		portAR = (double)W / (double)H;
+	  // render
+		paintGL();
+		if( paintok ){
+			QImage img = fbo.toImage();
+			ok = img.save( name );
+		} else ok = false;
+		fbo.release();
+	  // restore screen viewport
+		resizeGL( Width, Height );
+	} else ok = false;
+	return ok;
 }

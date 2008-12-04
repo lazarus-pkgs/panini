@@ -248,6 +248,10 @@ void MainWindow::on_actionAbout_pvQt_triggered(){
 	emit about_pvQt();
 }
 
+void MainWindow::on_actionMouse_modes_triggered(){
+	mm.show();
+}
+
 /* Display projection and FOV 
 */
 void MainWindow::showProj( QString name ){

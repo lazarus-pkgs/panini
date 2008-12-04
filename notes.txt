@@ -463,5 +463,22 @@ ok	-- 2:1 images shd default to eqr.
 	must be distinct from the ones shown to the user.
 	
 	  
+03 Dec 2008
+
+	D-n-d working, incl. cube faces.  The face pick routine
+	renders pixval = face id to back buffer, then reads the
+	pixel at mouse position -- which seems to contain the
+	1's complement of the input data, so I'd like to study
+	this operation some more.  But it works as is.
+	
+	Now for saving the view to a file.  Qt supplies class
+	QGLFrameBufferObject for offscreen redering, which
+	can copy itself into a QImage; so I'll try using that.
+	This should allow the saved image to have better than
+	screen resolution.  Apparently nothing is needed to
+	achieve that except to specify more pixels for the
+	render buffer, and set the viewport to that size.
+	Works like a charm!
+	
 	
 	

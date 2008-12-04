@@ -556,8 +556,30 @@ bool GLwindow::choosePictureFiles( const char * ptnm ){
 	return loadTypedFiles( ptnm, files );
 }
 
-
-// save current view
+// save current view to an image file
 void GLwindow::save_as() {
-	qCritical("Save view not implemented");
+	QSize scrn = glview->screenSize();	// size as displayed
+	double fac = 2.5;		// linear scale factor for size
+	QString fnm = "testSaveView.jpg";
+
+	QFileDialog fd( this );
+	fd.setAcceptMode( QFileDialog::AcceptSave );
+	fd.setFileMode( QFileDialog::AnyFile );
+	fd.setViewMode( QFileDialog::List );
+  // set dialog title
+	QString title = tr("pvQt -- Save View As");
+	fd.setWindowTitle( title );
+  // contruct file extension filter
+	QString filter(tr("Jpeg files (*.jpg)") );
+	fd.setNameFilter( filter );
+  // default suffix is "jpg"
+	fd.setDefaultSuffix( QString("jpg"));
+	QStringList files;
+	if( fd.exec()){
+		files = fd.selectedFiles();
+		if( !glview->saveView( files[0], scrn * fac )){
+			qCritical("saveView() failed");
+		}
+	}
 }
+

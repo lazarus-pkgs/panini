@@ -81,6 +81,18 @@ public:
    */
 	 pvQtPic::PicFace pickFace( QPoint pnt );
 
+   /* Save the current view to a file
+   name is full pathname, with extension .jpg or .tif
+   Default size is the current viewport size.  Custom sizes
+   need not be the same shape as the viewport.
+   Returns true if image was rendered and written OK.
+   */
+	 bool saveView( QString name, QSize size = QSize());
+
+   /* get the current screen viewport size in pixels
+   */
+	 QSize screenSize(){ return QSize( Width, Height ); }
+
  public slots:
 /* Angles passed from/to GUI are integers in 16ths of a degree,
    so they can be reliably checked for equality.  The zoom angle 
@@ -111,7 +123,7 @@ public:
 	 void picChanged(); // from scratch
 	 void newFace( pvQtPic::PicFace face ); // one cube face
 
- signals:
+signals:
 	void reportView( QString msg );
 	void OGLerror( QString msg );
 	void reportTurn( double deg );

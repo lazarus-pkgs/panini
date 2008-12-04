@@ -159,6 +159,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\build\ui_ShowText.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\Version0.h"
 				>
 			</File>
@@ -182,6 +186,10 @@
 			</File>
 			<File
 				RelativePath="..\..\ui\picTypeDialog.ui"
+				>
+			</File>
+			<File
+				RelativePath="..\..\ui\ShowText.ui"
 				>
 			</File>
 		</Filter>
