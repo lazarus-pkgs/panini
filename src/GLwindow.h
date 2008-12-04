@@ -68,7 +68,7 @@ private:
 	void dragEnterEvent(QDragEnterEvent * event);
 	void dropEvent(QDropEvent * event);
 
-	pvQtAbout aboutbox;
+	pvQtAbout * aboutbox;
 
 	picTypeDialog ptd;
 	pvQtView * glview;	// display widget
