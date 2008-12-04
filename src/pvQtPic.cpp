@@ -266,8 +266,10 @@ bool pvQtPic::setType( pvQtPic::PicType t )
 	facedims = QSize( 512, 512 );
 	double r = facefovs.width() / facefovs.height();
 	if( r < 1 ) facedims.setWidth( 256 );
-	else if( r < 1 ) facedims.setHeight( 256 );
-	picdims = facedims;	// default for empty frames
+	else if( r > 1 ) facedims.setHeight( 256 );
+  // default pic = face
+	picdims = facedims;
+	imagefovs = facefovs;
 
   // pixel format for face images
 	faceformat = PVQT_PIC_FACE_FORMAT; 
@@ -278,8 +280,6 @@ bool pvQtPic::setType( pvQtPic::PicType t )
   	if( lockfovs ) minfovs = facefovs;
 	else minfovs = QSizeF( 10, 10 );
   // clear source image info; set empty face style
-	picdims = QSize(0,0);
-	imagefovs = QSizeF(0,0);
 	for( int i = 0; i < 6; i++ ){
 		accept[i] = false;
 		kinds[i] = 0;			// coded source type
@@ -573,7 +573,8 @@ bool pvQtPic::setFaceImage( pvQtPic::PicFace face, QUrl url )
   of accepted images in numimgs.
   
   Sets imagedims to the minimum enclosing rectangle
-  of all accepted images.
+  of all accepted images, and calls setFaceSize with
+  these dims.
   
   All cube face images must be square, but can be different
   sizes.
@@ -601,7 +602,7 @@ bool pvQtPic::addimgsize( int i, QSize dims )
 	idims[i] = dims;	
 	++numimgs;
 	accept[i] = true;
-	return true;
+	return setFaceSize( imagedims );
 }
 
 

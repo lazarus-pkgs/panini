@@ -149,15 +149,20 @@ void GLwindow::dropEvent(QDropEvent *event)
 	n = paths.count();
 	if( n > 0 ){
 		bool ok;
-		if( pvpic->Type() == pvQtPic::cub && n == 1 ){
-		// add or replace one cube face
-			QPoint pnt = event->pos();
-			pvQtPic::PicFace pf = glview->pickFace( pnt );
-////	qCritical("pos (%d,%d) face %d", pnt.x(), pnt.y(), int(pf) );
-			ok = pvpic->setFaceImage( pf, paths[0] );
-////		qCritical("setFaceImage = %d", ok );
-			if( ok ) glview->newFace( pf );
-			else ok = loadPictureFiles( paths );
+		if( pvpic->Type() == pvQtPic::cub ){
+			if( n > 1 ){
+				ok = loadTypedFiles( "cube", paths );
+			} else { // add or replace one cube face
+				QPoint pnt = event->pos();
+				pvQtPic::PicFace pf = glview->pickFace( pnt );
+				pvpic->setImageFOV(QSizeF( 90, 90 ));
+				ok = pvpic->setFaceImage( pf, paths[0] );
+				if( ok ){
+					if( pvpic->NumImages() == 1 ) glview->showPic( pvpic );
+					else glview->newFace( pf );
+				}
+				else ok = loadPictureFiles( paths );
+			}
 		} else {
 			ok = loadPictureFiles( paths );
 		}
