@@ -520,8 +520,13 @@ ok	-- 2:1 images shd default to eqr.
 	
 	So now just need to
 	-- fix the glitches in stereographic TCs;
+	Done
 	-- get the Mercator TCs right;
+	Done (looks plausible, anyhow)
 	-- test on a few more boxes....
-
+	Tomorrow
+	
+	Tonite, commit 1st release 0.5 candidate
+	
 
 	
