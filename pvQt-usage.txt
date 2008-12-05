@@ -6,11 +6,11 @@ pvQt is also a versatile perspective converter, that lets you warp input images 
 
 SYSTEM REQUIREMENTS and LIMITATIONS
 
-To display pictures pvQt uses OpenGL, a low level graphics API that is tightly integrated with a system's video drivers.  OpenGL cannot be installed as a separate piece of software.  
+To display pictures pvQt uses OpenGL, a low level graphics API that is tightly integrated with the system's video drivers.  OpenGL cannot be installed as a separate piece of software.  
 
 If the version of your OpenGL implementation is less than 1.2 or does not support cubic texture mapping, pvQt will not run.  If the OpenGL version is less than 1.5 it may not be able to display all pictures correctly.
 
-You will get best results with OpenGL version 2.0 and above.  That means you should have either a "gaming" video card, or a recent "multimedia" one.  But ultimate gaming performance is not needed; a basic version 2.0 system should be perfectly adequate.  Cards that will upgrade most desktop PCs to this level now cost only $35 to $70.  
+You will get best results with OpenGL version 2.0 and above.  That means you should have either a "gaming" video card, or a recent "multimedia" one.  But ultimate gaming performance is not needed; a basic version 2 system should be perfectly adequate.  Cards to upgrade most desktop PCs to that level now cost only $35 to $70.  
 
 On ubuntu Linux you will probably need to install the manufacturer's video drivers (both nVidia and ATI now supply them).  Ubuntu does not install these drivers by default because they are not open-source.
 
@@ -19,7 +19,9 @@ The "About" dialog shows information about your system's OpenGL facilities as we
   texMax:	maximum dimension of 2D textures, the bigger the better.
   cubeMax:	maximum dimension of cubic textures, the bigger the better.
   			
-Depending on the amount of texture memory available, pictures may be shown at reduced resolution.  Cubic panoramas can generally be displayed at higher resolution than the other picture types.  
+Depending on the amount of texture memory available, pictures may be shown at reduced resolution.  Cubic panoramas can generally be displayed at higher resolution than the other picture types.
+
+To save high resolution views, your OpenGL must support offscreen frame buffers of arbitrary size.  It it does not, all saved views will be at screen resolution.  
 
 pvQt places no special demands on CPU speed or memory; if you can stitch panoramas, you will have no trouble viewing them.
 
@@ -33,9 +35,11 @@ All the viewing commands have keyboard shortcuts, shown in the View menu.  You c
 
 The Yaw, Pitch and Roll controls rotate the viewing frame with respect to the panosphere, as in a flight simulator.  Yaw and Pitch let you look in different directions; Roll adjusts which way is up.  You can control Yaw and Pitch with the mouse by holding the left button and moving the pointer in the direction you wish to look.  For a real flight simulator experience, you can hold Shift along with the left mouse button and "fly" using Roll and Pitch.
 
-Zoom controls magnification by changing the vertical field of view on the panosphere.  When you resize the window, the displayed image grows or shrinks to maintain the selected vertical field.  The mouse wheel (if present) adjusts zoom in coarse steps.  For finer control, hold the both buttons and move the mouse vertically.  Holding the right button couples horizontal movement to perspective and vertical movement to zoom -- a convenient combnation because these two controls interact strongly.
+Zoom controls magnification by changing the vertical field of view on the panosphere.  When you resize the window, the displayed image grows or shrinks to maintain the selected vertical field.  The mouse wheel (if present) adjusts zoom in coarse steps.  For finer control, hold  both buttons and move the mouse vertically.  
   
 "Eye in" and "Eye out" change perspective by moving the point of view toward or away from the center of the panosphere.  Eye position is reported in units of the sphere's radius.  When Eye is zero, the viewing perspective is rectilinear, like a normal camera lens.  As eye distance increases, the perspective becomes more fisheye-like, and you can zoom farther out to see wider views.  But you can zoom in to the same level of image detail at any perspective setting.  Technically, moving the eye point this way generates a family of conformal tangent projections, ranging from rectilinear at Eye = 0 to stereographic at Eye = 1, that are very useful for presenting photographic views.
+
+Becasue the perspective and zoom controls interact, it is convenient to control both at once by holding the right mouse button.
 
 The remaining viewing controls change how the input image is painted onto the sphere, as discussed below.
 
@@ -47,7 +51,7 @@ The Turn controls ("L" and "R" keys) rotate the image on the panosphere in incre
 
 For convenience in viewing series of similar pictures, pvQt remembers the last selected Turn angle and FOV for each type of picture (but version 0.5 does not save them when you exit the program).
 
-The Preset menu also has controls for switching between the various non-cubic input projections.  More on that below.
+The Preset menu also has controls for switching between the various non-cubic input projections.
 
 LOADING PICTURES 
 
@@ -119,21 +123,24 @@ The current input projection is shown on the status bar.  Please remember that t
 
 FIELD OF VIEW
 
-The angular size, or field of view of an image determines how much of the surface of the panosphere it covers.  Each projection has a maximum feasible FOV, which is the default, however you can specify smaller FOVs for any non-cubic picture. 
+The angular size, or field of view of an image determines how much of the panosphere it covers.  Each projection has a maximum feasible FOV, which is the default, however you can specify smaller FOVs for any non-cubic picture. 
 
-An image is assiged a horizontal and a vertical field of view when loaded.  They are locked to the image dimensions according to the assigned projection, so you can't vary them separately.  But for non-cubic pictures, the assigned fields of view may or may not be the "true" ones, and can be adjusted after the image is loaded, using the hFov and vFov controls in View menu (also Shift-left-mouse).  These controls change the horizontal and vertical FOVs independently, within a range of 10% to 100% of the assigned FOV (or its equivalent in the current projection).  The "End" key restores the assigned FOVs.
+An image is assiged a horizontal and a vertical field of view when loaded.  They are locked to the image dimensions according to the assigned projection, so you can't vary them separately.  But for non-cubic pictures, the apparent fields of view can be adjusted after the image is loaded, using the hFov and vFov controls in View menu (also Shift-right-mouse).  These controls change the horizontal and vertical FOVs independently, within a range of 10% to 100% of the assigned FOV (or its equivalent in the current projection).  The "End" key restores the assigned FOVs and projection.
 
-Reducing the FOVs not only changes the apparent size of the image (which can be undone with the zoom control), but also alters the perspective and pixel aspect ratio, providing more routes to possibly interesting pictures.
+Adjusting the FOVs not only changes the apparent size of the image (which could be undone with the zoom control) but also alters the projection's "built-in" perspective.
 
 The current horizontal and vertical FOVs are shown in the status bar.  Note that these also change when you change the input projection, since each projection has different relationships of image dimension to angular size.
 
 SAVING VIEWS
 
-You can save the current view to a jpeg image file at any time ("Save as..." in View menu, or Ctrl-S).  You get an exact copy of the displayed image, but with the resolution increased 2.5 times (5.25 saved pixels for each screen pixel).  This typically gives a 3 to 8 megapixel image, suitable for printing.  Remember that you can control both the size and shape of the screen image by resizing the window.
+You can save the current view to a jpeg image file at any time ("Save as..." in View menu, or Ctrl-S).  This is an exact copy of the displayed image, with the resolution increased 2.5 times (5.25 saved pixels for each screen pixel) if possible, typically a 3 to 8 megapixel image suitable for printing.  But you will only get a screen-size jpeg if your OpenGL does not support offscreen rendering buffers of arbitrary size.  
+
+Remember that you can control both the size and shape of the screen image by resizing the window.
 
 RELEASE INFORMATION
 
-The version number shown in the "about" dialog has the form: major.minor.rev.  Major.minor is the "release number", set somewhat arbitrarily by me; rev is the SVN revision of the source from which it was built.  The SVN rev increases at every source archive update, and does not reset when I change the release number.  
+The version number shown in the "about" dialog has the form: major.minor.rev.  Major.minor is the "release number", set somewhat arbitrarily by me; rev is the SVN revision of the source from which it was built.  The SVN rev increases at every source archive update, and does not reset when I change the release number.
+  
 Rev will have two revision numbers separated by a colon (:) if the program was built from a mixture of SVN revisions, and an "M" at the end if it was built from a locally modified copy of the archived code.  It may also be "???" if the program was built from an unknown source code revision.
 
 Some of the functions described here may not work in all versions of pvQt.  Please consult the Release Notes for further information.  And please check the project site (https://sourceforge.net/projects/pvqt/) to see if you have the latest version.  

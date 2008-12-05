@@ -1012,34 +1012,62 @@ void pvQtView::newFace( pvQtPic::PicFace face )
 }
 
 /* save current view to a file
-  Uses a QGLFrameBufferObject to render view at custom size
-  Default size = screen size
+  Default size is current viewport size.  
+  If a different size is requested, uses an offsscreen framebuffer 
+  to render the view if possible.  
+  Otherwise, renders to the back screen buffer and dumps that.
 */
 bool pvQtView::saveView( QString name, QSize size )
 {
+	bool done = false;
 	int W = size.width(), H = size.height();
-	if( W <= 0 || H <= 0 ){
-		W = Width;
-		H = Height;
+	if( ( W != Width || H != Height ) 
+	 && QGLFramebufferObject::hasOpenGLFramebufferObjects() ){
+		makeCurrent();	
+	  // create private frame buffer
+		QGLFramebufferObject fbo( W, H );
+		bool ok = fbo.isValid();
+	  // try to render and save
+		if( ok && fbo.bind() ){
+		  // temp resize viewport
+			glViewport(0, 0, W, H);
+			portAR = (double)W / (double)H;
+		  // render
+			paintGL();
+			if( paintok ){
+				QImage img = fbo.toImage();
+				ok = img.save( name );
+			} else ok = false;
+			fbo.release();
+		  // restore screen viewport
+			resizeGL( Width, Height );
+		} 
+		done = ok;
 	}
-  // get OGL context, create private frame buffer
-	makeCurrent();	
-	QGLFramebufferObject fbo( W, H );
-	bool ok = fbo.isValid();
-  // try to render and save
-	if( ok && fbo.bind() ){
-	  // temp resize viewport
-		glViewport(0, 0, W, H);
-		portAR = (double)W / (double)H;
-	  // render
-		paintGL();
-		if( paintok ){
-			QImage img = fbo.toImage();
-			ok = img.save( name );
-		} else ok = false;
-		fbo.release();
-	  // restore screen viewport
-		resizeGL( Width, Height );
-	} else ok = false;
-	return ok;
+// fallback: use the screen buffer
+	if( !done ){
+		W = Width; H = Height;
+		makeCurrent();
+		GLenum buf = GL_BACK;	// fb to use
+		glDrawBuffer( buf );	// select it
+		paintGL();				// render
+	  // read the famebuffer into a QImage
+		glReadBuffer( buf );
+		QImage::Format image_format = QImage::Format_RGB32;
+		QImage img( W, H, image_format );
+		glPixelStorei(GL_PACK_ALIGNMENT, 4);  // QImage row alignment
+		glReadPixels( 0, 0, W, H,
+					  GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV,
+					  img.bits() );
+	  // reverse Y axis and save
+		done = img.mirrored().save( name );
+	}
+	return done;
 }
+
+bool pvQtView::saveView( QString name, double scale ){
+	if( scale < 1 ) scale = 1;
+	else if( scale > 5 ) scale = 5;
+	return saveView( name, QSize( Width, Height ) * scale );
+}
+
