@@ -31,11 +31,11 @@ When you start pvQt without a command line, for example by double clicking an ic
 
 All the viewing commands have keyboard shortcuts, shown in the View menu.  You can also operate viewing controls with the mouse.  Help menu item "mouse modes..." shows how.
 
-The Yaw, Pitch and Roll controls rotate the viewing frame with respect to the panosphere, as in a flight simulator.  Yaw and Pitch let you look in different directions; Roll adjusts which way is up.  You can control Yaw and Pitch with the mouse by holding the left button and moving the pointer in the direction you wish to look.  For a real flight simulator experience, hold Shift along with the left mouse button to "fly" using Roll and Pitch.
+The Yaw, Pitch and Roll controls rotate the viewing frame with respect to the panosphere, as in a flight simulator.  Yaw and Pitch let you look in different directions; Roll adjusts which way is up.  You can control Yaw and Pitch with the mouse by holding the left button and moving the pointer in the direction you wish to look.  For a real flight simulator experience, you can hold Shift along with the left mouse button and "fly" using Roll and Pitch.
 
-Zoom controls magnification by changing the vertical field of view on the panosphere.  When you resize the window, the displayed image grows or shrinks to maintain the selected vertical field.  The mouse wheel (if present) adjusts zoom in coarse steps.  For finer control, hold the both buttons and move the mouse vertically.  Holding the right button couples horizontal movement to eye distance (see below) and vertical movement to zoom -- a convenient combnation since these two controls interact strongly.
+Zoom controls magnification by changing the vertical field of view on the panosphere.  When you resize the window, the displayed image grows or shrinks to maintain the selected vertical field.  The mouse wheel (if present) adjusts zoom in coarse steps.  For finer control, hold the both buttons and move the mouse vertically.  Holding the right button couples horizontal movement to perspective and vertical movement to zoom -- a convenient combnation because these two controls interact strongly.
   
-"Eye in" and "Eye out" change perspective by moving the point of view toward or away from the center of the panosphere.  Eye position is reported in units of the sphere's radius.  When Eye is zero, the viewing perspective is rectilinear, like a normal camera lens.  As eye distance increases, the perspective becomes more fisheye-like, and you can zoom farther out to see wider views.  But you can zoom in to the same level of image detail at any perspective setting.  Technically, moving the eye point this way generates a family of conformal tangent projections, ranging from rectilinear at Eye = 0 to stereographic at Eye = 1, that are very useful for presenting wide photographic views.
+"Eye in" and "Eye out" change perspective by moving the point of view toward or away from the center of the panosphere.  Eye position is reported in units of the sphere's radius.  When Eye is zero, the viewing perspective is rectilinear, like a normal camera lens.  As eye distance increases, the perspective becomes more fisheye-like, and you can zoom farther out to see wider views.  But you can zoom in to the same level of image detail at any perspective setting.  Technically, moving the eye point this way generates a family of conformal tangent projections, ranging from rectilinear at Eye = 0 to stereographic at Eye = 1, that are very useful for presenting photographic views.
 
 The remaining viewing controls change how the input image is painted onto the sphere, as discussed below.
 
@@ -47,13 +47,13 @@ The Turn controls ("L" and "R" keys) rotate the image on the panosphere in incre
 
 For convenience in viewing series of similar pictures, pvQt remembers the last selected Turn angle and FOV for each type of picture (but version 0.5 does not save them when you exit the program).
 
-The Preset menu also has controls for switching between the various non-cubic input projections.  More on this below.
+The Preset menu also has controls for switching between the various non-cubic input projections.  More on that below.
 
 LOADING PICTURES 
 
 To show a picture, pvQt needs to know the format (projection), angular size (field of view, FOV), image dimensions and where to find the image data.  All supported sources supply image dimensions and data, and some also define projection and angular size; but in many cases you must specify the projection and field of view yourself.
 
-You do this in a dialog that shows the file name, projection, dimensions in pixels, and horizontal and vertical fields of view in degrees.  When appropriate it will let you select a projection, and in all cases you can enter a field of view.  The two FOVs are related via the dimensions and projection; whenever you change one the other will change to match.  When you change the projection, the FOV for the longer axis stays the same and the other is adjusted.  The default FOVs are the largest ones consistent with the projection and image dimensions.  
+You do this in a dialog that shows the file name, projection, dimensions in pixels, and horizontal and vertical fields of view in degrees.  When appropriate it will let you select a projection, and in all cases you can enter a field of view.  The two FOVs are related via the dimensions and projection; whenever you change one the other will change to match.  When you select a different projection, the FOV for the longer axis stays the same and the other is adjusted.  The default FOVs are the largest ones consistent with the projection and image dimensions.  
 
 When a picture is loaded, the pvQt window's title bar shows the file name and displayed size in megapixels, which will be smaller than the source image size if there is not enough OpenGL texture memory to hold the full image.  Note that this is not the size of the view on screen, but of the texture image used to generate it.  In case loading or display fails, the title bar will show an error message instead.
 
@@ -61,7 +61,7 @@ You can load images by naming them on the command line, by selecting them via th
 
 	via Command Line
 
-When you start pvQt from the command line, you can optionally specify a picture to be displayed.  If you give only a partial specification, pvQt will ask you for the rest of the information, as described below.
+When you start pvQt from the command line, you can optionally specify a picture to be displayed.  If you give only a partial specification, pvQt will ask you for the rest of the information.
 
 The first command line argument can be a 4 letter picture type name, one of:
 	proj	PanoTools script or project
@@ -79,15 +79,13 @@ The first 3 names are rarely needed, because project and qtvr files are normally
 
 For the other picture types, which imply specific input projections, you need to specify the angular size; so the next argument can be a field of view, in degrees, as a floating point number.  This is always the fov of the longer image axis, if the image is not square.  
 
-The last thing on the command line is a file name, or up to six file names for a cubic panorama.  pvQt can read tiff, jpeg and png image files, identified by the conventional file name extensions.  
+The last thing on the command line can be a file name, or up to six file names for a cubic panorama.  pvQt can read tiff, jpeg and png image files, identified by the conventional file name extensions.  
 
-If you give only a file name or names on the command line, and it is not the name of a QTVR (.mov) file or of a PanoTools script (or compatible stitcher project) then pvQt will try to guess the format.  It assumes that two or more square images are cube faces (to load a single cube face you must give the type name) and that an image file whose width is exactly twice its height is a 360 degree equirectangular panorama.  Otherwise it will ask you to specify the projection and FOV.
-
+If you give only an image file name or names on the command line, pvQt will assume that two or more square images are cube faces (to load a single cube face you must give the type name) and that an image file whose width is exactly twice its height is a 360 degree equirectangular panorama.  Otherwise it will ask you to specify the projection and FOV.
 Note that on Windows and Mac, dragging files onto the pvQt program icon generates a files-only command line.
 
-If you give a type but no file name, pvQt will pop a file selector dialog so you can choose the file(s) to be displayed; if necessary it will then ask you to specify the field of view.
+If the command line is only a picture type name (other than proj or qtvr) pvQt displays  labelled empty frames (just a "front" frame for most picture types; or six cube faces).
 
-If the command line is empty, pvQt displays a wire frame model of the panosphere without asking for a picture specification.  If you give just a picture type name, pvQt displays an image consisting of labelled empty frames (just a "front" frame for most picture types; or six cube faces).
 
 	via Picture Menu
 
@@ -111,9 +109,9 @@ PROJECTIONS
 
 A photographic image is a projection of part of the world, as seen from a single point, onto a flat plane, according to some mathematical rule.  That is also true of most images created by photo processing software, which provides a much bigger choice of projection rules than camera lenses can.  For mathematical purposes, the original view of the world is equivalent to its linear projection onto a spherical surface, so the various photographic projections are considered as projections of the sphere onto the image plane.  Most of them were known to map makers and astronomers long before the invention of photography.  
 
-The main job of a panorama viewer is to undo the imaging projection, in effect recreating the spherical image, and to let you see that from the center of the sphere, so that you see the orignal view of the world as the camera saw it. 
+The main job of a panorama viewer is to undo the imaging projection, in effect recreating the spherical image, and to let you look at that from the center of the sphere, so that you see the orignal view of the world as the camera saw it. 
 
-pvQt literally projects input images onto a sphere, using the inverse of one of the popular imaging projections.  If that projection really was used to make the image, then pvQt can show you a "correct" world image, as well as various perspective transformations of that.   If a different input projection were used, then none of the views displayed by pvQt would be "correct" -- but some of them might be interesting or useful images anyhow.  
+pvQt literally projects input images onto a sphere, using the inverse of one of the popular imaging projections.  If that projection really was used to make the image, then pvQt can show you a "correct" world image, as well as various perspective transformations of it.   If a different input projection were used, then none of the views displayed by pvQt would be "correct" -- but some of them might be interesting or useful images anyhow.  
 
 Each image is assigned an input projection when it is loaded; however all but the cubic projection are actually interchangeable -- pvQt will happily display the same image according to any of them, and you can cycle through them without reloading the image (controls in the Preset menu; Shift-double-click also cycles through the projections).	The "End" key restores the projection assigned when the image was loaded.  
 
