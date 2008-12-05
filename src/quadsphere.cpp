@@ -334,13 +334,13 @@ quadsphere::quadsphere( int divs ){
 	double amaxrect = DEG2RAD(0.5 * fovs.width());
 	double cminrect = cos( amaxrect );
 	double tmaxrect = tan( amaxrect );
-	double amaxcyl = DEG2RAD( 80 );
+	double amaxcyl = DEG2RAD( 85 );
 	double amaxsph = DEG2RAD( 180 );
 	double amaxfish = DEG2RAD( 180 );
-	double amaxmerc = DEG2RAD( 80 );
+	double amaxmerc = DEG2RAD( 85 );
 	double cminmerc = cos( amaxmerc );
 	double tmaxmerc = log( tan(amaxmerc) + 1.0 / cminmerc );
-	double amaxster = DEG2RAD( 155 );
+	double amaxster = DEG2RAD( 160 );
 	double tmaxster = tan( 0.5 * amaxster );
 
 	ps = verts;
@@ -428,10 +428,11 @@ quadsphere::quadsphere( int divs ){
 
 	  // mercator
 		pm[0] = pe[0];
+		s = ya - 0.5 * Pi;
 		if( fabs(cya) < cminmerc ) pm[1] = INVAL( s );
 		else {
-			s = log((sya + 1) / cya);
-			pm[1] = float(CLIP( s / tmaxmerc ));
+			s = 0.5 * log((sya + 1) /(1 - sya ));
+			pm[1] = float(CLIP( 0.5 - s / tmaxmerc ));
 		}
 
 	  // stereographic
@@ -494,7 +495,9 @@ quadsphere::quadsphere( int divs ){
 		setEdgeTCs( rects, ic, id );
 		copyTCs( fishs, ic, id );
 		setEdgeTCs( cylis, ic, id );
-		setEdgeTCs( equis, ic, id );	
+		setEdgeTCs( equis, ic, id );
+		copyTCs( sters, ic, id );
+		setEdgeTCs( mercs, ic, id );
 		ic += 2 * dp1; 
 		id += 2;
 	}
@@ -513,6 +516,8 @@ quadsphere::quadsphere( int divs ){
 		copyTCs( fishs, ic, id );
 		setEdgeTCs( cylis, ic, id );
 		setEdgeTCs( equis, ic, id );	
+		copyTCs( sters, ic, id );
+		setEdgeTCs( mercs, ic, id );
 		ic += 2 * dp1; 
 		id += 2;	
 	}
@@ -531,6 +536,8 @@ quadsphere::quadsphere( int divs ){
 		copyTCs( fishs, ic, id );
 		setEdgeTCs( cylis, ic, id );
 		setEdgeTCs( equis, ic, id );	
+		copyTCs( sters, ic, id );
+		setEdgeTCs( mercs, ic, id );
 		ic += 2 * dp1; 
 		id += 2;	
 	}
@@ -608,6 +615,10 @@ quadsphere::quadsphere( int divs ){
 	makeCTCtop(ps, pd, pq );
 	ps = equis; pd = ps + jf;
 	makeCTCtop(ps, pd, pq );
+	ps = sters; pd = ps + jf;
+	makeCTCtop(ps, pd, pq );
+	ps = mercs; pd = ps + jf;
+	makeCTCtop(ps, pd, pq );
   // change indices
 	pq[-2] = idc; pq[1] = idc + 1;
 #endif
@@ -630,6 +641,10 @@ quadsphere::quadsphere( int divs ){
 	ps = cylis; pd = ps + jf;
 	makeCTCbot(ps, pd, pq );
 	ps = equis; pd = ps + jf;
+	makeCTCbot(ps, pd, pq );
+	ps = sters; pd = ps + jf;
+	makeCTCbot(ps, pd, pq );
+	ps = mercs; pd = ps + jf;
 	makeCTCbot(ps, pd, pq );
   // change indices
 	pq[-1] = idc + 2; pq[0] = idc + 3;
