@@ -583,7 +583,7 @@ void GLwindow::save_as() {
 	QStringList files;
 	if( fd.exec()){
 		files = fd.selectedFiles();
-		if( !glview->saveView( files[0], scrn * fac )){
+		if( !glview->saveView( files[0], fac )){
 			qCritical("saveView() failed");
 		}
 	}

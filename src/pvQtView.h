@@ -84,10 +84,15 @@ public:
    /* Save the current view to a file
    name is full pathname, with extension .jpg or .tif
    Default size is the current viewport size.  Custom sizes
-   need not be the same shape as the viewport.
+   need not be the same shape as the viewport (but may
+   not be supported on a given system -- if not, viewport
+   size is used)
    Returns true if image was rendered and written OK.
    */
 	 bool saveView( QString name, QSize size = QSize());
+  // overload to save possibly scaled-up copy of viewport
+  // scale is clipped to [1.0:5.0]
+	 bool saveView( QString name, double scale = 1.0 );
 
    /* get the current screen viewport size in pixels
    */

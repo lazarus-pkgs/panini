@@ -528,5 +528,30 @@ ok	-- 2:1 images shd default to eqr.
 	
 	Tonite, commit 1st release 0.5 candidate
 	
+05 Dec 2008
+
+	Save view fails on the T60 laptop (but what can one epext?).
+	Chances are it either does not support the framebuffer
+	object extension, or dislikes the non-pwr2 size I request.
+	So I guess there will have to be a fallback to screen dump.
+	
+	Looking into the FBO a bit more (Apple's docs as usual
+	helpful) it seems that a bound texture (which can impose
+	the pwr-of-2 constraint) is not required; OGL also allows
+	pixel buffers (called renderbuffers) of any size as the
+	storage target for an FBO.  But Qt's wrapper class only
+	caters for the texture kind -- understandable as they are
+	easier to use for OGL image processing.
+	
+
+	Did an easy fix: if can't render at custom size, then render 
+	at viewport size in back buffer.  Reading frambuffer into
+	a QImage is essentially the inverse of reading a QImage
+	into a 2D texture. NOTE my code for this takes advantage of
+	the OGL "reversed packed" pixel formats.  Will it still
+	work on a big-endian machine?
+
+	
+	
 
 	
