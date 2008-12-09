@@ -20,22 +20,22 @@
   one of which is the associated pvQtPic::PicType code.
 
   The first 7 names are the projection names used  by quadsphere.
-
-*/
+  These max FOVs set the ranges of the quadsphere mappings.
+ */
 #include "pvQtPic.h"
 
 pictureTypes::pictypnumdesc
 pictureTypes::pictypn[NpictureTypes] = {
-	{ "rect", pvQtPic::rec, 1, QString(), 5,5,140,140 },
-	{ "fish", pvQtPic::eqs, 1, QString(), 50,50,360,360 },
-	{ "sphr", pvQtPic::eqa, 1, QString(), 50,50,360,360 },
-	{ "cyli", pvQtPic::cyl, 1, QString(), 50,25,360,140 },
-	{ "equi", pvQtPic::eqr, 1, QString(), 50, 25,360,180 }, 
-	{ "ster", pvQtPic::stg, 1, QString(), 50, 50, 310, 310 },
-	{ "merc", pvQtPic::mrc, 1, QString(), 50, 25, 360, 140 },
-	{ "cube", pvQtPic::cub, 6, QString(), 90,90,90,90 },
-	{ "proj", pvQtPic::nil, 1, QString(), 0,0,0,0 },
-	{ "qtvr", pvQtPic::nil, 1, QString(), 0,0,0,0 }
+	{ "rect", pvQtPic::rec, 1, QString(), 10,10, 140,140, 165,165 },
+	{ "fish", pvQtPic::eqs, 1, QString(), 10,10, 360,360, 360,360 },
+	{ "sphr", pvQtPic::eqa, 1, QString(), 10,10, 360,360, 360,360 },
+	{ "cyli", pvQtPic::cyl, 1, QString(), 10,10, 360,140, 360,165 },
+	{ "equi", pvQtPic::eqr, 1, QString(), 10,10, 360,180, 360,180 }, 
+	{ "ster", pvQtPic::stg, 1, QString(), 10,10, 270,270, 360,360 },
+	{ "merc", pvQtPic::mrc, 1, QString(), 10,10, 360,160, 360,175 },
+	{ "cube", pvQtPic::cub, 6, QString(), 90,90, 90,90, 90,90 },
+	{ "proj", pvQtPic::nil, 1, QString(), 0,0,0,0,0,0 },
+	{ "qtvr", pvQtPic::nil, 1, QString(), 0,0,0,0,0,0 }
  };
 
 // need c'tor as tr() does not work outside a QObject
@@ -137,6 +137,11 @@ QSizeF pictureTypes::minFov( int index ){
 QSizeF pictureTypes::maxFov( int index ){
 	if( index < 0 || index >= NpictureTypes ) return QSizeF();
 	return QSizeF( pictypn[index].maxW, pictypn[index].maxH );
+}
+
+QSizeF pictureTypes::absMaxFov( int index ){
+	if( index < 0 || index >= NpictureTypes ) return QSizeF();
+	return QSizeF( pictypn[index].AmaxW, pictypn[index].AmaxH );
 }
 
 

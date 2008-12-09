@@ -1,6 +1,6 @@
 <ui version="4.0" >
- <class>MouseModes</class>
- <widget class="QDialog" name="MouseModes" >
+ <class>ShowText</class>
+ <widget class="QDialog" name="ShowText" >
   <property name="geometry" >
    <rect>
     <x>0</x>
@@ -16,9 +16,9 @@
    </font>
   </property>
   <property name="windowTitle" >
-   <string>pvQt  Mouse Modes Help</string>
+   <string/>
   </property>
-  <widget class="QPlainTextEdit" native="1" name="plainTextEdit" >
+  <widget class="QPlainTextEdit" name="plainTextEdit" >
    <property name="geometry" >
     <rect>
      <x>10</x>
@@ -31,23 +31,16 @@
     <font>
      <family>Sans Serif</family>
      <pointsize>10</pointsize>
-  </font>
+    </font>
    </property>
-   <property name="undoRedoEnabled" stdset="0" >
+   <property name="undoRedoEnabled" >
     <bool>false</bool>
    </property>
-   <property name="readOnly" stdset="0" >
+   <property name="readOnly" >
     <bool>true</bool>
    </property>
   </widget>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>QPlainTextEdit</class>
-   <extends>QWidget</extends>
-   <header>qplaintextedit.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

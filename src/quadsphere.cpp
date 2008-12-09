@@ -328,19 +328,31 @@ quadsphere::quadsphere( int divs ){
 	and fish fov limits are set abitrarily here, because
 	I want to leave the image limits at 360
   */
-// fov limits
-	int i = pictypes.picTypeIndex( pvQtPic::rec );
-	QSizeF fovs = pictypes.maxFov( i );
+// set angular limts from fovs in pictureTypes
+	QSizeF fovs;
+	fovs = pictypes.maxFov( pictypes.picTypeIndex( "rect" ) );
 	double amaxrect = DEG2RAD(0.5 * fovs.width());
 	double cminrect = cos( amaxrect );
 	double tmaxrect = tan( amaxrect );
-	double amaxcyl = DEG2RAD( 85 );
-	double amaxsph = DEG2RAD( 180 );
-	double amaxfish = DEG2RAD( 180 );
-	double amaxmerc = DEG2RAD( 85 );
-	double cminmerc = cos( amaxmerc );
-	double tmaxmerc = log( tan(amaxmerc) + 1.0 / cminmerc );
-	double amaxster = DEG2RAD( 160 );
+
+	fovs = pictypes.maxFov( pictypes.picTypeIndex( "cyli" ) );
+	double amaxcyli = DEG2RAD( 0.5 * fovs.height() );
+	double tmaxcyli = tan( amaxcyli );
+
+	fovs = pictypes.maxFov( pictypes.picTypeIndex( "sphr" ) );
+	double amaxsphr = DEG2RAD( 0.5 * fovs.width() );
+
+
+	fovs = pictypes.maxFov( pictypes.picTypeIndex( "fish" ) );
+	double amaxfish = DEG2RAD( 0.5 * fovs.width() );
+
+	fovs = pictypes.maxFov( pictypes.picTypeIndex( "merc" ) );
+	double amaxmerc = DEG2RAD( 0.5 * fovs.height() );
+	double smaxmerc = sin( amaxmerc );
+	double tmaxmerc = log((smaxmerc + 1)/( 1 - smaxmerc));
+
+	fovs = pictypes.maxFov( pictypes.picTypeIndex( "ster" ) );
+	double amaxster = DEG2RAD( 0.5 * fovs.width() );
 	double tmaxster = tan( 0.5 * amaxster );
 
 	ps = verts;
@@ -408,16 +420,16 @@ quadsphere::quadsphere( int divs ){
 
 	  // cylindrical
 		s = ya - 0.5 * Pi;
-		if( fabs(s) > amaxcyl ){
+		if( fabs(s) > amaxcyli ){
 			pc[0] = INVAL( xa );
 			pc[1] = INVAL( s );
 		} else {
 			pc[0] = pe[0];
-			pc[1] = float(CLIP(0.5 - 0.5 * (sya/cya) / tmaxrect));
+			pc[1] = float(CLIP(0.5 - 0.5 * (sya/cya) / tmaxcyli));
 		}
 
 	  // equiangular sphere
-		if( za > amaxsph ){
+		if( za > amaxsphr ){
 			pa[0] = INVAL( xa );
 			pa[1] = INVAL( ya - 0.5 * Pi );
 		} else {
@@ -429,7 +441,7 @@ quadsphere::quadsphere( int divs ){
 	  // mercator
 		pm[0] = pe[0];
 		s = ya - 0.5 * Pi;
-		if( fabs(cya) < cminmerc ) pm[1] = INVAL( s );
+		if( fabs(sya) > smaxmerc ) pm[1] = INVAL( s );
 		else {
 			s = 0.5 * log((sya + 1) /(1 - sya ));
 			pm[1] = float(CLIP( 0.5 - s / tmaxmerc ));

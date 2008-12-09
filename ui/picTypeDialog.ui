@@ -12,7 +12,7 @@
   <property name="windowTitle" >
    <string>pvQt - Picture Type and FOV</string>
   </property>
-  <widget class="QWidget" name="" >
+  <widget class="QWidget" name="layoutWidget" >
    <property name="geometry" >
     <rect>
      <x>10</x>
@@ -63,7 +63,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="" >
+  <widget class="QWidget" name="layoutWidget" >
    <property name="geometry" >
     <rect>
      <x>10</x>
@@ -76,7 +76,7 @@
     <item>
      <widget class="QLabel" name="label_8" >
       <property name="text" >
-       <string>Width, Height, pixels</string>
+       <string>Width, Height, pixels  </string>
       </property>
      </widget>
     </item>
@@ -181,9 +181,9 @@
   <widget class="QDialogButtonBox" name="buttonBox" >
    <property name="geometry" >
     <rect>
-     <x>10</x>
+     <x>174</x>
      <y>170</y>
-     <width>265</width>
+     <width>141</width>
      <height>25</height>
     </rect>
    </property>
@@ -192,6 +192,19 @@
    </property>
    <property name="standardButtons" >
     <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="nonSqOK" >
+   <property name="geometry" >
+    <rect>
+     <x>30</x>
+     <y>170</y>
+     <width>111</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>unlock FOVs</string>
    </property>
   </widget>
  </widget>

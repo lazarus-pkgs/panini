@@ -13,6 +13,8 @@ picTypeDialog::picTypeDialog( QWidget * parent)
 	
 	connect( typesBox, SIGNAL(currentIndexChanged( int )),
 			this, SIGNAL( picTypeSelected( int )) );
+	connect( nonSqOK, SIGNAL(toggled( bool )),
+			this, SLOT( freeToggled( bool )) );
 
 	connect ( hfovBox, SIGNAL(valueChanged(double)),
 			  this, SIGNAL(hFovChanged(double)));
@@ -25,8 +27,10 @@ void picTypeDialog::setNameLabel( QString name ){
 }
 
 void picTypeDialog::setPicTypes( QStringList types ){
+	typesBox->blockSignals( true );
 	typesBox->clear();
 	typesBox->addItems( types );
+	typesBox->blockSignals( false );
 }
 
 void picTypeDialog::setDims( QSize wh ){
@@ -55,6 +59,15 @@ void picTypeDialog::setFOV( QSizeF fovs ){
 	vfovBox->setValue( thefov.height() );
 }
 
+void picTypeDialog::setFreeFovs( bool val ){
+	nonSqOK->setChecked( val );
+}
+
+bool picTypeDialog::freeFovs(){
+	return nonSqOK->isChecked();
+}
+
+
 QSizeF picTypeDialog::getFOV(){
 	return thefov;
 }
@@ -66,6 +79,10 @@ void picTypeDialog::selectPicType( int t, bool lock ){
 
 int picTypeDialog::chosenType(){
 	return typesBox->currentIndex();
+}
+
+void picTypeDialog::freeToggled( bool ckd ){
+	emit picTypeSelected( typesBox->currentIndex() );
 }
 
 
