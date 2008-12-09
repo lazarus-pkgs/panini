@@ -116,6 +116,7 @@ A photographic image is a projection of part of the world, as seen from a single
 The main job of a panorama viewer is to undo the imaging projection, in effect recreating the spherical image, and to let you look at that from the center of the sphere, so that you see the orignal view of the world as the camera saw it. 
 
 pvQt literally projects input images onto a sphere, using the inverse of one of the popular imaging projections.  If that projection really was used to make the image, then pvQt can show you a "correct" world image, as well as various perspective transformations of it.   If a different input projection were used, then none of the views displayed by pvQt would be "correct" -- but some of them might be interesting or useful images anyhow.  
+To correctly view images made with the "transverse" forms of the cylindrical or mercator projection, simply turn them 90 degrees with respect to the projection axes with the "L" or "R" key.
 
 Each image is assigned an input projection when it is loaded; however all but the cubic projection are actually interchangeable -- pvQt will happily display the same image according to any of them, and you can cycle through them without reloading the image (controls in the Preset menu; Shift-double-click also cycles through the projections).	The "End" key restores the projection assigned when the image was loaded.  
 
@@ -123,19 +124,19 @@ The current input projection is shown on the status bar.  Please remember that t
 
 FIELD OF VIEW
 
-The angular size, or field of view of an image determines how much of the panosphere it covers.  Each projection has a maximum feasible FOV, which is the default, however you can specify smaller FOVs for any non-cubic picture. 
+The angular size, or field of view of an image determines how much of the panosphere it covers.  Each projection has a maximum displayable FOV, which is the default, however you can specify a different FOV for any non-cubic picture.  
 
-An image is assiged a horizontal and a vertical field of view when loaded.  They are locked to the image dimensions according to the assigned projection, so you can't vary them separately.  But for non-cubic pictures, the apparent fields of view can be adjusted after the image is loaded, using the hFov and vFov controls in View menu (also Shift-right-mouse).  These controls change the horizontal and vertical FOVs independently, within a range of 10% to 100% of the assigned FOV (or its equivalent in the current projection).  The "End" key restores the assigned FOVs and projection.
+An image is assigned a horizontal and a vertical field of view when loaded.  Normally, these are limited to the displayable range and locked to the image dimensions according to the assigned projection, so that setting either of them automatically adjusts the other.  On the rare occasion when you have an image with a larger-than-displayble FOV, or non-square pixels, you can check the "unlock FOVs" box and enter arbitrary horizontal and vertical FOVs, up to the theoretical maximum, either 360x180 or 360x360 depending on the format.  The aspect ratio of the displayed picture will then depend on the FOVs you entered (not linearly, but through the projection functions for the format).  If you specify a larger-than-displayable FOV, the image will also be cropped to fit the picture.  
 
-Adjusting the FOVs not only changes the apparent size of the image (which could be undone with the zoom control) but also alters the projection's "built-in" perspective.
+For non-cubic pictures, you can also adjust the apparent fields of view after the image is loaded, using the hFov and vFov controls in the View menu (also Shift-right-mouse).  These controls change the horizontal and vertical FOVs independently, within a range of 10% to 100% of the displayable FOV for the current projection.  The "End" key restores the assigned FOVs and projection.
 
-The current horizontal and vertical FOVs are shown in the status bar.  Note that these also change when you change the input projection, since each projection has different relationships of image dimension to angular size.
+Changing an FOV changes not only the apparent width or height of the picture but also the intrinsic perspective, because the image displayed through a different part of the projection function.
+
+The apparent horizontal and vertical FOVs, shown in the status bar, also change when you select a different input projection, since each projection has different relationships of image dimension to angular size.  However they are not always correct.
 
 SAVING VIEWS
 
-You can save the current view to a jpeg image file at any time ("Save as..." in View menu, or Ctrl-S).  This is an exact copy of the displayed image, with the resolution increased 2.5 times (5.25 saved pixels for each screen pixel) if possible, typically a 3 to 8 megapixel image suitable for printing.  But you will only get a screen-size jpeg if your OpenGL does not support offscreen rendering buffers of arbitrary size.  
-
-Remember that you can control both the size and shape of the screen image by resizing the window.
+You can save the current view to a jpeg image file at any time ("Save as..." in View menu, or Ctrl-S).  This is an exact copy of the displayed view, with the resolution increased 2.5 times (5.25 saved pixels for each screen pixel) if possible, typically giving a 3 to 8 megapixel image suitable for printing.  If your OpenGL does not support offscreen rendering buffers of arbitrary size, the filed view will be at screen resolution instead.  You can control the size and shape of the saved image by resizing the screen window.
 
 RELEASE INFORMATION
 

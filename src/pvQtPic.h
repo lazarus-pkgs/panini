@@ -66,7 +66,7 @@
   after the picture is displayed, to add, replace or delete 
   face images.   To delete a face, pass a null QImage *.
   To add or replace one, call any of the overloads.  The
-  new images will be shown at the exisiting face dimensions. 
+  new images will be shown at the existing face dimensions. 
  */
 
 #ifndef __PVQTPIC_H__
@@ -146,7 +146,8 @@ enum{
  QSizeF picScale2Fov( PicType t, QSizeF fovs, QSizeF scls );
 // new 2D fov from a change of pictype
  QSizeF changeFovType( PicType t, QSizeF fovs, PicType twas );
-
+// limit fovs to max for type, preserving aspect ratio
+ QSizeF legalFov( PicType t, QSizeF fovs );
 /* Functions that return displayable images or info about them
 */
  PicType Type();		// nil => cannot display
@@ -174,9 +175,15 @@ enum{
  QColor		getFill( PicFace face = front );
  
 // normally called only from pvQtView:
+// set final texture size and image pad/crop
+ bool fitFaceToImage( QSize maxdims, bool pwr2 = false );
+// get a displayable image
  QImage * FaceImage( PicFace face = front );  // get face image
-// a face image filled with the border color
- QImage * FaceEmpty( PicFace face = front );
+// texcoord scale factors to give correct display FOV
+ QSizeF  getTexScale();
+// Apparent FOV for arbitrary projection and texcoord scale
+ QSizeF  texScale2Fov( QSizeF scl, PicType t );
+ 
 
 /* programmed setup fns return true: success, false: failure.
   
@@ -189,21 +196,13 @@ enum{
   
   Source images must be individually assigned to specific faces, 
   legal for the type. 
-  
+
+  call setType before setImageFov before setFaceImage
 */
 
-// to be called only from pvQtView, to set displayed size...
- bool setFaceSize( QSize dims );	// arbitrary dimensions
- bool fitFaceToImage( QSize maxdims, bool pwr2 = false );
-
-// texcoord scale factors to give correct display FOV
- QSizeF  getTexScale();
-// Apparent FOV for arbitrary projection and texcoord scale
- QSizeF  texScale2Fov( QSizeF scl, PicType t );
- 
 // to be called only from app:
  bool setType( PicType pt ); 		// clears, sets all defaults
- bool setImageFOV( QSizeF angles );	// before setFaceImage, if needed
+ bool setImageFOV( QSizeF angles );	
  bool setFaceImage( PicFace face, QImage * img );
  bool setFaceImage( PicFace face, int width, int height, void * addr,
  				int bitsPerColor, int colorsPerPixel, 
@@ -223,6 +222,7 @@ enum{
 
 
 private:
+	bool setFaceSize( QSize dims );
 	pictureTypes * picTypes;	// for max fovs
 	PicType type;
 	int ipt;	// pictureTypes index of type
@@ -230,11 +230,17 @@ private:
 	int numimgs;	// no. of faces with source images
   // display image and face properties
   	QImage::Format faceformat;
-	QSize		imagedims;	// source image
-	QSizeF		imagefovs;	// degrees
-	QSize		picdims;	// image as displayed
-	QSize		facedims;	// as displayed
-	QSizeF		facefovs;	// degrees
+    // dimensions and assigned FOVs of input image
+	QSize		imagedims;
+	QSizeF		imagefovs;
+	// factors to crop to max displayable fovs
+	double rcropx, rcropy;
+    //dimensions of displayed image (scaled to face;
+	//same Fovs as input image)
+	QSize		picdims;
+	// dimensions and FOVs of final texture image
+	QSize		facedims;	// set by view driver 
+	QSizeF		facefovs;	// assigned here
 	QSizeF		maxfovs, minfovs;	// face limits
 	bool 		lockfovs;	// true => fixed fov & aspect ratio
   // arrays indexed by face id, 0:maxfaces-1
@@ -311,6 +317,7 @@ public:
 	QString picTypeDescr( int index );
 	QSizeF minFov( int index );
 	QSizeF maxFov( int index );
+	QSizeF absMaxFov( int index );
   // all descriptors as a list of strings
 	QStringList picTypeDescrs();
 
@@ -321,7 +328,9 @@ private:
 		pvQtPic::PicType pictype;
 		const int nfi; 					// max file count
 		QString desc; 
-		double minW, minH, maxW, maxH;	// degrees
+		double minW, minH,		// smallest accepted
+			   maxW, maxH,		// largest displayable
+			   AmaxW, AmaxH;	// largest accepted
 	} pictypnumdesc;
 
   static pictypnumdesc pictypn[NpictureTypes]; 

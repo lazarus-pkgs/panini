@@ -48,15 +48,19 @@ public:
 	void setMinFOV( QSizeF fovs );
 	void setMaxFOV( QSizeF fovs );
 	void setFOV( QSizeF fovs );
+	void setFreeFovs( bool val );
 	
 	int chosenType();
 	QSizeF getFOV();
+	bool freeFovs();	// state of "unlock" checkbox
 
 signals:
-	void picTypeSelected( int t );
+	void picTypeSelected( int t ); // also free toggled
 	void hFovChanged( double h );
 	void vFovChanged( double v );
-
+	
+private slots:
+	void freeToggled( bool ckd );
 private:
 	QSize	dims;
 	QSizeF  minfov, maxfov, thefov;

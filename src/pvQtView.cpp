@@ -147,7 +147,8 @@ bool pvQtView::OpenGLOK()
 		picok = false;
 		errmsg = tr("OpenGL insufficient");
 	} 
-
+////TEST////
+////TEST////
 	return OGLisOK;
 }
 
@@ -652,10 +653,6 @@ bool pvQtView::OGLok( const char * label ){
 
 	curr_pt = picType;
 	curr_ipt = ipicType;
-	if( curr_pt > 0 ){
-		curr_fovs = thePic->PictureFOV();
-		setTexMag( thePic->getTexScale() );
-	} else curr_fovs = QSizeF(0, 0);
 
 	makeCurrent();	// get OGL's attention
 	if(textgt){
@@ -695,6 +692,13 @@ bool pvQtView::OGLok( const char * label ){
 	} else {
 	/* no picture, show wireframe */
 	}
+
+	if( curr_pt != pvQtPic::nil ){
+		setTexMag( thePic->getTexScale() );
+	} else curr_fovs = QSizeF(0, 0);
+ // report the projection 
+	emit reportProj(QString( pictypes.picTypeName( curr_pt )));
+	emit reportFov( curr_fovs );
  }
 
 /* set working texture coordinate magnifications,

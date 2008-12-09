@@ -17,6 +17,16 @@
  *
 
  An invisible "glue" widget to encapsulate a pvQtView widget
+ Handles most user interaction other than mouse view control;
+ in particular selecting files and setting picture type and fov.
+
+ The policy on fovs is to accept whatever the user enters, even
+ if it exceeds the displayable limits or gives non-square pixels
+ (however the user has to check a box to enable the latter).
+ It is up to pvQtPic to fit the image into a displayable
+ face.
+
+
 
 */
 #include <QtCore>
@@ -30,7 +40,7 @@ GLwindow::GLwindow (QWidget * parent )
 	glview = new pvQtView(this);
 	pvpic = new pvQtPic( );
 	aboutbox = new pvQtAbout( parent );
-
+	ipt = -1;
 	for(int i = 0; i < NpictureTypes; i++ ){
 		lastTurn[i] = 0;
 		lastFOV[i] = pictypes.maxFov( i );
@@ -156,11 +166,10 @@ void GLwindow::dropEvent(QDropEvent *event)
 			} else { // add or replace one cube face
 				QPoint pnt = event->pos();
 				pvQtPic::PicFace pf = glview->pickFace( pnt );
-				pvpic->setImageFOV(QSizeF( 90, 90 ));
 				ok = pvpic->setFaceImage( pf, paths[0] );
 				if( ok ){
-					if( pvpic->NumImages() == 1 ) glview->showPic( pvpic );
-					else glview->newFace( pf );
+					glview->newFace( pf );
+					reportPic( ok, 1, paths );
 				}
 				else ok = loadPictureFiles( paths );
 			}
@@ -218,7 +227,7 @@ void GLwindow::newPicture( const char * type ){
 	files are handled by subroutines.
 */
 bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
-	QString errmsg("(no image file)");
+	errmsg = tr("(no image file)");
 	ipt = pictypes.picTypeIndex( tnm );
 	if( ipt < 0 ) return false;	// no such pic type
 	picType = pictypes.PicType( ipt );
@@ -253,8 +262,14 @@ bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 		glview->showPic( pvpic );
 		ok = glview->picOK( errmsg );	// get any OGL error
 		glview->turnAbs( lastTurn[ipt] );
+		reportPic( ok, c, fnm );
 	}
-  // put image name & size or error message in window title
+	return ok;
+}
+
+// put image name & size or error message in window title
+// c is the number of files just loaded
+void GLwindow::reportPic( bool ok, int c, QStringList fnm ) {
 	if( ok ){
 		QString msg = "  pvQt  ";
 		if( c > 0 ){
@@ -270,9 +285,8 @@ bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 		QString msg = "  pvQt  error: " + errmsg;
 		emit showTitle( msg );
 	}
-
-	return ok;
 }
+
 
 // Load a QTVR file
 bool GLwindow::QTVR_file( QString name ){
@@ -300,25 +314,24 @@ bool GLwindow::QTVR_file( QString name ){
 /* ask user for the picture type and/or angular size
  	of one or more image files. 
  	 
-	The choices for type don't include project or
-	qtvr, and the range of allowed fovs depends 
-	on currently selected type (implemented by slot 
-	picTypeChanged ).
-	
-	Note the dialog sets the larger of the 2 axial fovs. 
-	The other fov is computed from the image dimensions
-	and picture type.
-	
 	If ptype points to a valid type name, then that
 	type is locked in the selector and only the FOV
 	can be changed.
-   
+
+	The range of legal fovs depends on currently selected 
+	type, image dimensions, and the "unlock aspect ratio"
+	checkbox (implemented by xxxChanged slots below).
+
    returns
-	a type name and a legal angular size,
-	or a null pointer with size = 0,0
+	a type name, with a legal angular size in picFov,
+	or a null pointer with picFov = (0,0)
+
+	initial type and fov same as last image loaded, if
+	valid.
 */
 const char * GLwindow::askPicType(  QStringList files, 
 									const char * ptype ){
+	picFov = QSizeF(0,0);
 	int nf = files.count();
 	if( nf < 1 ) return 0;
 // fail if not a readable image file
@@ -330,6 +343,8 @@ const char * GLwindow::askPicType(  QStringList files,
 // get and show image size
 	picDim = ir.size();
 	ptd.setDims( picDim );
+// default lock aspect ratio
+	ptd.setFreeFovs( false );
 // show file name
 	if( nf == 1 ) ptd.setNameLabel( files[0] );
 	else ptd.setNameLabel( files[0] + ",..." );
@@ -340,18 +355,22 @@ const char * GLwindow::askPicType(  QStringList files,
 	desc.removeLast();
   // post the rest to the type selector box
 	ptd.setPicTypes( desc );
-// lock type selection if ptype is valid
+  // lock type selection if ptype is valid
+	if( ipt < 0 ) ipt = 0;
   	if( ptype ){
   		ipt = pictypes.picTypeIndex( ptype );
   		if( ipt < 0 ) return 0;
   		ptd.selectPicType( ipt, true );
 	} else {
-		ipt = 0;
-		ptd.selectPicType( 0, false );
+		ptd.selectPicType( ipt, false );
 	}
+// post initial selection 
 	picTypeChanged( ipt );
 // run the dialog
-	if( !ptd.exec() ) return 0;
+	if( !ptd.exec() ){
+		picFov = QSizeF(0,0);
+		return 0;
+	}
 // return chosen fov and type name
  	picFov = ptd.getFOV();
 	ipt = ptd.chosenType();
@@ -359,21 +378,31 @@ const char * GLwindow::askPicType(  QStringList files,
 }
 /* Slots: update pictype dialog on type or FOV change
   type change: post new fov and limits.  
-  fov change: rescale the other fov resp. type
+  fov change: rescale the other fov resp. type,
+  unless "unlock aspect ratio" is checked.
+
+  If user checks "freeFovs" we accept any input fov up 
+  to 360 x 360.  Otherwise they are limited to the
+  displayable fovs published by pictypes, and the Fovs
+  are locked together via the dimensions.
+
+
 */
 void GLwindow::picTypeChanged( int t ){
 	ipt = t;
 	picType = pictypes.PicType( ipt );
-	picFov = pvpic->adjustFov( picType, lastFOV[ipt], picDim );
-	ptd.setMaxFOV( pictypes.maxFov( ipt ) );
+	if( !ptd.freeFovs() ){
+		picFov = pvpic->adjustFov( picType, lastFOV[ipt], picDim );
+	}
+	ptd.setMaxFOV( pictypes.absMaxFov( ipt ) ); 
 	ptd.setMinFOV( pictypes.minFov( ipt ) );
 	ptd.setFOV( picFov );
 }
 
 void GLwindow::hFovChanged( double h ){
 	if( fabs(h - picFov.width()) < 0.05 ) return;
-//	picFov = ptd.getFOV();
-	if( ipt < 0 ) picFov.setWidth( h );
+	picFov = ptd.getFOV();
+	if( ptd.freeFovs() || ipt < 0 ) picFov.setWidth( h );
 	else {
 		picFov = pvpic->changeFovAxis( picType, picFov, h, 0 );
 	}
@@ -382,8 +411,8 @@ void GLwindow::hFovChanged( double h ){
 
 void GLwindow::vFovChanged( double v ){
 	if( fabs(v - picFov.height()) < 0.05 ) return;
-//	picFov = ptd.getFOV();
-	if( ipt < 0 ) picFov.setHeight( v );
+	picFov = ptd.getFOV();
+	if( ptd.freeFovs() || ipt < 0 ) picFov.setHeight( v );
 	else {
 		picFov = pvpic->changeFovAxis( picType, picFov, v, 1 );
 	}

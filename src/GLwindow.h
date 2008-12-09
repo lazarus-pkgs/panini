@@ -64,7 +64,7 @@ private:
 	const char * askPicType( QStringList files, 
 							 const char * ptyp = 0 );
 	bool loadTypedFiles( const char * type, QStringList files );
-
+	void reportPic( bool ok, int c, QStringList files );
 	void dragEnterEvent(QDragEnterEvent * event);
 	void dropEvent(QDropEvent * event);
 
@@ -82,5 +82,6 @@ private:
 	QSize  picDim;	// current size
 	QSizeF lastFOV[NpictureTypes];
 	double lastTurn[NpictureTypes];
+	QString errmsg;
 
 };
