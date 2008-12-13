@@ -349,7 +349,7 @@ quadsphere::quadsphere( int divs ){
 	fovs = pictypes.maxFov( pictypes.picTypeIndex( "merc" ) );
 	double amaxmerc = DEG2RAD( 0.5 * fovs.height() );
 	double smaxmerc = sin( amaxmerc );
-	double tmaxmerc = log((smaxmerc + 1)/( 1 - smaxmerc));
+	double tmaxmerc = asinh(tan(amaxmerc));
 
 	fovs = pictypes.maxFov( pictypes.picTypeIndex( "ster" ) );
 	double amaxster = DEG2RAD( 0.5 * fovs.width() );
@@ -443,8 +443,8 @@ quadsphere::quadsphere( int divs ){
 		s = ya - 0.5 * Pi;
 		if( fabs(sya) > smaxmerc ) pm[1] = INVAL( s );
 		else {
-			s = 0.5 * log((sya + 1) /(1 - sya ));
-			pm[1] = float(CLIP( 0.5 - s / tmaxmerc ));
+			s = asinh(sya / cya);
+			pm[1] = float(CLIP( 0.5 -  s / tmaxmerc ));
 		}
 
 	  // stereographic

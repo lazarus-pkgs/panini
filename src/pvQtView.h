@@ -221,6 +221,7 @@ private slots:
 	QSizeF curr_fovs;	// current
 	pvQtPic::PicType curr_pt;
 	int		curr_ipt;	// index of curr_pt
+	QSizeF	stdTexScale;
 
 };
 

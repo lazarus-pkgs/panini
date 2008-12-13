@@ -550,8 +550,46 @@ ok	-- 2:1 images shd default to eqr.
 	into a 2D texture. NOTE my code for this takes advantage of
 	the OGL "reversed packed" pixel formats.  Will it still
 	work on a big-endian machine?
-
 	
+10 Dec 2008
+
+	Everything basically in place for release 0.5 but still some
+	glitches in fov control -- kill them tomorow.
+	
+	Big news: the Panini projection, that Bruno deduced from 
+	Panini's big SanPietro view.  Great for architecture.  It is 
+	a perspective view of a	cylindrical image surface from a point 
+	on the surface -- like stereographic with straight verticals.  
+	I can render it in pvQt by substituting a panocylinder for the 
+	panosphere.
+	
+	In preparation for that have added a panosurface type code to
+	pvQtPic and a menu toggle, status display and signal on main 
+	window.  It remains to generate the cylinder and its TCs, make
+	pvQtView use them, and deal with trimming input images that 
+	exceed the cylinder's display range.  Also need a generalized
+	vFOV control -- or some better way to describe zoom.
+	
+11 Dec 2008
+
+	Controls for panosurface switching implemented and work;  but
+	will stay disabled until panocylinder is ready to use (release
+	0.6).  Now to fix those fov bugs....  
+	
+	Most obvious syndrome is the jumping fov:
+	1] load rect with height < width; get correct looking initial 
+	display but with obviously too-small vFov shown; on shift-right 
+	click vFov jumps to the correct number and image gets too high. 
+	2] width < height, initial hFov too small, picture OK; jumps 
+	to correct hFov and too-wide pic on shift-rgtclik.
+	After 2], subsequent empty frames are stretched horizontally and 
+	the rect FOVs shown in dialog are bad.
+	The basic problem here is that old code assumes we are using TC
+	scaling to fit image fovs into a face whose fovs == maxfovs
+	(which is correct) while some new code clips facefovs to 
+	imagefovs (which is rong).
+		
+
 	
 
 	

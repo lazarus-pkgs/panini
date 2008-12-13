@@ -231,9 +231,9 @@ void pvQtView::mTimeout(){
 			izoom -= dy;
 			setFOV( normalizeAngle( izoom, 1, minFOV, maxFOV ) );
 		} else if( mk == Qt::ShiftModifier ){	// hFov, vFov
-			ihfov = KLIP( ihfov - dx, 0, 4000);
-			ivfov = KLIP( ivfov - dy, 0, 4000);
-			setTexMag( QSizeF( 1.0 + 0.00225 * ihfov, 1.0 + 0.0025 * ivfov ));
+			xtexmag -= 0.00225 * dx;
+			ytexmag -= 0.00225 * dy;
+			setTexMag( QSizeF( xtexmag, ytexmag ));
 		} 
 	} else if( mb == Qt::LeftButton + Qt::RightButton ){
 		// Y adjusts zoom
@@ -318,14 +318,14 @@ void pvQtView::wheelEvent(QWheelEvent *event){
  }
 
  void pvQtView::step_hfov( int dp ){
-	ihfov = KLIP( ihfov - 10 * dp, 0, 4000);
-	setTexMag( QSizeF( 1.0 + 0.00225 * ihfov, 1.0 + 0.0025 * ivfov ));
+	xtexmag -= 0.00225 * dp;
+	setTexMag( QSizeF( xtexmag, ytexmag ));
 	updateGL();
  }
 
  void pvQtView::step_vfov( int dp ){
-	ivfov = KLIP( ivfov - 10 * dp, 0, 4000);
-	setTexMag( QSizeF( 1.0 + 0.00225 * ihfov, 1.0 + 0.0025 * ivfov ));
+	ytexmag -= 0.00225 * dp;
+	setTexMag( QSizeF( xtexmag, ytexmag ));
 	updateGL();
  }
 
@@ -339,7 +339,7 @@ void pvQtView::wheelEvent(QWheelEvent *event){
 			if( --i < 0 ) i = Nprojections - 1;
 		}
 		pvQtPic::PicType pt = pictypes.PicType( i );
-		curr_fovs = thePic->changeFovType( picType, thePic->PictureFOV(), pt );
+		curr_fovs = thePic->changeFovType( picType, thePic->FaceFOV(), pt );
 		curr_pt = pt;
 		curr_ipt = i;
 		makeSphere( theScreen );		// set & display proj
@@ -406,13 +406,16 @@ void pvQtView::turnAbs( double deg ){
 	 emit reportView( s );
  }
 
-/**  API call to display a picture  **/
+/**  API call to display a new picture  **/
 bool pvQtView::showPic( pvQtPic * pic )
  {
  	setupPic( pic );
  	return picok;
  }
 
+/* redisplay current picture, 
+   e.g. after surface switch
+*/
 void pvQtView::picChanged( )
 {
 	updatePic();
@@ -694,29 +697,34 @@ bool pvQtView::OGLok( const char * label ){
 	}
 
 	if( curr_pt != pvQtPic::nil ){
-		setTexMag( thePic->getTexScale() );
+		stdTexScale = thePic->getTexScale();
+		setTexMag( stdTexScale );
 	} else curr_fovs = QSizeF(0, 0);
  // report the projection 
 	emit reportProj(QString( pictypes.picTypeName( curr_pt )));
-	emit reportFov( curr_fovs );
  }
 
-/* set working texture coordinate magnifications,
-  and report the corresponding apparent FOV
+/* set working texture coordinate magnifications
+   If current texture target is not GL_TEXTURE_2D,
+   set (1,1) else the passed mags clipped to [1:10]
+  then report the corresponding apparent FOV
 */
 void pvQtView::setTexMag( QSizeF mags ){
-	double xmag = mags.width(),
-		   ymag = mags.height();
-	if( xmag < 1.0 ) xmag = 1.0;
-	else if( xmag > 10.0 ) xmag = 10.0;
-	if( ymag < 1.0 ) ymag = 1.0;
-	else if( ymag > 10.0 ) xmag = 10.0;
-	xtexmag = xmag;
-	ytexmag = ymag;
+	if( textgt == GL_TEXTURE_2D ){
+		double xmag = mags.width(),
+			   ymag = mags.height();
+		if( xmag < 1.0 ) xmag = 1.0;
+		else if( xmag > 10.0 ) xmag = 10.0;
+		if( ymag < 1.0 ) ymag = 1.0;
+		else if( ymag > 10.0 ) xmag = 10.0;
+		xtexmag = xmag;
+		ytexmag = ymag;
+	} else {
+		xtexmag = ytexmag = 1.0;
+	}
   // report the apparent image FOV
 	if( thePic ){
-		QSizeF rats(1.0 / xtexmag, 1.0 / ytexmag);
-		curr_fovs = thePic->picScale2Fov( curr_pt, thePic->PictureFOV(), rats );
+		curr_fovs = thePic->picScale2Fov( QSizeF( xtexmag, ytexmag ) );
 		emit reportFov( curr_fovs );
 	}
 }
@@ -739,7 +747,7 @@ void pvQtView::setTexMag( QSizeF mags ){
 		GLuint sclamp, tclamp;
 		sclamp = tclamp = GL_CLAMP_TO_BORDER;
 		if( curr_fovs.width() >= 360 ) sclamp = GL_CLAMP_TO_EDGE;
-		if( curr_fovs.height() >= 180 ) tclamp = GL_CLAMP_TO_EDGE;
+		if( curr_fovs.height() >= 360 ) tclamp = GL_CLAMP_TO_EDGE;
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, sclamp);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, tclamp);
 	}

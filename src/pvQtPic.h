@@ -82,43 +82,41 @@ class pvQtPic : public QObject
 {	Q_OBJECT
 public:
 
+/* Panosurface (projection screen) type
+*/
+enum {
+	sphere = 0,
+	cylinder
+};
+
 /* Picture type
    implies the number of faces and the image projection
 */
-typedef enum {
-  nil = 0,		// No picture
-  cub,		// cubic (1 to 6 rectilinear cube face images)
-  rec,		// rectilinear
-  eqs,		// equal solid angle
-  eqa,		// equal angle
-  cyl,		// cylindrical
-  eqr,		// equirectangular
-  stg,		// stereographic
-  mrc		// mercator
- } PicType;
+	typedef enum {
+	  nil = 0,		// No picture
+	  cub,		// cubic (1 to 6 rectilinear cube face images)
+	  rec,		// rectilinear
+	  eqs,		// equal solid angle
+	  eqa,		// equal angle
+	  cyl,		// cylindrical
+	  eqr,		// equirectangular
+	  stg,		// stereographic
+	  mrc		// mercator
+	 } PicType;
  
 /* cube face IDs
   Use front for all single images, front and back for hemi pairs.
   These enumerated values should not be used as array indices.
 */
- typedef enum {
- 	any = -1,
- 	front,
- 	right,
- 	back,
- 	left,
- 	top,
- 	bottom
- } PicFace;
- 
-// source kind codes used in kinds[]
-enum{
-	NO_KIND = 0,
-	QIMAGE_KIND,
-	RASTER_KIND,
-	FILE_KIND,
-	URL_KIND
-};
+	 typedef enum {
+ 		any = -1,
+ 		front,
+ 		right,
+ 		back,
+ 		left,
+ 		top,
+ 		bottom
+	 } PicFace;
 
  pvQtPic( PicType type = nil );
  
@@ -143,25 +141,29 @@ enum{
 // new 2D fov from change in one angle 
  QSizeF changeFovAxis( PicType t, QSizeF fovs, double fov, int axis = -1 );
 // new 2D fov from rescaling of dimensions
- QSizeF picScale2Fov( PicType t, QSizeF fovs, QSizeF scls );
+ QSizeF picScale2Fov( QSizeF scls );
 // new 2D fov from a change of pictype
  QSizeF changeFovType( PicType t, QSizeF fovs, PicType twas );
 // limit fovs to max for type, preserving aspect ratio
  QSizeF legalFov( PicType t, QSizeF fovs );
-/* Functions that return displayable images or info about them
+
+/* Functions that return state info 
 */
  PicType Type();		// nil => cannot display
  int 	 NumFaces();	// max for type, 0 for nil
  int 	 NumImages();	// number of faces that have source images
-// overall size of texture image(s)
+
+ int Surface(){ return surface; } 
+ QSizeF  SurfaceFOV();
+
+// size of texture image(s)
  QSize   FaceSize(){ return facedims; }
  QSizeF  FaceFOV(){ return facefovs; }
 // size of source image
  QSize   ImageSize(){ return imagedims; }
  QSizeF  ImageFOV(){ return imagefovs; }
-// size of displayed image (maybe cropped/padded)
- QSize	 PictureSize(){ return picdims; }
- QSizeF  PictureFOV();
+// Effective size of displayed image in megapixels
+ double	 PictureSize();
  
  QString FaceName( PicFace face = front );	// display name
 /* info about the default "empty image" for a face
@@ -175,12 +177,12 @@ enum{
  QColor		getFill( PicFace face = front );
  
 // normally called only from pvQtView:
-// set final texture size and image pad/crop
+// set face size and display scaling
  bool fitFaceToImage( QSize maxdims, bool pwr2 = false );
+// texcoord scale factors to give correct displayed FOV
+ QSizeF  getTexScale(){ return texscale; }
 // get a displayable image
  QImage * FaceImage( PicFace face = front );  // get face image
-// texcoord scale factors to give correct display FOV
- QSizeF  getTexScale();
 // Apparent FOV for arbitrary projection and texcoord scale
  QSizeF  texScale2Fov( QSizeF scl, PicType t );
  
@@ -202,6 +204,7 @@ enum{
 
 // to be called only from app:
  bool setType( PicType pt ); 		// clears, sets all defaults
+ bool setSurface( int s );
  bool setImageFOV( QSizeF angles );	
  bool setFaceImage( PicFace face, QImage * img );
  bool setFaceImage( PicFace face, int width, int height, void * addr,
@@ -222,27 +225,32 @@ enum{
 
 
 private:
-	bool setFaceSize( QSize dims );
 	pictureTypes * picTypes;	// for max fovs
 	PicType type;
+	int surface;
 	int ipt;	// pictureTypes index of type
 	int maxfaces;	// 0 to 6
 	int numimgs;	// no. of faces with source images
   // display image and face properties
-  	QImage::Format faceformat;
-    // dimensions and assigned FOVs of input image
+  	QImage::Format faceformat;	// pixel format
+  /* dimensions and assigned FOVs of source image
+     never modified here
+  */
 	QSize		imagedims;
 	QSizeF		imagefovs;
-	// factors to crop to max displayable fovs
-	double rcropx, rcropy;
-    //dimensions of displayed image (scaled to face;
-	//same Fovs as input image)
-	QSize		picdims;
-	// dimensions and FOVs of final texture image
-	QSize		facedims;	// set by view driver 
-	QSizeF		facefovs;	// assigned here
-	QSizeF		maxfovs, minfovs;	// face limits
-	bool 		lockfovs;	// true => fixed fov & aspect ratio
+  /* texture image and scaling params
+     set by fitFaceToImage()
+  */
+	QSize		facedims; 
+	QSizeF		facefovs;
+	QSizeF		texscale;
+	QRectF		cliprect;	// fractional image clip
+	QRect		imageclip;  // same scaled to image dims
+  // display limits (current projection)
+	QSizeF		maxfovs, minfovs;
+  // latest arguments to fitFaceToImage
+	QSize l_maxdims;
+	bool l_pwr2;
   // arrays indexed by face id, 0:maxfaces-1
 	bool		accept[6];	// usable image
 	int		 	kinds[6];	// coded source type

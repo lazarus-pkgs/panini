@@ -47,6 +47,7 @@ public slots:
 	void showTitle( QString msg );
 	void showProj( QString name );
 	void showFov( QSizeF fovs );
+	void showSurface( int surf );
 
 signals:
 	void step_pan( int d );
@@ -63,6 +64,7 @@ signals:
 	void super_wide();
 	void full_frame();
 	void turn90( int d );
+	void set_surface( int surf );
 	
 	void newPicture( const char * pictype );
 
@@ -117,6 +119,9 @@ private slots:
 	void on_actionHFovDn_triggered();
 	void on_actionVFovUp_triggered();
 	void on_actionVFovDn_triggered();
+
+	void on_actionPanosphere_triggered( bool ckd );
+	void on_actionPanocylinder_triggered( bool ckd );
 
 };
 

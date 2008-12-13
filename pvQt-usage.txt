@@ -1,6 +1,6 @@
-How to use pvQt version 0.5.xx   04 December 2008
+How to use pvQt version 0.5.xx   11 December 2008
 
-pvQt is a viewer for panoramic and wide angle pictures that runs on Linux, Windows and Apple OSX.  It can display many common photo and panoramic formats from ordinary image files or QuickTime VR (.mov) files.  Like other viewers, it shows pictures in rectilinear perspective, but can also display extremely wide angle stereographic views, and a range of intermediate perspectives.  It can do this because it projects the picture on a 3D sphere -- the "panosphere" -- which you view from the inside in true perspective.
+pvQt is a viewer for panoramic and wide angle pictures that runs on Linux, Windows and Apple OSX.  It can display many common photo and panoramic formats from ordinary image files or QuickTime VR (.mov) files.  Like other viewers, it shows pictures in rectilinear perspective, but can also display extremely wide angle stereographic views, and a range of intermediate perspectives.  It can do this because it projects the picture on a 3D surface -- the "panosphere" -- which you view from the inside in true perspective.
 
 pvQt is also a versatile perspective converter, that lets you warp input images in a wide variety of ways, and save the results to high resolution image files.
 
@@ -47,17 +47,25 @@ PRESETS
 
 Several preset views are available via single keystrokes.  "Home" resets the yaw, pitch and roll angles to zero; "End" resets everything, restoring the standard view you got when the image was first loaded.  "F" gives the widest possible full frame view (a stereographic projection of the sphere, 280 degrees high) and "S" gives a circular "super fisheye" view, obtained by moving the eye point slightly outside the panosphere (note: in this mode the displayed vFOV is not quite correct).
 
-The Turn controls ("L" and "R" keys) rotate the image on the panosphere in increments of 90 degrees.  This is meant for statically orienting images and is not reset by "End".  
+The Turn controls ("L" and "R" keys) rotate the image on the panosphere in increments of 90 degrees.  This rotation is not reset by "End".  Note: the projection axes do not turn along with the image, so you get strange results for the asymmetric projections (cylindrical, mercator and equirectangular).  However you can view the "transverse" forms of those projections, if you assign swapped fovs when you load the image (check "unlock Fovs").  All this will be sorted out less confusingly in future relase.
 
 For convenience in viewing series of similar pictures, pvQt remembers the last selected Turn angle and FOV for each type of picture (but version 0.5 does not save them when you exit the program).
 
 The Preset menu also has controls for switching between the various non-cubic input projections.
 
+Also present, but disabled in this release, are controls for switching between spherical and cylindrical "panosurfaces".
+
 LOADING PICTURES 
 
 To show a picture, pvQt needs to know the format (projection), angular size (field of view, FOV), image dimensions and where to find the image data.  All supported sources supply image dimensions and data, and some also define projection and angular size; but in many cases you must specify the projection and field of view yourself.
 
-You do this in a dialog that shows the file name, projection, dimensions in pixels, and horizontal and vertical fields of view in degrees.  When appropriate it will let you select a projection, and in all cases you can enter a field of view.  The two FOVs are related via the dimensions and projection; whenever you change one the other will change to match.  When you select a different projection, the FOV for the longer axis stays the same and the other is adjusted.  The default FOVs are the largest ones consistent with the projection and image dimensions.  
+You do this in a dialog that shows the file name, projection, dimensions in pixels, and horizontal and vertical fields of view in degrees.  When appropriate it will let you select a projection, and in all cases you can enter the field of view.
+
+You can specify either the horizontal or vertical field of view.  They are coupled via the dimensions and projection, so that when you change one the other changes to match.  You can uncouple the FOVs when necessary, for example to load an image with non-square pixels, or one with a "transverse" projection.
+
+When you select a different projection, the last FOV used for that projection is recalled.  If it does not match the current image's dimensions, the larger FOV is kept and the other is adjusted.  
+
+Each projection has a maximum FOV, that you can not exceed.  These limits are generous, and may let you specify an FOV larger than the maximum that can actually be displayed.  In that case the image will be projected according to the given FOV, but cropped to the display limit.
 
 When a picture is loaded, the pvQt window's title bar shows the file name and displayed size in megapixels, which will be smaller than the source image size if there is not enough OpenGL texture memory to hold the full image.  Note that this is not the size of the view on screen, but of the texture image used to generate it.  In case loading or display fails, the title bar will show an error message instead.
 
@@ -85,8 +93,7 @@ For the other picture types, which imply specific input projections, you need to
 
 The last thing on the command line can be a file name, or up to six file names for a cubic panorama.  pvQt can read tiff, jpeg and png image files, identified by the conventional file name extensions.  
 
-If you give only an image file name or names on the command line, pvQt will assume that two or more square images are cube faces (to load a single cube face you must give the type name) and that an image file whose width is exactly twice its height is a 360 degree equirectangular panorama.  Otherwise it will ask you to specify the projection and FOV.
-Note that on Windows and Mac, dragging files onto the pvQt program icon generates a files-only command line.
+If you give only an image file name or names on the command line, pvQt will assume that two or more square images are cube faces (to load a single cube face you must give the type name) and that an image file whose width is exactly twice its height is a 360 degree equirectangular panorama.  Otherwise it will ask you to specify the projection and FOV.  On Windows and Mac, dragging files onto the pvQt program icon generates a files-only command line.
 
 If the command line is only a picture type name (other than proj or qtvr) pvQt displays  labelled empty frames (just a "front" frame for most picture types; or six cube faces).
 
@@ -103,7 +110,7 @@ The "sphr" picture type uses the equal-angle spherical projection.  Most stitche
 
 You can load 1 to 6 image files for the "cube" picture type.  They must be square images (but need not be the same size).  Their sorted names must fall in the conventional cube face order: front, right, back, left, top, bottom.  So if you have names like foo_front.tif, foo_right.tif,..., you would have to change them to something like foo_1.tif, foo_2.tif,....  If you give fewer than 6 cube face files, pvQt will display empty frames for the missing ones.  Nonexistent or unreadable files will also generate empty frames.
 
-But the easy way to load cube faces is...
+The easy way to load cube faces is...
 
 	via Drag-and-Drop
 
@@ -124,11 +131,10 @@ The current input projection is shown on the status bar.  Please remember that t
 
 FIELD OF VIEW
 
-The angular size, or field of view of an image determines how much of the panosphere it covers.  Each projection has a maximum displayable FOV, which is the default, however you can specify a different FOV for any non-cubic picture.  
+The angular size, or field of view of an image determines how much of the panosphere it covers.  Each projection has a maximum displayable FOV, however you can specify a different FOV for any non-cubic picture.  
 
-An image is assigned a horizontal and a vertical field of view when loaded.  Normally, these are limited to the displayable range and locked to the image dimensions according to the assigned projection, so that setting either of them automatically adjusts the other.  On the rare occasion when you have an image with a larger-than-displayble FOV, or non-square pixels, you can check the "unlock FOVs" box and enter arbitrary horizontal and vertical FOVs, up to the theoretical maximum, either 360x180 or 360x360 depending on the format.  The aspect ratio of the displayed picture will then depend on the FOVs you entered (not linearly, but through the projection functions for the format).  If you specify a larger-than-displayable FOV, the image will also be cropped to fit the picture.  
-
-For non-cubic pictures, you can also adjust the apparent fields of view after the image is loaded, using the hFov and vFov controls in the View menu (also Shift-right-mouse).  These controls change the horizontal and vertical FOVs independently, within a range of 10% to 100% of the displayable FOV for the current projection.  The "End" key restores the assigned FOVs and projection.
+An image is assigned a horizontal and a vertical field of view when loaded.  
+But for non-cubic pictures, you can adjust the apparent fields of view after the image is loaded, using the hFov and vFov controls in the View menu (also Shift-right-mouse).  These controls change the horizontal and vertical FOVs independently, within a range of 10% to 100% of the displayable FOV for the current projection.  The "End" key restores the assigned FOVs and projection.
 
 Changing an FOV changes not only the apparent width or height of the picture but also the intrinsic perspective, because the image displayed through a different part of the projection function.
 
