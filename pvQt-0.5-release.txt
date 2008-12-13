@@ -43,6 +43,10 @@ spherical panoramic view, that you can use to verify the
 correctness (or lack thereof) of the projections.  It is
 available for download as a separate package only.
 
+The win32 binary package has been built with Qt 4.4.3, and
+contains the executable Qt libraries from that version.
+Earlier releases used Qt version 4.4.1.
+
 LICENSE
 
 pvQt is free software, copyright (C) 2008 Thomas K Sharpless.  You 
