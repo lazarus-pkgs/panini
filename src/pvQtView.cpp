@@ -904,8 +904,11 @@ bool pvQtView::setupPic( pvQtPic * pic )
 		maxdims = maxTexCube;
 		break;
 	}
-
-	thePic->fitFaceToImage( maxdims );
+#if 1
+	thePic->fitFaceToImage( maxdims, texPwr2 );
+#else	// test pwr2
+		thePic->fitFaceToImage( QSize(2048, 1024) , true );
+#endif
 
 /**  Load texture images  **/
 	makeCurrent();

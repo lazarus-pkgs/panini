@@ -303,6 +303,8 @@ bool GLwindow::QTVR_file( QString name ){
 	}
 	if( dec.getType() == PANO_CUBIC ){
 		pvpic->setType( pvQtPic::cub );
+		picFov = QSizeF( 90, 90 );
+		pvpic->setImageFOV( picFov );
 		emit( showSurface( 0 ) );	// cube forces sphere
 		for( int i = 0; ok && i < 6; i++ ){
 			QImage * pim = dec.getImage( i );
@@ -311,6 +313,12 @@ bool GLwindow::QTVR_file( QString name ){
 	} else if( dec.getType() == PANO_CYLINDRICAL ){
 		pvpic->setType( pvQtPic::cyl );
 		QImage * pim = dec.getImage( 0 );
+	  // compute vFov assuming hFov = 360
+		picFov = pvpic->adjustFov(  pvQtPic::cyl,
+									QSizeF( 360 , 0 ),
+									pim->size()
+								 );
+		pvpic->setImageFOV( picFov );
 		ok = pvpic->setFaceImage( pvQtPic::PicFace(0), pim );
 	} else ok = false; 
 
