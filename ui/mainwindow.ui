@@ -73,13 +73,35 @@
      <string>vfov 180.0</string>
     </property>
    </widget>
+   <widget class="QLabel" name="surfaceLabel" >
+    <property name="enabled" >
+     <bool>true</bool>
+    </property>
+    <property name="geometry" >
+     <rect>
+      <x>370</x>
+      <y>150</y>
+      <width>71</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="frameShape" >
+     <enum>QFrame::Panel</enum>
+    </property>
+    <property name="frameShadow" >
+     <enum>QFrame::Sunken</enum>
+    </property>
+    <property name="text" >
+     <string>panocylinder</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar" >
    <property name="geometry" >
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>C
+     <width>800</width>
      <height>22</height>
     </rect>
    </property>
@@ -142,6 +164,9 @@
     <addaction name="action90_deg_CW" />
     <addaction name="actionNext_iProj" />
     <addaction name="actionPrev_iProj" />
+    <addaction name="separator" />
+    <addaction name="actionPanosphere" />
+    <addaction name="actionPanocylinder" />
    </widget>
    <addaction name="menuLoad" />
    <addaction name="menu_View" />
@@ -412,6 +437,37 @@
    </property>
    <property name="shortcut" >
     <string>Alt+Left</string>
+   </property>
+  </action>
+  <action name="actionPanosphere" >
+   <property name="checkable" >
+    <bool>true</bool>
+   </property>
+   <property name="checked" >
+    <bool>true</bool>
+   </property>
+   <property name="enabled" >
+    <bool>false</bool>
+   </property>
+   <property name="text" >
+    <string>panosphere</string>
+   </property>
+   <property name="toolTip" >
+    <string>project on sphere</string>
+   </property>
+  </action>
+  <action name="actionPanocylinder" >
+   <property name="checkable" >
+    <bool>true</bool>
+   </property>
+   <property name="enabled" >
+    <bool>false</bool>
+   </property>
+   <property name="text" >
+    <string>panocylinder</string>
+   </property>
+   <property name="toolTip" >
+    <string>project on cylinder</string>
    </property>
   </action>
  </widget>

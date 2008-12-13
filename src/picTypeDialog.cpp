@@ -41,16 +41,24 @@ void picTypeDialog::setDims( QSize wh ){
 
 void picTypeDialog::setMinFOV( QSizeF fovs ){
 	minfov = fovs;
+	hfovBox->blockSignals(true);
+	vfovBox->blockSignals(true);
 	hfovBox->setMinimum( minfov.width() );
 	vfovBox->setMinimum( minfov.height() );
 	setFOV( thefov );
+	hfovBox->blockSignals(false);
+	vfovBox->blockSignals(false);
 }
 
 void picTypeDialog::setMaxFOV( QSizeF fovs ){
 	maxfov = fovs;
+	hfovBox->blockSignals(true);
+	vfovBox->blockSignals(true);
 	hfovBox->setMaximum( maxfov.width() );
 	vfovBox->setMaximum( maxfov.height() );
 	setFOV( thefov );
+	hfovBox->blockSignals(false);
+	vfovBox->blockSignals(false);
 }
 
 void picTypeDialog::setFOV( QSizeF fovs ){

@@ -1,0 +1,61 @@
+
+	pvQt 0.5.xx  Release Notes	13 December 2008
+	
+This is a beta release of software that is under active
+development and will be replaced by a better version in
+the not-too-distant future.  So you should expect to find
+some bugs.  Please report those, either on the hugin-et-al
+discussion group:
+http://groups.google.com/group/hugin-ptx
+or the pvQt project's bug tracker at SourceForge:
+http://sourceforge.net/tracker/?group_id=241632&atid=1116683
+You may find a newer release at:
+http://sourceforge.net/projects/pvqt/
+
+Release 0.5 is a fairly extensive rework of 0.4, in particular
+the mouse and keyboard controls are different; so current as
+well as new users should read pvQt-usage.txt for this release.
+
+The main new features are:
+-- can load images (including cube faces) by drag-and-drop
+-- can save the view as a high resolution jpeg
+-- can adjust the apparent angular size of loaded images
+-- two more projections: mercator and stereographic
+
+Some other improvements
+-- image scales and displayed FOVs are more likely to be
+correct (a few cases still need work)
+-- can load images with fields of view too big to be
+displayed (the excess is clipped)
+-- can zoom with the scroll wheel, if your mouse has one
+
+Known issues and limitations:
+-- still does not read PT scripts/projects
+-- image scaling is somewhat wrong for some projections, in
+particular stereographic, the vertical axis of mercator, and
+the vertical axis of cylindrical QTVRs.  But all are usable.
+-- To save high resolution views, your OpenGL must support 
+off-screen framebuffers of arbitrary size.  If it does not,
+views are saved at screen resolution.
+
+I have prepared a set of test images, made from the same 
+spherical panoramic view, that you can use to verify the
+correctness (or lack thereof) of the projections.  It is
+available for download as a separate package only.
+
+LICENSE
+
+pvQt is free software, copyright (C) 2008 Thomas K Sharpless.  You 
+can redistribute and/or modify it under the terms of the GNU General 
+Public License as published by the Free Software Foundation; either 
+version 2 of the License, or (at your option) any later version.
+
+pvQt is distributed in the hope that it will be useful, but WITHOUT 
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License 
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with pvQt; if not, write to Free Software Foundation, Inc.,
+59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+

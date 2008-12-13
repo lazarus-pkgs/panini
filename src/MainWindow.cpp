@@ -101,6 +101,8 @@ if(ok) ok =
 	statusbar->addPermanentWidget( vfovLabel );
 	statusbar->addPermanentWidget( hfovLabel );
 	statusbar->addPermanentWidget( projLabel );
+	statusbar->addPermanentWidget( surfaceLabel );
+	surfaceLabel->setText(tr("panosphere"));
 	statusBar()->showMessage(tr("Ready"));
 
 if(ok){
@@ -111,7 +113,10 @@ if(ok){
 
   if( !ok ) qFatal("MainWindow setup failed");
  
-
+/*/// enable panosurface switch 
+  actionPanosphere->setEnabled(true);
+  actionPanocylinder->setEnabled(true);
+*///
 }
 
 /* handle command line argumnents
@@ -292,4 +297,21 @@ void MainWindow::on_actionVFovDn_triggered(){
 	emit step_vfov( -1 );
 }
 
+void MainWindow::on_actionPanosphere_triggered( bool ckd ){
+	int surf = ckd? 0 : 1;
+	showSurface( surf );
+	emit set_surface( surf );
+}
 
+void MainWindow::on_actionPanocylinder_triggered( bool ckd ){
+	on_actionPanosphere_triggered( !ckd );
+}
+
+// Display panosurface.  0: sphere, 1: cylinder
+// also sets menu checks
+void MainWindow::showSurface( int surf ){
+	bool s = surf == 0;
+	surfaceLabel->setText( s? tr("panosphere") : tr("panocylinder") );
+	actionPanosphere->setChecked( s );
+	actionPanocylinder->setChecked( !s );
+}

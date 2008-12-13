@@ -124,6 +124,12 @@ GLwindow::GLwindow (QWidget * parent )
 	connect( this, SIGNAL(showFov(QSizeF)),
 			 parent, SLOT(showFov(QSizeF)) );
   if(ok) ok = 
+	connect( this, SIGNAL(showSurface(int)),
+			 parent, SLOT(showSurface(int)) );
+  if(ok) ok = 
+	connect( parent, SIGNAL(set_surface(int)),
+			 this, SLOT(set_surface(int)) );
+  if(ok) ok = 
 	connect( glview, SIGNAL(reportProj( QString )),
 			 this, SIGNAL(showProj( QString )) );
   if(ok) ok = 
@@ -244,6 +250,7 @@ bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 		} 
 	} else {
 		ok = pvpic->setType( picType );
+		if( picType == pvQtPic::cub ) emit( showSurface(0) );
 	}
 
 	if( ok ) {
@@ -276,9 +283,7 @@ void GLwindow::reportPic( bool ok, int c, QStringList fnm ) {
 			msg += QFileInfo(fnm[0]).fileName();
 		} else 	msg += tr("(no image file)");
 		msg += QString("  ") + QString(" at ");
-		QSize pd = pvpic->PictureSize();
-		double m = pvpic->NumImages();
-		m *= pd.width(); m *= pd.height(); m *= 1.0e-6;
+		double m = pvpic->PictureSize();
 		msg += QString().setNum( m, 'f', 2 ) + QString(" Mpixels");
 		emit showTitle( msg );
 	} else {
@@ -298,6 +303,7 @@ bool GLwindow::QTVR_file( QString name ){
 	}
 	if( dec.getType() == PANO_CUBIC ){
 		pvpic->setType( pvQtPic::cub );
+		emit( showSurface( 0 ) );	// cube forces sphere
 		for( int i = 0; ok && i < 6; i++ ){
 			QImage * pim = dec.getImage( i );
 			ok = pvpic->setFaceImage( pvQtPic::PicFace(i), pim );
@@ -364,7 +370,7 @@ const char * GLwindow::askPicType(  QStringList files,
 	} else {
 		ptd.selectPicType( ipt, false );
 	}
-// post initial selection 
+// make sure initial fov is set
 	picTypeChanged( ipt );
 // run the dialog
 	if( !ptd.exec() ){
@@ -372,8 +378,8 @@ const char * GLwindow::askPicType(  QStringList files,
 		return 0;
 	}
 // return chosen fov and type name
- 	picFov = ptd.getFOV();
-	ipt = ptd.chosenType();
+ //	picFov = ptd.getFOV();
+//	ipt = ptd.chosenType();
 	return pictypes.picTypeName( ipt );
 }
 /* Slots: update pictype dialog on type or FOV change
@@ -391,8 +397,9 @@ const char * GLwindow::askPicType(  QStringList files,
 void GLwindow::picTypeChanged( int t ){
 	ipt = t;
 	picType = pictypes.PicType( ipt );
+	picFov = lastFOV[ipt];
 	if( !ptd.freeFovs() ){
-		picFov = pvpic->adjustFov( picType, lastFOV[ipt], picDim );
+		picFov = pvpic->adjustFov( picType, picFov, picDim );
 	}
 	ptd.setMaxFOV( pictypes.absMaxFov( ipt ) ); 
 	ptd.setMinFOV( pictypes.minFov( ipt ) );
@@ -402,7 +409,7 @@ void GLwindow::picTypeChanged( int t ){
 void GLwindow::hFovChanged( double h ){
 	if( fabs(h - picFov.width()) < 0.05 ) return;
 	picFov = ptd.getFOV();
-	if( ptd.freeFovs() || ipt < 0 ) picFov.setWidth( h );
+	if( ptd.freeFovs() ) picFov.setWidth( h );
 	else {
 		picFov = pvpic->changeFovAxis( picType, picFov, h, 0 );
 	}
@@ -412,7 +419,7 @@ void GLwindow::hFovChanged( double h ){
 void GLwindow::vFovChanged( double v ){
 	if( fabs(v - picFov.height()) < 0.05 ) return;
 	picFov = ptd.getFOV();
-	if( ptd.freeFovs() || ipt < 0 ) picFov.setHeight( v );
+	if( ptd.freeFovs() ) picFov.setHeight( v );
 	else {
 		picFov = pvpic->changeFovAxis( picType, picFov, v, 1 );
 	}
@@ -618,3 +625,9 @@ void GLwindow::save_as() {
 	}
 }
 
+// handle user set surface request
+void GLwindow::set_surface( int surf ){
+	bool ok = pvpic->setSurface( surf );
+	emit showSurface( pvpic->Surface());
+	if( ok ) glview->picChanged();
+}

@@ -18,13 +18,14 @@
  	This is the base implementation; see pvQtPic.h for details.
  	
   A note on projections
-	These ideal axial projections are supported:
-	0 - rectilinear: d = f * tan(angle)
-	1 - equiangular: d = f * angle
-	2 - fisheye:	 d = f * sin( angle / 2 )
-	3 - stereographic:  d = f * tan( angle / 2 )
-	4 - mercator y:	 d = ln( tan( Pi/4 + angle / 2 ))
-	(d = distance in image, f = focal length)
+	These ideal projection functions are supported:
+	0 - rectilinear: d = tan( a )
+	1 - equiangular: d = a
+	2 - fisheye:	 d = sin( a / 2 )
+	3 - stereographic:  d = tan( a / 2 )
+	4 - mercator y:	 d = asinh( tan( a ) )
+	  a = angle at projection center (radians)
+	  d = distance in image plane (unit = radius)
 	type 2, also known as the "mirror ball" projection, is a decent
 	approximation for most fisheye lenses, and type 0 is a good
 	approximation for most "normal" lenses.  Type 1 is used for the
@@ -41,11 +42,43 @@
 
 	Horizontal and vertical FOVs are treated as independent except 
 	in adjustFOV() which couples them via the dimensions, assuming 
-	square pixels.  
+	square pixels. 
 
+  How images are scaled for display
+    OpenGL needs a "texture image", which I call a "face image".
+    OGL may allow arbitrary texture image dimensions, or it may
+	require that they are powers of 2.  In either case the largest
+	feasible texture image is likely to be smaller than the source
+	image.
 
-
+	The picture must show the image's FOV, up to the limit, 
+	maxfovs, set by the texture coordinate map for the chosen
+	projection.  Where imagefov > maxfov, part of the image must 
+	be discarded.  Where imagefov < maxfov, only part of the TC
+	map applies, and the texture coordinates must be scaled up to 
+	reach [0:1] at imagefov.  
 	
+	Qt image reader offers the ability to clip and scale an image
+	as it is being read.  I use this to reduce source images to
+	displayed size.  Parts corresponding to view angles > maxfov
+	are clipped off, and the rest is scaled to the size of the 
+	texture image.  
+	
+	The texture coordinate scale factors are set to display the 
+	face fovs correctly.  They are independent of the pixel aspect
+	ratio in the texture image.
+
+	The following class variables are involved in image scaling:
+		maxfovs		angular range of current texture coordinate map
+		imagedims	the source image dimensions
+		imagefovs	its assigned fovs (may be > maxfovs)
+		facedims	the chosen texture image size
+		facefovs	imagefovs clipped to maxfovs
+		texscale	texture coordinate scale factors
+		cliprect	fractional image clip matching facefovs
+		imageclip	source image clip rectangle (in pixels)
+
+
  */
  
 #include "pvQtPic.h"
@@ -56,6 +89,15 @@
 #define DEG2RAD(x) (Pi*(x)/180.0)
 #define RAD2DEG(x) (180.0*(x)/Pi)
 #endif
+
+// source kind codes used in kinds[]
+enum{
+	NO_KIND = 0,
+	QIMAGE_KIND,
+	RASTER_KIND,
+	FILE_KIND,
+	URL_KIND
+};
 
 #define kcode(bpc,cpp,isfp,pack,align) \
 	((bpc&0xFF) + (cpp&0xFF)<<8 + (align&0xFF)<<16 \
@@ -84,7 +126,7 @@ double pvQtPic::fov2rad( int proj, double fov ){
 	case 1: return a;
 	case 2: return sin( 0.5 * a );
 	case 3: return tan( 0.5 * a );
-	case 4: return log( tan( 0.25 * Pi + 0.5 * a ));
+	case 4: return asinh(tan( a ));
 	}
 }
 // (full) field of view from radius
@@ -106,8 +148,7 @@ double pvQtPic::rad2fov( int proj, double rad ){
 		a = 2 * atan( rad );
 		break;
 	case 4: 
-		double t = exp( rad );
-		a = 2 * (atan( t ) - 0.25 * Pi );
+		a = atan( sinh( rad ));
 		break;
 	}
 	return 2 * RAD2DEG( a );
@@ -141,6 +182,13 @@ bool pvQtPic::getxyproj( PicType t, int & xproj, int & yproj ){
 	}
 	return true;
  }
+
+/* angular size of current display screen
+*/
+QSizeF  pvQtPic::SurfaceFOV(){
+	if(surface == cylinder ) return QSizeF(360, 150);
+	return QSizeF( 360, 360 );
+}
 
 /* limit fovs to the legal maximum for a given projection,
    preserving the linear aspect ratio
@@ -186,26 +234,32 @@ double pvQtPic::scalefov( int proj, double fov,
 
 /* fit a 2D FOV to image dimensions assuming square pixels
 	and the input projection for a specified pictype.
-  Both dimensions must be valid.  If one fov is zero, the 
-  other gets assigned to the long dimension, which sets the
-  scale.  If both are zero, result is (0,0).  
+  Both dimensions must be valid.  If only one fov is nonzero, 
+  it gets assigned to the long dimension;  if both are zero, 
+  result is (0,0).  Otherwise the axis with the larger fov 
+  sets the scale and the other fov is adjusted.   
 */
 QSizeF pvQtPic::adjustFov( PicType t, QSizeF fovs, QSize dims ){
 	int pr[2];
 	if( !getxyproj( t, pr[0], pr[1] ) ) return QSizeF(0,0);
+
 	int d[2];
 	d[0] = dims.width(); d[1] = dims.height();
 	if( d[0] <= 0 || d[1] <= 0 ) return QSizeF(0,0);
+
 	double f[2];
 	f[0] = fovs.width(); f[1] = fovs.height();
-	if( f[0] <= 0 ) f[0] = f[1];
-	if( f[1] <= 0 ) f[1] = f[0];
- 
+	if( f[0] <= 0 ){
+		if( f[1] <= 0 ) return QSizeF(0,0);
+		else f[0] = f[1];
+	}
+
 	int i = 0, j = 1;
-	if( d[1] > d[0] ){
+	if( f[1] > f[0] ){
 		i = 1;
 		j = 0;
 	}
+
     double r = double(d[j])/double(d[i]);
 	double s = r * fov2rad( pr[i], f[i] );
 	f[j] = rad2fov( pr[j], s );
@@ -217,10 +271,8 @@ QSizeF pvQtPic::adjustFov( PicType t, QSizeF fovs, QSize dims ){
 
 /* new 2D fov from a new value for one axis
 	returns fovs for invalid type or FOV
-   preserves the aspect ratio (unless fov == 0,
-   when return  0, 0 ).
-  Result fovs are limited to legal values for the projection,
-  as given by picturetypes::absMaxFov
+   preserves the aspect ratio if possible
+  Result limited to legal fovs for the projection
 */
 QSizeF pvQtPic::changeFovAxis( PicType t, QSizeF fovs,
 							   double fov, int axis ){
@@ -246,21 +298,6 @@ QSizeF pvQtPic::changeFovAxis( PicType t, QSizeF fovs,
 	return legalFov( t, rf );
 }
 
-/* new 2D FOV after linear rescaling of an image
-   of a given projection type
-   Returns fovs for invalid type
-*/
-QSizeF pvQtPic::picScale2Fov( PicType t, QSizeF fovs, 
-							  QSizeF scl  // scale factors
-							){
-	int xp, yp;
-	if( !getxyproj( t, xp, yp ) ) return fovs;
-	double w = fov2rad( xp, fovs.width());
-	double h = fov2rad( yp, fovs.height());
-	return QSizeF( rad2fov(xp, w * scl.width()),
-				   rad2fov(yp, h * scl.height()) );
-}
-
 /* new 2D fov from change of projection
 */
 QSizeF pvQtPic::changeFovType( PicType t, QSizeF fovs, 
@@ -281,6 +318,7 @@ pvQtPic::pvQtPic( pvQtPic::PicType t )
 {
 	picTypes = new pictureTypes();
 	if( !setType( t ) ) setType( nil );
+	surface = sphere;
 }
 
 
@@ -300,28 +338,27 @@ bool pvQtPic::setType( pvQtPic::PicType t )
 
   // accept the type
 	type = t;
-	lockfovs = type == cub;
 	getxyproj( type, xproj, yproj );
 	maxfaces = picTypes->picTypeCount( ipt );
-
+  // legalize panosurface
+	if( type == cub || surface != cylinder ) surface = sphere;
+  // angular size limits
+	maxfovs = picTypes->maxFov( ipt ).boundedTo(SurfaceFOV());
+	if( type == cub ) minfovs = maxfovs;
+	else minfovs = QSizeF( 10, 10 );
   // default face size 
-	facefovs = picTypes->maxFov( ipt );
+	facefovs = maxfovs;
 	facedims = QSize( 512, 512 );
 	double r = facefovs.width() / facefovs.height();
 	if( r < 1 ) facedims.setWidth( 256 );
 	else if( r > 1 ) facedims.setHeight( 256 );
-  // default pic = face
-	picdims = facedims;
-	imagefovs = facefovs;
+  // default image == max
+	imagefovs = maxfovs;
 
   // pixel format for face images
 	faceformat = PVQT_PIC_FACE_FORMAT; 
   // no face images assigned
 	numimgs = 0;
-  // angular size limits
-  	maxfovs = facefovs;
-  	if( lockfovs ) minfovs = facefovs;
-	else minfovs = QSizeF( 10, 10 );
   // clear source image info; set empty face style
 	for( int i = 0; i < 6; i++ ){
 		accept[i] = false;
@@ -336,6 +373,20 @@ bool pvQtPic::setType( pvQtPic::PicType t )
 	return true;
 }
 
+/* select the panosurface.
+  Rejects changes if current pic type is cubic
+  adjust maxfovs and face cropping for new surface
+*/
+bool pvQtPic::setSurface( int s ){
+	if( s != sphere && s != cylinder ) return false;
+	if( type == cub ) return s == sphere;
+	surface = s;
+	if(  type != nil  ){
+		maxfovs = picTypes->maxFov( ipt ).boundedTo(SurfaceFOV());
+		fitFaceToImage( l_maxdims, l_pwr2 );
+	}
+	return true;
+}
 
 QString pvQtPic::FaceName( PicFace face )
 {
@@ -351,128 +402,110 @@ QString pvQtPic::FaceName( PicFace face )
  	return tr("no such face");
 }
 
-/* set facedims, facefovs and picdims for a proposed 
-   maximum face (texture image) size.
-  Assumes imagedims and imagefovs are valid.
-  Called by pvQtView to set texture image size.  
+/* set display image parameters for a proposed 
+   maximum face (texture image) size
 
   If pwr2 is true, maxdims must both be powers of 
   2 and the resulting face dimensions will be, too.
-  Otherwise the face dimensions will be just large 
-  enough to hold the source image (cropped to max 
-  display fov).
 
-  Sets facefovs to min( maxfovs, imagefovs ) and picdims
-  so that fov fits inside the returned face dimensions. 
+Assumes:
+  imagedims, imagefovs and maxfovs are valid.
+Sets:
+  facefovs = imagefovs clipped to maxfovs
+  facedims <= maxdims; either powers of 2 or square-pixel 
+    congruent with facefovs.  Will not exceed source image
+	pixel count by more than a factor of 2.
+  texscale = texture coordinate scale factors that map 
+    facefovs to [0:1].
+  cliprect = fractional image clip to facefovs
+  imageclip = same scaled to imagedims
 
 */
 bool pvQtPic::fitFaceToImage( QSize maxdims, bool pwr2 ){
 	if( type == nil ) return false;	// no picture
 	if(imagedims.isEmpty() ) return false;  // no image
 
-  // scale factors: image dims to max displayable dims
-	double rx = 
-		fov2rad(xproj, maxfovs.width()) / fov2rad(xproj, imagefovs.width());
-	double ry = 
-		fov2rad(yproj, maxfovs.height()) / fov2rad(yproj, imagefovs.height());
+  // save args in case surface changes
+	l_maxdims = maxdims;
+	l_pwr2 = pwr2;
 
-  // full size of max displayable image
+  // displayable angular size
+    facefovs = imagefovs.boundedTo( maxfovs );
+
+  // linearized fovs
+	double rix = fov2rad(xproj, imagefovs.width()),
+		   riy = fov2rad(yproj, imagefovs.height()),
+		   rfx = fov2rad(xproj, facefovs.width()),
+		   rfy = fov2rad(yproj, facefovs.height()),
+		   rmx = fov2rad(xproj, maxfovs.width()),
+		   rmy = fov2rad(yproj, maxfovs.height());
+
+  // TC scale = linear max/image (assuming square pixels)
+	double rx = rmx / rix,
+		   ry = rmy / riy;
+	texscale = QSizeF( rx, ry );
+  
+  // fractional image clip
+	if( rx > 1 ) rx = 1;
+	if( ry > 1 ) ry = 1;
+	cliprect =  QRectF( 
+		0.5 * ( 1 - rx ),
+		0.5 * ( 1 - ry ),
+		rx, ry
+	);
+  // clipping rect in pixels
 	int iw = imagedims.width(),
 		ih = imagedims.height();
-	if( rx < 1 ) iw = int( rx * iw );	// crop width
-	if( ry < 1 ) ih = int( ry * ih );   // crop height
+	imageclip = QRect(
+		int( iw * cliprect.x()),
+		int( ih * cliprect.y()),
+		int( iw * cliprect.width()),
+		int( ih * cliprect.height())
+	);
 
-  // facefovs = displayable part of image
-	facefovs = imagefovs.boundedTo(maxfovs);
-
-  // scale down to fit maxdims (maybe adj to pwr of 2)
-	int tw = iw, th = ih;
-	int mw = maxdims.width(), mh = maxdims.height();
-	double rw = double(mw) / double(tw),
-		   rh = double(mh) / double(th);
-	if( rw < rh ){
-		if( rw < 1 ){
-			tw = int( tw * rw );
-			th = int( th * rw );
-		}
-	} else if( rh < 1 ){
-		tw = int( tw * rh );
-		th = int( th * rh );
-	}
-
-  /* tw, th are now the dimensions of the biggest
-	 cropped image <= maxdims and <= imagedims. 
-	 Put the corresponding uncropped size in picdims.
-   */
-	if( rx < 1 ) iw = int( tw / rx ); else iw = tw;
-	if( ry < 1 ) ih = int( th / ry ); else ih = th;
-	picdims = QSize( iw, ih );
-
-  /* post the face dimensions 
-     padded to powers of 2 if necessary
+  /* face size = clip size if possible.
+    Otherwise largest feasible size not more 
+	than twice as big as the clip rectangle.
   */
+	iw = imageclip.width();
+	ih = imageclip.height();
+	int mw = maxdims.width(),
+		mh = maxdims.height();
 	if( pwr2 ){
-		rw = double( tw ) / double( mw );
-		while( rw < 0.5 ){
-			rw *= 2;
-			mw /= 2;
-		}
-		tw = mw;
-		rh = double( th ) / double( mh );
-		while( rh < 0.5 ){
-			rh *= 2;
-			mh /= 2;
-		}
-		th = mh;
+		while( mw >= 2 * iw ) mw /= 2;
+		while( mh >= 2 * ih ) mh /= 2;
+		iw = mw;
+		ih = mh;
+	} else {
+		if( iw > mw ) iw = mw;
+		if( ih > mh ) ih = mh;
 	}
-	facedims = QSize( tw, th );
-/*
-qCritical("picdims %d, %d\npicfovs %.1f, %.1f\nfacedims %d, %d\nfacefovs %.1f, %.1f",
-		  picdims.width(), picdims.height(),
-		  imagefovs.width(), imagefovs.height(),
-		  facedims.width(), facedims.height(),
-		  facefovs.width(), facefovs.height() );
-*/
-	return !facedims.isEmpty();
+	facedims = QSize( iw, ih );
+
+
+	return true;
 }
 
-/* Set working face dimensions (private)
-  Sets facedims = the passed dimensions, and picdims =
-  facedims scaled by imagefovs/facefovs.  Note if this makes 
-  picdims > facedims the pimage will be cropped to the face 
-  size when loaded, and will be padded to face size 
-  when image fov is smaller.
-20 Nov 08:
-  When horizontal fov == 360 degrees, force pic width == face width
+/* apparent fovs corresponding to arbitrary
+   texture scale factors for current projection
 */
-bool pvQtPic::setFaceSize( QSize dims ){
-	if( type == nil ) return false;	// no picture
-	if(dims.isEmpty() ) return false;  // bad dimensions
-	facedims = dims;
-	int picw = scalepix( xproj, facedims.width(),
-					facefovs.width(), imagefovs.width());
-	int pich = scalepix( yproj, facedims.height(),
-					facefovs.height(), imagefovs.height());
-  // ensure clean wrap for 360 degree images
-	if( imagefovs.width() == 360 ) picw = facedims.width();
-
-	picdims = QSize( picw, pich );
-	return !picdims.isEmpty();
+QSizeF pvQtPic::picScale2Fov( QSizeF scl ){
+	if( type == cub ) return maxfovs;
+	double mx = fov2rad( xproj, maxfovs.width() ),
+		   my = fov2rad( yproj, maxfovs.height() );
+	return QSizeF( rad2fov( xproj, mx / scl.width() ),
+				   rad2fov( yproj, my / scl.height() ) );
 }
 
-/* (size at max display FOV) / (size at current face FOV).
-   Used to scale texture coordinates for standard display
+
+/* Effective displayed image size in megapixels
 */
-QSizeF  pvQtPic::getTexScale(){
-	QSizeF r(1.0, 1.0);
-	if( type == nil ) return r;	// no projection
-	if(imagedims.isEmpty() ) return r;  // no image
-	if( facefovs == maxfovs ) return r;	// actual == max
-	double w = fov2rad( xproj, facefovs.width());
-	if( w > 0 ) r.setWidth( fov2rad( xproj, maxfovs.width()) / w );
-	double h = fov2rad( yproj, facefovs.height());
-	if( h > 0 ) r.setHeight( fov2rad( yproj, maxfovs.height()) / h );
-	return r;
+double pvQtPic::PictureSize(){
+	if( type == nil || facedims.isNull() ) return 0;
+	double d = facedims.height() * numimgs;
+	d *= facedims.width();
+	d /= 1000000;
+	return d;
 }
 
 /* post source image FOVs
@@ -697,10 +730,6 @@ int 	pvQtPic::NumImages()
 	return numimgs;
 }
 
-QSizeF  pvQtPic::PictureFOV(){
-  return facefovs.boundedTo( imagefovs ); 
-}
-
 bool  pvQtPic::isEmpty( PicFace face )
 {
 	if(face == any) return numimgs == 0;
@@ -733,11 +762,9 @@ QColor	pvQtPic::getFill( PicFace face )
   
   FaceImage() delivers a displayable image, which it gets
   by calling a reader for the appropriate source.  Readers
-  return temp images of size picdims in the native pixel
-  format of the source; FaceImage makes the final image and
-  may delete the temp one.  
-  
-  Caller should delete the returned QImage when done with it.
+  return new images of size facedims in the native pixel
+  format of the source; FaceImage converts pixel format it
+  necessary.
   
 **/
 
@@ -747,19 +774,34 @@ QImage * pvQtPic::FaceImage( PicFace face ){
 
 	QImage * pim = 0;
 	int i = int(face);
-	switch( kinds[i] ){
-	case QIMAGE_KIND: 
-		pim = loadQImage( i );
-		break;
-	case RASTER_KIND: 
-		pim = loadRaster( i );
-		break;
-	case FILE_KIND:	
-		pim = loadFile( i );
-		break;
-	case URL_KIND: 
-		pim =  loadURL( QUrl( names[i] ) );
-		break;
+
+	if( !idims[i].isNull() ){
+    /* set clipping rectangle for this face's image
+       (allows mixed-size cube faces)
+    */
+		int dx = idims[i].width(),
+			dy = idims[i].height();
+		imageclip = QRect(
+			int( dx * cliprect.x()),
+			int( dy * cliprect.y()),
+			int( dx * cliprect.width()),
+			int( dy * cliprect.height())
+		);
+
+		switch( kinds[i] ){
+		case QIMAGE_KIND: 
+			pim = loadQImage( i );
+			break;
+		case RASTER_KIND: 
+			pim = loadRaster( i );
+			break;
+		case FILE_KIND:	
+			pim = loadFile( i );
+			break;
+		case URL_KIND: 
+			pim =  loadURL( QUrl( names[i] ) );
+			break;
+		}
 	}
 // if no image, return the empty face
 	if( pim == 0 ) return loadEmpty( i );
@@ -767,33 +809,6 @@ QImage * pvQtPic::FaceImage( PicFace face ){
 // convert pixel format if necessary		
 	if( pim->format() != faceformat ) {
 		QImage *oim = new QImage( pim->convertToFormat(faceformat) );
-		delete pim;
-		pim = oim;
-	}
-// pack image into face if necessary
-	if( !picdims.isEmpty()  
-	    && picdims != facedims ){
-		QSize cropdims = picdims.boundedTo( facedims );
-		QImage * oim = new QImage( facedims, faceformat );
-		oim->fill( 0xFF000000 ); // opaque black
-		int jit = (pim->height() - cropdims.height() + 1) / 2;
-		int jft = (oim->height() - cropdims.height() + 1) / 2;
-		int jil = (pim->width() - cropdims.width() + 1) / 2;
-		int jfl = (oim->width() - cropdims.width() + 1) / 2;
-		int bpli = pim->bytesPerLine();
-		int bplf = oim->bytesPerLine();
-		int bpp = bpli / pim->width();
-		int bcpy =  pim->width(); 
-		if( bcpy > oim->width() ) bcpy = oim->width();
-		bcpy *= bpp;
-		unsigned char * pli, * plf;
-		pli = pim->scanLine( jit + i ) + jil * bpp; 
-		plf = oim->scanLine( jft + i ) + jfl * bpp; 
-		for( int i = cropdims.height(); i > 0; --i ){
-			memcpy( plf, pli, bcpy );
-			pli += bpli;
-			plf += bplf;
-		}
 		delete pim;
 		pim = oim;
 	}
@@ -831,36 +846,26 @@ QImage * pvQtPic::loadFile( int face )
 {
 	QImageReader ir( names[face] );
 	if( !ir.canRead() ) return 0;
-// get info for temp fix now
-// because read() wipes it out!
-	QSize fs = ir.size();
-	QByteArray fmt = ir.format();
+	QImage * pim;
 
-	ir.setScaledSize( picdims );
-	QImage *pim = new QImage( ir.read() );
-
-/* Temp fix for a bug in Qt jpeg reader:
-  if size was reduced, last column is probably black;
-  so if hfov == 360, replace that col with the average 
-  of its neighbors.  NOTE assumes 8 bits per color
+/* to avoid a bug in Qt4.4 jpeg reader:
+  read at full size, reduce using QImage ops
 */
-	if(  imagefovs.width() == 360
-	  && picdims.width() < fs.width()
-	  && ( fmt == "jpg" || fmt == "jpeg" )
-	  )
-	{
-		int ppl = pim->width(),
-			bpl = pim->bytesPerLine(),
-			bpp = bpl / ppl;
-		int ic = (ppl - 1) * bpp;
-		unsigned char * pl = pim->bits();
-		for( int l = 0; l < pim->height(); l++ ){
-			for(int i = 0; i < bpp; i++ ){
-				pl[i + ic] = (pl[i] + pl[i + ic - bpp]) >> 1;
-			}
-			pl += bpl;
-		}
-	}
+#if 1
+	pim = new QImage(
+		ir.read().copy( 
+			imageclip
+		).scaled( 
+			facedims,
+			Qt::IgnoreAspectRatio,
+			Qt::SmoothTransformation
+		)
+	);
+#else	// can use this if bug gets fixed:
+	ir.setClipRect( imageclip );
+	ir.setScaledSize( facedims );
+	pim = new QImage( ir.read() );
+#endif
 
 	return pim;
 }
@@ -869,7 +874,13 @@ QImage * pvQtPic::loadQImage( int face )
 {
 	QImage * iim = (QImage *)(addrs[face]);
 	QImage * pim = new QImage(
-		iim->scaledToHeight( picdims.height())
+		iim->copy( 
+				imageclip
+			).scaled( 
+				facedims,
+				Qt::IgnoreAspectRatio,
+				Qt::SmoothTransformation
+			)
 	);
 	return pim;
 }

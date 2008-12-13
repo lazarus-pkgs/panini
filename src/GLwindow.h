@@ -39,12 +39,14 @@ signals:
 	void showTitle( QString msg );
 	void showProj( QString name );
 	void showFov( QSizeF fovs );
+	void showSurface( int surf );
 
 public slots:
   // from mainwindow
 	void newPicture( const char * type );
 	void about_pvQt();
 	void save_as();
+	void set_surface( int surf );
  // from picType dialog...
 	void picTypeChanged( int t );
 	void hFovChanged( double h );

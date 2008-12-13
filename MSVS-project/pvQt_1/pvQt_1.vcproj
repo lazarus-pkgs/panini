@@ -217,10 +217,6 @@
 			RelativePath="..\..\pvQt.pro"
 			>
 		</File>
-		<File
-			RelativePath="..\..\pvQtSpecification.txt"
-			>
-		</File>
 	</Files>
 	<Globals>
 	</Globals>
