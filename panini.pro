@@ -1,10 +1,10 @@
-##  qmake project for pvQt  ##
+##  qmake project for panini  ##
 TEMPLATE = app
 CONFIG += debug_and_release
 CONFIG(debug, debug|release) {
-     TARGET = pvQtd
+     TARGET = panini-d
 } else {
-     TARGET = pvQt
+     TARGET = panini
 }
 
 ##  framework  ##
@@ -38,6 +38,9 @@ HEADERS += src/quadsphere.h
 SOURCES += src/quadsphere.cpp
 FORMS += ui/ShowText.ui
 HEADERS += src/pvQtMouseModes.h
+HEADERS += src/panocylinder.h
+SOURCES += src/panocylinder.cpp
+
 
 ##  Version  ##
 # major.minor rev numbers are in version0.h

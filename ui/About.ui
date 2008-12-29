@@ -15,7 +15,7 @@
    </font>
   </property>
   <property name="windowTitle" >
-   <string>About pvQt</string>
+   <string>About panini</string>
   </property>
   <property name="autoFillBackground" >
    <bool>true</bool>
@@ -81,7 +81,7 @@ Info...</string>
     </font>
    </property>
    <property name="text" >
-    <string>Open source multiplatform panorama viewer using OpenGL &amp; Qt</string>
+    <string>multiplatform panorama viewer and perspective converter</string>
    </property>
    <property name="alignment" >
     <set>Qt::AlignCenter</set>
@@ -92,7 +92,7 @@ Info...</string>
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>421</width>
+     <width>429</width>
      <height>28</height>
     </rect>
    </property>
@@ -108,7 +108,7 @@ Info...</string>
        </font>
       </property>
       <property name="text" >
-       <string>pvQt version</string>
+       <string>panini version</string>
       </property>
      </widget>
     </item>

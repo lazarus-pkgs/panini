@@ -113,10 +113,10 @@ if(ok){
 
   if( !ok ) qFatal("MainWindow setup failed");
  
-/*/// enable panosurface switch 
+// enable panosurface switch 
   actionPanosphere->setEnabled(true);
   actionPanocylinder->setEnabled(true);
-*///
+
 }
 
 /* handle command line argumnents

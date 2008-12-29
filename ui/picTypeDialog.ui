@@ -10,7 +10,7 @@
    </rect>
   </property>
   <property name="windowTitle" >
-   <string>pvQt - Picture Type and FOV</string>
+   <string>panini - Picture Type and FOV</string>
   </property>
   <widget class="QWidget" name="layoutWidget" >
    <property name="geometry" >

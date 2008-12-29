@@ -11,16 +11,15 @@ public:
 	pvQtMouseModes( QWidget * parent = 0 )
 	: QDialog(parent) {
 		setupUi( this );
-		setWindowTitle("pvQt  Mouse Modes");
+		setWindowTitle(" panini  mouse modes");
 		plainTextEdit->setPlainText( QString( "\
   Key	Buttons	Horizontal	Vertical\n\
   none	  left	  Yaw	  Pitch\n\
-  none	  right	  Eye	  Zoom\n\
-  none	  both		  Zoom\n\
-  Shift	  left	  Roll	  Pitch\n\
+  none	  right	  EyeZ	  Zoom\n\
+  none	  both	  Roll	  Pitch\n\
+  Shift	  left	  FrameX	  FrameY\n\
   Shift	  right	  hFov	  vFov\n\
-  Shift	  both		  Zoom\n\
-  Shift	  double click: Next Projection\n\
+  Shift	  both	  EyeX	  EyeY\n\
   Scroll wheel: Zoom "));
 	}
 protected:

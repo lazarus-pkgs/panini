@@ -127,6 +127,9 @@ GLwindow::GLwindow (QWidget * parent )
 	connect( this, SIGNAL(showSurface(int)),
 			 parent, SLOT(showSurface(int)) );
   if(ok) ok = 
+	connect( this, SIGNAL(showSurface(int)),
+			 glview, SLOT(setSurface(int)) );
+  if(ok) ok = 
 	connect( parent, SIGNAL(set_surface(int)),
 			 this, SLOT(set_surface(int)) );
   if(ok) ok = 

@@ -31,6 +31,7 @@
 #include <QtOpenGL/QGLWidget>
 #include "pvQtPic.h"
 #include "quadsphere.h"
+#include "panocylinder.h"
 
 class pvQtView : public QGLWidget
 {
@@ -128,6 +129,8 @@ public:
 	 void picChanged(); // from scratch
 	 void newFace( pvQtPic::PicFace face ); // one cube face
 
+	 void setSurface( int surf );
+
 signals:
 	void reportView( QString msg );
 	void OGLerror( QString msg );
@@ -173,14 +176,13 @@ private slots:
      int ispin, spinstep;
      int izoom, zoomstep;
 	 int idist, diststep;
-	 int ihfov, ivfov;
 
 	int mx0, my0, mx1, my1;	// mouse coordinates
 	Qt::MouseButtons mb;
 	Qt::KeyboardModifiers mk;
 	QTimer mTimer;
 
-	void setTexMag( QSizeF mags );
+	void setTexMag( double magx, double magy );
 
   // display support
 	 void setPicType( pvQtPic::PicType pt );
@@ -214,6 +216,7 @@ private slots:
   	bool OGLok(const char * label);	// check, post and signal OGL errors
   // tabulated sphere points and texture coordinates
 	quadsphere  * pqs;
+	panocylinder * ppc;
 	bool QS_BUF;	// put quadsphere data in OGL buffers
 	double xtexmag, ytexmag;  // tex coord scale factors
 
@@ -222,6 +225,13 @@ private slots:
 	pvQtPic::PicType curr_pt;
 	int		curr_ipt;	// index of curr_pt
 	QSizeF	stdTexScale;
+
+	int surface;
+ 
+	double eyex, eyey;
+	double framex, framey,
+		   framex0, framey0,
+		   fwf, fhf;
 
 };
 

@@ -10,7 +10,7 @@
    </rect>
   </property>
   <property name="windowTitle" >
-   <string>pvQt</string>
+   <string>panini</string>
   </property>
   <widget class="QWidget" name="centralwidget" >
    <widget class="QLabel" name="projLabel" >
@@ -312,7 +312,7 @@
   </action>
   <action name="actionAbout_pvQt" >
    <property name="text" >
-    <string>About pvQt...</string>
+    <string>About...</string>
    </property>
   </action>
   <action name="actionFull_frame" >
