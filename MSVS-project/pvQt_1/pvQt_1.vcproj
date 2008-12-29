@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="pvQt_1"
+	Name="panini"
 	ProjectGUID="{A70594CC-2C31-4F76-AC81-DB3B0475F57E}"
 	Keyword="MakeFileProj"
 	TargetFrameworkVersion="196613"
@@ -24,9 +24,9 @@
 			<Tool
 				Name="VCNMakeTool"
 				BuildCommandLine="cd ..\.. &#x0D;&#x0A;make debug"
-				ReBuildCommandLine="cd ..\.. &#x0D;&#x0A;qmake pvQt.pro &#x0D;&#x0A;make clean &#x0D;&#x0A;make debug &#x0D;&#x0A;&#x0D;&#x0A;"
+				ReBuildCommandLine="cd ..\.. &#x0D;&#x0A;qmake panini.pro &#x0D;&#x0A;make clean &#x0D;&#x0A;make debug &#x0D;&#x0A;&#x0D;&#x0A;"
 				CleanCommandLine="cd ..\.. &#x0D;&#x0A;make clean"
-				Output="pvQt_1.exe"
+				Output=""
 				PreprocessorDefinitions="WIN32;_DEBUG"
 				IncludeSearchPath="C:\Qt\4.4.1\include;C:\MinGW\include;C:\MinGW\GnuWin32\include"
 				ForcedIncludes=""
@@ -44,9 +44,9 @@
 			<Tool
 				Name="VCNMakeTool"
 				BuildCommandLine="cd ..\.. &#x0D;&#x0A;make release"
-				ReBuildCommandLine="cd ..\.. &#x0D;&#x0A;qmake pvQt.pro &#x0D;&#x0A;make clean &#x0D;&#x0A;make release &#x0D;&#x0A;"
+				ReBuildCommandLine="cd ..\.. &#x0D;&#x0A;qmake panini.pro &#x0D;&#x0A;make clean &#x0D;&#x0A;make release &#x0D;&#x0A;"
 				CleanCommandLine="cd ..\.. &#x0D;&#x0A;make clean"
-				Output="pvQt_1.exe"
+				Output=""
 				PreprocessorDefinitions="WIN32;NDEBUG"
 				IncludeSearchPath="C:\Qt\4.4.1\include;C:\MinGW\include;C:\MinGW\GnuWin32\include"
 				ForcedIncludes=""
@@ -78,6 +78,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\MainWindow.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\panocylinder.cpp"
 				>
 			</File>
 			<File
@@ -120,6 +124,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\MainWindow.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\panocylinder.h"
 				>
 			</File>
 			<File
@@ -206,11 +214,15 @@
 			>
 		</File>
 		<File
-			RelativePath="..\..\pvQt-build.txt"
+			RelativePath="..\..\panini-build.txt"
 			>
 		</File>
 		<File
-			RelativePath="..\..\pvQt-usage.txt"
+			RelativePath="..\..\panini-usage.txt"
+			>
+		</File>
+		<File
+			RelativePath="..\..\panini.pro"
 			>
 		</File>
 		<File
