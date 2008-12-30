@@ -1,16 +1,16 @@
 How to use panini version 0.6.xx   29 December 2008
 
-panini (formerly pvQt) is a tool for creating printable views from panoramic and wide angle pictures. 
+panini (formerly pvQt) is a tool for creating perspective views from panoramic and wide angle images. 
+ 
+panini can load most common photo and panoramic formats from image files or QuickTime VR (.mov) files.  Like all pano viewers, it then shows a linear perspective view that can be panned, tilted and zoomed.  But panini can also display a range of wide angle perspectives via the stereographic and "Panini" families of projections, and shift, rotate, and stretch the image, like a software view camera.  
 
-panini can load most common photo and panoramic formats from image files or QuickTime VR (.mov) files.  Like all pano viewers, it then shows a linear perspective view that can be panned, tilted and zoomed.  But panini can also display a range of wide angle perspectives via the stereographic and "Panini" projections, and shift, rotate, and stretch the image.  
-
-panini can do those things because it paints the picture on a three dimensional surface -- either a sphere or a cylinder -- which you then view from inside in perspective.  Shifting the point of view changes the apparent perspective of the image, and other controls let you frame the view to your liking.  Then you can save the screen image to a file at higher-than-screen resolution. 
+panini can do those things because it paints the picture on a three dimensional surface, either a sphere or a cylinder, which you then view in perspective.  Shifting the point of view changes the apparent perspective of the image, and other controls let you frame the view to your liking.  Then you can save the screen image to a file at higher-than-screen resolution. 
 
 All of this works interactively at "mouse speed" thanks to the OpenGL video graphics system.  And thanks to the Qt application framework, it runs on Windows, Mac OSX, and most flavors of Linux and Unix.
 
 WHY "PANINI"?
 
-The name "panini" honors the 18th century artist and professor of perspective Gianpaolo Panini, who painted grand views of Rome and taught a generation of artists that included Canaletto and Piranesi.  Their impressive wide angle views of building interiors and urban landscapes were famous throughout Europe.  These pictures seem to be in "true perspective", but can't be: the standard linear perspective projection creates serious distortions at much smaller view angles.  Instead, they used clever combinations of cylindrical and linear projections.  
+The name "panini" honors the 18th century artist and professor of perspective Gianpaolo Panini, who painted grand views of Rome and taught a generation of artists that included Canaletto and Piranesi.  Their impressive wide angle views of building interiors and urban landscapes were famous throughout Europe.  These pictures seem to be in true perspective, but can't be: the standard linear perspective projection creates serious distortions at much smaller view angles.  Instead, they used clever combinations of cylindrical and linear projection.  
 
 Bruno Postle recently deduced one simple but very effective way of combining those by studying a Panini painting of St. Peter's; so we are calling it the "Panini projection".  It is a linear projection of a cylindrical image -- the cylindrical analog of the stereographic projection of a sphere.  The Baroque artists may or may not have used this construction explictly, but it certainly produces images that look like the ones they drew.
 
@@ -54,9 +54,11 @@ Zoom controls magnification by changing the vertical field of view on the panosu
 
 "Eye in" and "Eye out" change perspective by moving the point of view toward or away from the center of the panosurface.  With the eye at the center, the picture perspective is linear, like a normal camera lens or pano viewer.  As the eye moves out, the perspective becomes more fisheye-like, and you can zoom farther out to see wider views.  But you can zoom in to the same level of image detail at any perspective setting.  When the right button is held, horizontal mouse motion controls eye distance. Eye distance is reported on the status line as "Ez" in units of the panosurface radius.
 
-With the panosphere, the perspective projections are members of a family whose protoype (at Ez = 1) is the stereographic projection.  With the panocylinder, the projections are members of a family whose prototype is the recently rediscovered "Panini projection", a combination of cylindrical and linear projections.  Something like it was used by 18th century painters to create a convincing perspective illusion in wide angle pictures.  It works that way on panoramic photos, too.  
+With the panosphere, the perspective projections are members of a family whose protoype (at Ez = 1) is the stereographic projection.  With the panocylinder, the projections are members of a family whose prototype is the recently rediscovered "Panini projection", a combination of cylindrical and linear projections.
 
-Ez = 0 gives the linear perspective projection with both panosurfaces.  At Ez = 5, the projection approaches an orthographic view of the sphere or cylinder.
+The linear perspective projection, at Ez = 0, belongs to both families.  As eye distance increases past 1, the viewing projection becomes more nearly parallel, and at Ez = 26, it is very close to the orthographic spherical or cylindrical projection.
+
+Becase the effect of Ez on the image is quite nonlinear, the controls that adjust it have a compensating nonlinear response built in.
 
 The following view controls, new in version 0.6, can only be operated with the mouse.
 
