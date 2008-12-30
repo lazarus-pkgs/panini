@@ -121,6 +121,7 @@ public:
   // preset views
   	 void reset_view();	// reinit all params
 	 void home_view();	// zero view angles
+	 void home_eyeXY(); // zero eyepoint shifts
 	 void full_frame();	// stereographic, min zoom
 	 void super_fish();	// circular superwide
 	 void turn90( int d ) ;	// turn picture incremental
@@ -226,10 +227,11 @@ private slots:
 	int		curr_ipt;	// index of curr_pt
 	QSizeF	stdTexScale;
 
-	int surface;
- 
+	int surface;	// 0: sphere, 1: cylinder
+ // shifts perpendicular to view axis
 	double eyex, eyey;
-	double framex, framey,
+	double framex, framey,	// user controlled
+		   fcompx, fcompy,	// to compensate eye shifts
 		   framex0, framey0,
 		   fwf, fhf;
 

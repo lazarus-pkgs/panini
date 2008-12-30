@@ -307,6 +307,10 @@ void MainWindow::on_actionPanocylinder_triggered( bool ckd ){
 	on_actionPanosphere_triggered( !ckd );
 }
 
+void MainWindow::on_actionHome_Eye_X_Y_triggered(){
+	emit home_eyeXY();
+}
+
 // Display panosurface.  0: sphere, 1: cylinder
 // also sets menu checks
 void MainWindow::showSurface( int surf ){
