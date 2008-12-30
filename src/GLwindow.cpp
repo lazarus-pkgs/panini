@@ -73,6 +73,9 @@ GLwindow::GLwindow (QWidget * parent )
 	connect( parent, SIGNAL(step_iproj( int )),
 		     glview, SLOT(step_iproj( int )));
   if(ok) ok = 
+	connect( parent, SIGNAL(home_eyeXY()),
+		     glview, SLOT(home_eyeXY()));
+  if(ok) ok = 
 	connect( parent, SIGNAL(home_view()),
 		     glview, SLOT(home_view()));
   if(ok) ok = 

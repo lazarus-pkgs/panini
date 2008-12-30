@@ -159,6 +159,7 @@
     <addaction name="actionSuper_wide" />
     <addaction name="actionFull_frame" />
     <addaction name="action_Home" />
+    <addaction name="actionHome_Eye_X_Y" />
     <addaction name="actionReset" />
     <addaction name="action90_deg_CCW" />
     <addaction name="action90_deg_CW" />
@@ -468,6 +469,14 @@
    </property>
    <property name="toolTip" >
     <string>project on cylinder</string>
+   </property>
+  </action>
+  <action name="actionHome_Eye_X_Y" >
+   <property name="text" >
+    <string>Home Eye X, Y</string>
+   </property>
+   <property name="shortcut" >
+    <string>Shift+Home</string>
    </property>
   </action>
  </widget>

@@ -60,6 +60,7 @@ signals:
 	void step_iproj( int d );
 	void save_as();
 	void home_view();
+	void home_eyeXY();
 	void reset_view();
 	void super_wide();
 	void full_frame();
@@ -122,6 +123,8 @@ private slots:
 
 	void on_actionPanosphere_triggered( bool ckd );
 	void on_actionPanocylinder_triggered( bool ckd );
+
+	void on_actionHome_Eye_X_Y_triggered();
 
 };
 

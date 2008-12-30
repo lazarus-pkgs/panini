@@ -1,16 +1,29 @@
-How to use panini version 0.6.xx   28 December 2008
+How to use panini version 0.6.xx   29 December 2008
 
-panini (formerly called pvQt) is a viewer for panoramic and wide angle pictures that runs on Linux, Windows and Apple OSX.  It can display many common photo and panoramic formats from ordinary image files or QuickTime VR (.mov) files.  Like other viewers, it shows pictures in rectilinear perspective, but can also display extremely wide angle stereographic and "Panini" views, and a range of intermediate perspectives.  It can do this because it projects the picture on a 3D surface -- either a sphere or a cylinder -- which you view from the inside in true perspective.  
+panini (formerly pvQt) is a tool for creating printable views from panoramic and wide angle pictures. 
 
-panini is a versatile perspective converter, that lets you warp images in several useful ways, frame the resulting views accurately and save them to image files at higher than screen resolution.
+panini can load most common photo and panoramic formats from image files or QuickTime VR (.mov) files.  Like all pano viewers, it then shows a linear perspective view that can be panned, tilted and zoomed.  But panini can also display a range of wide angle perspectives via the stereographic and "Panini" projections, and shift, rotate, and stretch the image.  
+
+panini can do those things because it paints the picture on a three dimensional surface -- either a sphere or a cylinder -- which you then view from inside in perspective.  Shifting the point of view changes the apparent perspective of the image, and other controls let you frame the view to your liking.  Then you can save the screen image to a file at higher-than-screen resolution. 
+
+All of this works interactively at "mouse speed" thanks to the OpenGL video graphics system.  And thanks to the Qt application framework, it runs on Windows, Mac OSX, and most flavors of Linux and Unix.
+
+WHY "PANINI"?
+
+The name "panini" honors the 18th century artist and professor of perspective Gianpaolo Panini, who painted grand views of Rome and taught a generation of artists that included Canaletto and Piranesi.  Their impressive wide angle views of building interiors and urban landscapes were famous throughout Europe.  These pictures seem to be in "true perspective", but can't be: the standard linear perspective projection creates serious distortions at much smaller view angles.  Instead, they used clever combinations of cylindrical and linear projections.  
+
+Bruno Postle recently deduced one simple but very effective way of combining those by studying a Panini painting of St. Peter's; so we are calling it the "Panini projection".  It is a linear projection of a cylindrical image -- the cylindrical analog of the stereographic projection of a sphere.  The Baroque artists may or may not have used this construction explictly, but it certainly produces images that look like the ones they drew.
+
 
 SYSTEM REQUIREMENTS and LIMITATIONS
+
+To run panini you need several Qt runtime libraries, version 4.4.2 or above, and on Windows, the minGW runtime, mingwm10.dll.  The Windows and OSX packages contain those libraries, Linux and Unix users will need to install the open source Qt package (which is not a bad idea on Mac and Windows, either, if you do any C++ development).  You can get it at http://trolltech.com/downloads/opensource/appdev.
 
 To display pictures panini uses OpenGL, a low level graphics API that is tightly integrated with the system's video drivers.  OpenGL cannot be installed as a separate piece of software.  If the version of your OpenGL implementation is less than 1.2 or does not support cubic texture mapping, panini will not run.  If the OpenGL version is less than 1.5 it may not be able to display all pictures correctly.
 
 You will get best results with OpenGL version 2.0 and above.  That means you should have either a "gaming" video card, or a recent "multimedia" one.  But ultimate gaming performance is not needed; a basic version 2 system should be perfectly adequate.  Cards to upgrade most desktop PCs to that level now cost only under $50.  
 
-On ubuntu Linux you will probably need to install the manufacturer's video drivers (both nVidia and ATI now supply them).  Ubuntu does not install these drivers by default because they are not open-source.
+On ubuntu Linux you will probably need to install the manufacturer's video drivers (both nVidia and ATI now supply them).  Ubuntu does not install these drivers by default because they are not open source.
 
 The "About" dialog shows information about your system's OpenGL facilities as well as the version of panini you are running.  It reports these limits:
   texPwr2:	must texture dimensions be powers of 2? 0 (false) preferred.
@@ -25,35 +38,37 @@ panini places no special demands on CPU speed or memory; if you can stitch panor
 
 Version 0.6 still cannot process PanoTools scripts or project files.
 
+Version 0.6 cannot display cubic panoramas on the cylinder, so cannot apply the Panini projection to them.
+
 BASIC VIEWING CONTROLS
 
-When you start panini without a command line, for example by double clicking an icon, it displays a wire frame model of the panosurface.  You can switch to the panocylinder by clicking either panosurface name in the presets menu.  You can try out the basic viewing controls on this wire model.
+When you start panini without a command line, for example by double clicking an icon, it displays a wire frame model of the panosurface.  You can switch to the panocylinder by clicking either panosurface name in the presets menu.  You can try out the basic viewing controls on these wire models.
 
-All the viewing commands have keyboard shortcuts, shown in the View menu.  You can also operate viewing controls with the mouse.  Help menu item "mouse modes..." shows how.
+Most viewing commands have keyboard shortcuts, shown in the View menu.  You can operate all viewing controls with the mouse.  Help menu item "mouse modes..." shows how.
 
-The Yaw, Pitch and Roll controls rotate the viewing frame with respect to the panosurface, as in a flight simulator.  Yaw and Pitch let you look in different directions; Roll adjusts which way is up.  To control Yaw and Pitch with the mouse, hold the left button and move the pointer in the direction you wish to look.  For a real flight simulator experience, you can hold both mouse buttons and "fly" using Roll and Pitch.
+The Yaw, Pitch and Roll controls rotate your viewing frame with respect to the panosurface, as in a flight simulator.  Yaw and Pitch let you look in different directions; Roll adjusts which way is up, and changes the directions of the Yaw and Pitch axes accordingly.  The status line shows these angles as "Y", "P", and "R", in units of degrees.
 
-Zoom controls magnification by changing the vertical field of view on the panosurface.  When you resize the window, the displayed image grows or shrinks to maintain the selected vertical field.  The mouse wheel (if present) adjusts zoom in coarse steps.  For finer control, move the mouse vertically while holding the right button.
+To control Yaw and Pitch with the mouse, hold the left button and move the pointer in the direction you wish to look.  Or you can hold both mouse buttons and "fly" using Roll and Pitch. 
 
-"Eye in" and "Eye out" change perspective by moving the point of view toward or away from the center of the panosurface.  Eye distance is shown in units of the panosurface radius.  When this is zero, the viewing perspective is rectilinear, like a normal camera lens.  As eye distance increases, the perspective becomes more fisheye-like, and you can zoom farther out to see wider views.  But you can zoom in to the same level of image detail at any perspective setting.  
+Zoom controls magnification by changing the vertical field of view on the panosurface.  When you resize the window, the displayed image grows or shrinks to maintain the selected vertical field.  The mouse wheel (if present) adjusts zoom in coarse steps.  For finer control, move the mouse vertically while holding the right button.  Zoom is reported on the status line as "V", in units of degrees; it is the visible vertical angle on the panosphere, but has a less simple relationship to the vertical field of view on the panocylinder.
 
-When the right button is held, horizontal mouse motion controls eye distance.
+"Eye in" and "Eye out" change perspective by moving the point of view toward or away from the center of the panosurface.  With the eye at the center, the picture perspective is linear, like a normal camera lens or pano viewer.  As the eye moves out, the perspective becomes more fisheye-like, and you can zoom farther out to see wider views.  But you can zoom in to the same level of image detail at any perspective setting.  When the right button is held, horizontal mouse motion controls eye distance. Eye distance is reported on the status line as "Ez" in units of the panosurface radius.
 
-With the panosphere, the perspective projections are members of a family whose protoype (at Eye = 1) is the stereographic projection.  With the panocylinder, the projections are members of a family whose prototype is the recently rediscovered "Panini projection", a combination of the cylindrical and rectilinear projections.  Something like it was used by 18th century painters to create a convincing perspective illusion in wide angle pictures.  
+With the panosphere, the perspective projections are members of a family whose protoype (at Ez = 1) is the stereographic projection.  With the panocylinder, the projections are members of a family whose prototype is the recently rediscovered "Panini projection", a combination of cylindrical and linear projections.  Something like it was used by 18th century painters to create a convincing perspective illusion in wide angle pictures.  It works that way on panoramic photos, too.  
 
-Cubic panoramas can only be displayed on the panosphere, so the Panini-family projections are not available for cubic sources. 
+Ez = 0 gives the linear perspective projection with both panosurfaces.  At Ez = 5, the projection approaches an orthographic view of the sphere or cylinder.
 
 The following view controls, new in version 0.6, can only be operated with the mouse.
 
-To shift the whole view horizontally or vertically without changing its size or shape,hold Shift and the left mouse button.
+To move the whole view horizontally or vertically without changing its size or shape, hold down the Shift key and the left mouse button.  These "framing shifts" are not reported on the status line.  "End" resets them to zero.
   
-To move the eye point away from the projection axis, hold down the Shift key and both mouse buttons.  The effects are similar to "swing" and "tilt" on a view camera (the image also shifts sideways; use the framing controls to recenter it).
+To move the eye point perpendicular to the projection axis, hold down the Shift key and both mouse buttons, and move the mouse toward the desired eye position.  The effects are similar to "swing" and "tilt" on a view camera.  Eye position is reported on the status line as "Ex" and "Ey" in units of the panosurface radius.  "Shift-Home" resets the eyepoint shifts to zero, as does "End".
 
-Some additional viewing controls change how the input image is painted onto the panosurface; these don't affect the appearance of the wire frame model. 
+Some additional viewing controls change how the input image is painted onto the panosurface; they don't affect the appearance of the wire frame model. 
 
 PRESETS
 
-Several preset views are available via single keystrokes.  "Home" resets the yaw, pitch and roll angles to zero.  "Shift + Home" resets the eyepoint and framing shifts. "End" resets everything, restoring the standard view you got when the image was first loaded.  "F" gives the widest possible full frame view (a stereographic or Panini projection) and "S" gives a "super wide" view, obtained by moving the eye point slightly outside the panosurface.
+Several preset views are available via single keystrokes.  "Home" resets the yaw, pitch and roll angles to zero.  "Shift + Home" resets the eyepoint shifts. "End" resets everything, restoring the standard view you got when the image was first loaded.  "F" gives the widest possible full frame view (a stereographic or Panini projection) and "S" gives a "super wide" view, obtained by moving the eye point slightly outside the panosurface.
 
 The Turn controls ("L" and "R" keys) rotate the image on the panosurface in increments of 90 degrees.  This rotation is not reset by "End".  Note: the projection axes do not turn along with the image, so you get strange results on the panocylinder and for the asymmetric projections (cylindrical, mercator and equirectangular).  However you can view the "transverse" forms of those projections, if you assign swapped fovs when you load the image (check "unlock Fovs").  All this will be sorted out less confusingly in future release.
 
@@ -84,7 +99,7 @@ When you start panini from the command line, you can optionally specify a pictur
 The first command line argument can be a 4 letter picture type name, one of:
 	proj	PanoTools script or project
 	qtvr	QuickTime VR panorama (cubic or cylindrical)
-	cube	1 to 6 rectilinear cube face images 
+	cube	1 to 6 linear cube face images 
 	rect	Rectilinear (normal lens) projection 
 	fish	Fisheye lens or mirror ball projection
 	sphr	Equal angle spherical projection
@@ -154,7 +169,8 @@ The version number shown in the "about" dialog has the form: major.minor.rev.  M
   
 Rev will have two revision numbers separated by a colon (:) if the program was built from a mixture of SVN revisions, and an "M" at the end if it was built from a locally modified copy of the archived code.  It may also be "???" if the program was built from an unknown source code revision.
 
-Some of the functions described here may not work in all versions of panini.  Please consult the Release Notes for further information.  And please check the project site (https://sourceforge.net/projects/pvqt/) to see if you have the latest version.  
+Please consult the Release Notes for further information.  And please check the project site (https://sourceforge.net/projects/pvqt/) to see if you have the latest version.  
+
 
 LICENSE
 

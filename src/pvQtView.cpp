@@ -228,7 +228,7 @@ void pvQtView::mTimeout(){
 		}
 	} else if ( mb == Qt::RightButton ){
 		if( mk == Qt::NoModifier ){ 
-		// Eye, Zoom
+		// Eye Z, Zoom
 			idist -= dx;
 			setDist( idist );
 			izoom -= dy;
@@ -249,7 +249,9 @@ void pvQtView::mTimeout(){
 		} else if( mk == Qt::ShiftModifier ){	
 		// Eye X, Y position
 			eyex = KLIP( eyex - 0.001 * dx, -1, 1 );
-			eyey = KLIP( eyey - 0.001 * dy, -1, 1 );
+			eyey = KLIP( eyey + 0.001 * dy, -1, 1 );
+			fcompx = - 0.5 * eyex;
+			fcompy = 0.5 * eyey;
 		} 
 	}
 
@@ -375,8 +377,15 @@ void pvQtView::wheelEvent(QWheelEvent *event){
 	updateGL();
 	showview();
  }
- 
- void pvQtView::full_frame(){
+
+  void pvQtView::home_eyeXY(){
+	eyex = eyey = 0;
+	fcompx = fcompy = 0;
+	updateGL();
+	showview();
+ }
+
+void pvQtView::full_frame(){
 	setDist( 1000 );
 	setZoom( int(16 * maxFOV) );
 	updateGL();
@@ -384,7 +393,7 @@ void pvQtView::wheelEvent(QWheelEvent *event){
  }
  
  void pvQtView::super_fish(){
-	setDist( 1087 );
+	setDist( 1070 );
 	setZoom( int(16 * maxFOV) );	// maximize FOV
 	updateGL();
 	showview();
@@ -408,12 +417,12 @@ void pvQtView::turnAbs( double deg ){
 }
 
 
- /** report current view **/
+ /** report current view parameters **/
  
  void pvQtView::showview(){
 	 QString s;
-	 s.sprintf("Yaw %.1f  Pitch %.1f  Roll %.1f  Eye %.2f  vFOV %.1f",
-		 panAngle, tiltAngle, spinAngle, eyeDistance, vFOV );
+	 s.sprintf("Y %.1f  P %.1f  R %.1f  V %.1f  Ex %.2f  Ey %.2f  Ez %.2f",
+		 panAngle, tiltAngle, spinAngle, vFOV, eyex, eyey, eyeDistance);
 	 emit reportView( s );
  }
 
@@ -474,9 +483,11 @@ void pvQtView::initView()
 	framex = framey = 0;
   // eye position
 	eyeDistance = 0.0;
-	minDist = 0.0; maxDist = 1.07;	// fixed limits
+	minDist = 0.0; 
+	maxDist = 5; ///1.07;	// fixed limits
 	idist = 0; diststep = 10;	// % of radius
 	eyex = eyey = 0;
+	fcompx = fcompy = 0;
   // zoom
 	minFOV = 10.0;  maxFOV = MAXPROJFOV;
  	zoomstep = 40;	// 2.5 degrees in FOV
@@ -782,15 +793,14 @@ void pvQtView::setTexMag( double magx, double magy ){
   // Set point of view
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-/** initial viewing volume
-  vFOV sets zoom
-  includes a framing translation 
+/** initial viewing volume, vFOV sets zoom
+  includes framing and eye shift compensating translations 
 **/
 	Znear = 0.07; Zfar = 7;
 	double  hhnear = Znear * tan( 0.5 * RAD(wFOV) ),
 			hwnear = hhnear * portAR,
-			dxnear = 2 * hwnear * framex,
-			dynear = 2 * hhnear * framey;
+			dxnear = 2 * hwnear * (framex + fcompx),
+			dynear = 2 * hhnear * (framey + fcompy);
 	glFrustum( -(hwnear + dxnear), hwnear - dxnear,
 				-(hhnear + dynear), hhnear - dynear,
 				Znear, Zfar

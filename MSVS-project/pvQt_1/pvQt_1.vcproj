@@ -225,10 +225,6 @@
 			RelativePath="..\..\panini.pro"
 			>
 		</File>
-		<File
-			RelativePath="..\..\pvQt.pro"
-			>
-		</File>
 	</Files>
 	<Globals>
 	</Globals>
