@@ -63,7 +63,7 @@ signals:
 	void home_eyeXY();
 	void reset_view();
 	void super_wide();
-	void full_frame();
+	void set_view( int v );
 	void turn90( int d );
 	void set_surface( int surf );
 	
@@ -94,10 +94,11 @@ private slots:
 	void eyeOut();
 	void homeView();
 	void resetView();
-	void on_actionFull_frame_triggered();
+	void on_actionPanini_proj_triggered();
+	void on_actionLinear_proj_triggered();
+	void on_actionOrtho_proj_triggered();
 	void on_actionSuper_wide_triggered();
 	void on_action90_deg_CW_triggered();
-	void on_action90_deg_CCW_triggered();
 	
 	void on_actionQTVR_triggered();
 	void on_actionRectilinear_triggered();

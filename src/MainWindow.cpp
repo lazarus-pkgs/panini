@@ -188,8 +188,16 @@ void MainWindow::resetView(){
 	emit reset_view();
 }
 
-void MainWindow::on_actionFull_frame_triggered(){
-	emit full_frame();
+void MainWindow::on_actionLinear_proj_triggered(){
+	emit set_view( 0 );
+}
+
+void MainWindow::on_actionPanini_proj_triggered(){
+	emit set_view( 1 );
+}
+
+void MainWindow::on_actionOrtho_proj_triggered(){
+	emit set_view( 2 );
 }
 
 void MainWindow::on_actionSuper_wide_triggered(){
@@ -198,10 +206,6 @@ void MainWindow::on_actionSuper_wide_triggered(){
 
 void MainWindow::on_action90_deg_CW_triggered(){
 	emit turn90( 1 );
-}
-
-void MainWindow::on_action90_deg_CCW_triggered(){
-	emit turn90( -1 );
 }
 
 /** Picture Menu Handlers 

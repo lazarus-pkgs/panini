@@ -82,8 +82,8 @@ GLwindow::GLwindow (QWidget * parent )
 	connect( parent, SIGNAL(reset_view()),
 		     glview, SLOT(reset_view()));
   if(ok) ok = 
-	connect( parent, SIGNAL(full_frame()),
-		     glview, SLOT(full_frame()));
+	connect( parent, SIGNAL(set_view(int)),
+		     glview, SLOT(set_view(int)));
   if(ok) ok = 
 	connect( parent, SIGNAL(super_wide()),
 		     glview, SLOT(super_fish()));
@@ -256,7 +256,6 @@ bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 		} 
 	} else {
 		ok = pvpic->setType( picType );
-		if( picType == pvQtPic::cub ) emit( showSurface(0) );
 	}
 
 	if( ok ) {
@@ -311,7 +310,6 @@ bool GLwindow::QTVR_file( QString name ){
 		pvpic->setType( pvQtPic::cub );
 		picFov = QSizeF( 90, 90 );
 		pvpic->setImageFOV( picFov );
-		emit( showSurface( 0 ) );	// cube forces sphere
 		for( int i = 0; ok && i < 6; i++ ){
 			QImage * pim = dec.getImage( i );
 			ok = pvpic->setFaceImage( pvQtPic::PicFace(i), pim );

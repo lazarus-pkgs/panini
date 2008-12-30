@@ -1,7 +1,7 @@
 
-	panini 0.6.xx  Release Notes	28 December 2008
+	panini 0.6.xx  Release Notes	30 December 2008
 
-With version 0.6, pvQt has been renamed "panini".
+At version 0.6, pvQt has been renamed "panini".
 
 This is a beta release of software that is under active
 development and will be replaced by a better version in
@@ -14,16 +14,15 @@ http://sourceforge.net/tracker/?group_id=241632&atid=1116683
 You may find a newer release at:
 http://sourceforge.net/projects/pvqt/
 
-Release 0.6 is basically pvQt 0.5 with the addition of an 
-alternate cylindrical panosurface and some new viewing 
-controls.  But with the Panini projection, it is no longer 
-just a wacky panorama viewer, but the beginnings of a serious 
-tool for creating printable wide angle photographs. 
-
 The main new features are:
 -- cylindrical panosurface enables "Panini projection" for
    convincing perspective effects in wide angle views (not 
-   available for cubic source images)
+   available for cubic source images).
+-- The range of eye distance has been enlarged and the 
+   controls for it linearized.  It is now possible to sweep 
+   the viewing projection from linear through stereographic
+   or Panini, all the way to orthographic or cylindrical.
+-- There are presets for the 3 principal viewing projections.
 -- framing controls shift view center with respect to screen
    window.
 -- can shift eye point sideways as well as radially, for
@@ -32,8 +31,15 @@ The main new features are:
 Some other improvements
 -- fewer errors in input deprojection functions (some 
    still need work)
+-- a bug in cubic picture loading has ben fixed.
 
 Known issues and limitations:
+-- Displayed vFov angle is correct only for the panosphere
+   and eye distances between 0 and 1.
+-- Vertical scale and aspect ratio at picture center change
+   with eye distance.  You can fix this with view controls, 
+   but there should be some automatic compensation.
+-- Initial vertical scale on panocylinder is too high.
 -- still does not read PT scripts/projects
 -- Can't display cylindrical views of cubic sources
 -- To save high resolution views, your OpenGL must support 

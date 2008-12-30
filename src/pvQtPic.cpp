@@ -459,8 +459,8 @@ bool pvQtPic::fitFaceToImage( QSize maxdims, bool pwr2 ){
 	imageclip = QRect(
 		int( iw * cliprect.x()),
 		int( ih * cliprect.y()),
-		int( iw * cliprect.width()),
-		int( ih * cliprect.height())
+		int( 0.5 + iw * cliprect.width()),
+		int( 0.5 + ih * cliprect.height())
 	);
 
   /* face size = clip size if possible.
@@ -480,6 +480,9 @@ bool pvQtPic::fitFaceToImage( QSize maxdims, bool pwr2 ){
 		if( iw > mw ) iw = mw;
 		if( ih > mh ) ih = mh;
 	}
+// make sure cube face is square
+	if( type == cub ) ih = iw;
+
 	facedims = QSize( iw, ih );
 
 

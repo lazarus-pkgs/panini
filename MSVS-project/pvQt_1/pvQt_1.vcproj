@@ -214,6 +214,10 @@
 			>
 		</File>
 		<File
+			RelativePath="..\..\panini-0.6-release.txt"
+			>
+		</File>
+		<File
 			RelativePath="..\..\panini-build.txt"
 			>
 		</File>

@@ -108,7 +108,7 @@ public:
      void setTilt(int iangle);
      void setSpin(int iangle);
      void setZoom( int iangle );
-	 void setDist( int idist );  // unit = 1% of radius
+	 void setDist( double dist );  
   // keypress steps -- dp should normally be +/- 1
 	 void step_pan( int dp );
 	 void step_tilt( int dp );
@@ -120,10 +120,10 @@ public:
 	 void step_iproj( int dp );
   // preset views
   	 void reset_view();	// reinit all params
+	 void set_view( int v );  // 0: lin, 1: proto, 2: ortho
 	 void home_view();	// zero view angles
 	 void home_eyeXY(); // zero eyepoint shifts
-	 void full_frame();	// stereographic, min zoom
-	 void super_fish();	// circular superwide
+	 void super_fish();		// Ez = 1.07, min zoom
 	 void turn90( int d ) ;	// turn picture incremental
 	 void turnAbs(double deg);	// tun absolute
   // update display of current picture
@@ -155,15 +155,15 @@ private slots:
  // GUI support
      double normalizeAngle(int &iangle, int istep, double lwr, double upr);
 	 int iAngle( double angle );	// real to integer coded angle
+	 void stepDangl( int dp, int stp );
 	 void showview();
 	 void setFOV( double fov = 0 );
 	 void initView();
   // current view parameters
 	 double hFOV, vFOV;	// angular size at sphere center (deg)
 	 double minFOV, maxFOV; // limits on vFOV
-	 double wFOV;  // angular vFOV at eye point (deg)
+	 double wFOV;  // vert angle at eye (deg) sets magnification
  	 double eyeDistance;	// of eye from origin, in sphere radii
-	 double maxDist, minDist;
 
 	 int Width, Height;		// screen pixel dimensions
 	 double portAR;			// width/height
@@ -176,7 +176,7 @@ private slots:
      int itilt, tiltstep;
      int ispin, spinstep;
      int izoom, zoomstep;
-	 int idist, diststep;
+	 int idangl, danglstep;
 
 	int mx0, my0, mx1, my1;	// mouse coordinates
 	Qt::MouseButtons mb;

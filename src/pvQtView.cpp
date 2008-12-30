@@ -43,6 +43,8 @@
 
 /**** maximum projection angle at eye ****/ 
 #define MAXPROJFOV  150
+#define MAXDANGLE	88
+#define MAXDIST	tan(RAD(MAXDANGLE))
 
 /* C'tor for pvQtView 
   specifies a custom OGL context format, not because we need it 
@@ -229,8 +231,7 @@ void pvQtView::mTimeout(){
 	} else if ( mb == Qt::RightButton ){
 		if( mk == Qt::NoModifier ){ 
 		// Eye Z, Zoom
-			idist -= dx;
-			setDist( idist );
+			stepDangl( -dx, 1 );
 			izoom -= dy;
 			setFOV( normalizeAngle( izoom, 1, minFOV, maxFOV ) );
 		} else if( mk == Qt::ShiftModifier ){	
@@ -304,6 +305,11 @@ void pvQtView::wheelEvent(QWheelEvent *event){
 
  }
 
+ // real to integer coded angle
+ int pvQtView::iAngle( double angle ){	
+	 return int( 16 * angle );
+ }
+
 
  // "detented" keyboard driven view controls
 
@@ -324,8 +330,14 @@ void pvQtView::wheelEvent(QWheelEvent *event){
  }
 
  void pvQtView::step_dist( int dp ){
-	 idist += dp * diststep;
-	 setDist( idist );
+	 stepDangl( dp, danglstep);
+ }
+
+ void pvQtView::stepDangl( int dp, int stp ){
+	 idangl += dp * stp;
+	 if( idangl < 0 ) idangl = 0;
+	 double a = normalizeAngle( idangl, stp, 0, MAXDANGLE );
+	 setDist( tan( RAD( a )) );
 	 updateGL();
 	 showview();
  }
@@ -378,26 +390,30 @@ void pvQtView::wheelEvent(QWheelEvent *event){
 	showview();
  }
 
-  void pvQtView::home_eyeXY(){
+void pvQtView::home_eyeXY(){
 	eyex = eyey = 0;
 	fcompx = fcompy = 0;
 	updateGL();
 	showview();
+}
+
+ 
+void pvQtView::super_fish(){	// max angular view
+	setDist( 1.07 );
+	setZoom( int(16 * maxFOV) );	
+	updateGL();
+	showview();
+}
+
+void pvQtView::set_view( int v ){ 
+	double d = 0;
+	if( v == 1 ) d = 1;
+	else if( v == 2 ) d = MAXDIST;
+	setDist( d );
+	updateGL();
+	showview();
  }
 
-void pvQtView::full_frame(){
-	setDist( 1000 );
-	setZoom( int(16 * maxFOV) );
-	updateGL();
-	showview();
- }
- 
- void pvQtView::super_fish(){
-	setDist( 1070 );
-	setZoom( int(16 * maxFOV) );	// maximize FOV
-	updateGL();
-	showview();
- }
 
  // incremental turn picture
  void pvQtView::turn90( int d ){
@@ -478,14 +494,12 @@ void pvQtView::initView()
 	default user step increments 
 */
   // basic geometry
-	Znear = 0.07; Zfar = 7;
+	Znear = 0.07; Zfar = 30;
   // view framing shfts
 	framex = framey = 0;
   // eye position
 	eyeDistance = 0.0;
-	minDist = 0.0; 
-	maxDist = 5; ///1.07;	// fixed limits
-	idist = 0; diststep = 10;	// % of radius
+	idangl = 0;
 	eyex = eyey = 0;
 	fcompx = fcompy = 0;
   // zoom
@@ -495,6 +509,7 @@ void pvQtView::initView()
 	setFOV(90);
   // keyboard commands
 	panstep = tiltstep = spinstep = 32;	// 2 degrees
+	idangl = 0; danglstep = 16;
  	panAngle = tiltAngle = spinAngle = 0;
 	ipan = itilt = ispin = 0;
 
@@ -515,15 +530,14 @@ void pvQtView::setFOV( double newvfov ){
 	wFOV = vFOV / (eyeDistance + 1);		
 }
 
-void pvQtView::setDist( int id ){
+void pvQtView::setDist( double d ){
 /*  set distance of eye from sphere center,
 	Post new vFOV limits.
 	Then update the screen.
 */
-	double d = id / 1000.0;
-	if( d < minDist ) d = minDist;
-	if( d > maxDist ) d = maxDist;
-	idist = int( 1000 * d );
+	if( d < 0 ) d = 0;
+	if( d > MAXDIST ) d = MAXDIST;
+	idangl = iAngle( DEG(atan( d )));
 	eyeDistance = d;
 
 	double m = MAXPROJFOV * (d > 1 ? 2 : d + 1 );
@@ -796,7 +810,6 @@ void pvQtView::setTexMag( double magx, double magy ){
 /** initial viewing volume, vFOV sets zoom
   includes framing and eye shift compensating translations 
 **/
-	Znear = 0.07; Zfar = 7;
 	double  hhnear = Znear * tan( 0.5 * RAD(wFOV) ),
 			hwnear = hhnear * portAR,
 			dxnear = 2 * hwnear * (framex + fcompx),
@@ -956,6 +969,7 @@ bool pvQtView::setupPic( pvQtPic * pic )
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);  // QImage row alignment
 
 		if( picType == pvQtPic::cub ){
+			surface = 0;					// cubic requires panosphere
 			for(int i = 0; i < 6; i++){
 				QImage * p = thePic->FaceImage(pvQtPic::PicFace(i));
 				if( p ){
