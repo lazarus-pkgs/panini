@@ -210,11 +210,7 @@
 			</File>
 		</Filter>
 		<File
-			RelativePath="..\..\notes.txt"
-			>
-		</File>
-		<File
-			RelativePath="..\..\panini-0.6-release.txt"
+			RelativePath="..\..\panini-0.61-release.txt"
 			>
 		</File>
 		<File

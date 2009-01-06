@@ -78,11 +78,11 @@
 	ppc = new panocylinder( 200 );
 	surface = 0;	// select sphere
 
-     Width = Height = 400;
-	 minpan = -180; maxpan = 180;
-	 mintilt = -180; maxtilt = 180;
- 	 turnAngle = 0;
-     initView();
+    Width = Height = 400;
+	minpan = -180; maxpan = 180;
+	mintilt = -180; maxtilt = 180;
+ 	turnAngle = 0;
+    initView();
  }
 
  pvQtView::~pvQtView()
@@ -997,7 +997,10 @@ bool pvQtView::setupPic( pvQtPic * pic )
   // reset the view and display
 	reset_view();
 
-// check for (?asychronous?) OpenGL error
+  // report current panosurface
+	emit reportSurface( surface );
+
+  // check for (?asychronous?) OpenGL error
 	return picok;
 
 }

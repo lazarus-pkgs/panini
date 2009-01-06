@@ -18,6 +18,7 @@ MOC_DIR = build
 UI_DIR = build
 win32 {
   INCLUDEPATH += c:/MinGW/include c:/MinGW/GnuWin32/include
+  RC_FILE = ui/paniniWin.rc
 }
 
 ## Source Files  ##
@@ -41,6 +42,7 @@ HEADERS += src/pvQtMouseModes.h
 HEADERS += src/panocylinder.h
 SOURCES += src/panocylinder.cpp
 
+RESOURCES = ui/PaniniIcon.qrc
 
 ##  Version  ##
 # major.minor rev numbers are in version0.h
