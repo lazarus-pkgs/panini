@@ -1,40 +1,39 @@
-How to use panini version 0.6.xx   29 December 2008
+How to use Panini version 0.61.xx   06 January 2009
 
-panini (formerly pvQt) is a tool for creating perspective views from panoramic and wide angle images. 
+Panini (formerly pvQt) is a tool for creating perspective views from panoramic and wide angle images. 
  
-panini can load most common photo and panoramic formats from image files or QuickTime VR (.mov) files.  Like all pano viewers, it then shows a linear perspective view that can be panned, tilted and zoomed.  But panini can also display a range of wide angle perspectives via the stereographic and "Panini" families of projections, and shift, rotate, and stretch the image, like a software view camera.  
+Panini can load most common photo and panoramic formats from image files or QuickTime VR (.mov) files.  Like all pano viewers, it then shows a linear perspective view that can be panned, tilted and zoomed.  But Panini can also display a range of wide angle perspectives via the stereographic and "Pannini" families of projections, and shift, rotate, and stretch the image like a software view camera.  
 
-panini can do those things because it paints the picture on a three dimensional surface, either a sphere or a cylinder, which you then view in perspective.  Shifting the point of view changes the apparent perspective of the image, and other controls let you frame the view to your liking.  Then you can save the screen image to a file at higher-than-screen resolution. 
+Panini can do those things because it paints the picture on a three dimensional surface, either a sphere or a cylinder, which you then view in perspective.  Shifting the point of view changes the apparent perspective of the image, and other controls let you frame the view to your liking.  Then you can save the screen image to a file at higher-than-screen resolution. 
 
 All of this works interactively at "mouse speed" thanks to the OpenGL video graphics system.  And thanks to the Qt application framework, it runs on Windows, Mac OSX, and most flavors of Linux and Unix.
 
-WHY "PANINI"?
+WHY "Panini"?
 
-The name "panini" honors the 18th century artist and professor of perspective Gianpaolo Panini, who painted grand views of Rome and taught a generation of artists that included Canaletto and Piranesi.  Their impressive wide angle views of building interiors and urban landscapes were famous throughout Europe.  These pictures seem to be in true perspective, but can't be: the standard linear perspective projection creates serious distortions at much smaller view angles.  Instead, they used clever combinations of cylindrical and linear projection.  
+The name honors 18th century artist and professor of perspective Gianpaolo Pannini (also spelled "Panini"), who painted grand views of Rome and taught a generation of artists that included Canaletto and Piranesi.  Their impressive wide angle views of building interiors and urban landscapes were famous throughout Europe.  These pictures seem to be in true perspective, but can't be: the standard linear perspective projection creates serious distortions at much smaller view angles.  Instead, they used clever combinations of cylindrical and linear projections.  These techniques were probably invented in Holland a century or more earlier, which is one reason why Panini's icon is a picture of the Erasmus Bridge in Rotterdam.
 
-Bruno Postle recently deduced one simple but very effective way of combining those by studying a Panini painting of St. Peter's; so we are calling it the "Panini projection".  It is a linear projection of a cylindrical image -- the cylindrical analog of the stereographic projection of a sphere.  The Baroque artists may or may not have used this construction explictly, but it certainly produces images that look like the ones they drew.
-
+Bruno Postle recently deduced one very simple but effective way of combining the cylindrical and linear projections by studying a Pannini painting of St. Peter's; so we are calling that the "Pannini projection".  It is a linear perspective view of a cylindrical image -- the cylindrical analog of the stereographic projection of a sphere.  The Baroque artists may or may not have used this construction explictly, but it produces images that look a lot like some of the ones they drew.
 
 SYSTEM REQUIREMENTS and LIMITATIONS
 
-To run panini you need several Qt runtime libraries, version 4.4.2 or above, and on Windows, the minGW runtime, mingwm10.dll.  The Windows and OSX packages contain those libraries, Linux and Unix users will need to install the open source Qt package (which is not a bad idea on Mac and Windows, either, if you do any C++ development).  You can get it at http://trolltech.com/downloads/opensource/appdev.
+To run Panini you need several Qt runtime libraries, version 4.4.2 or above, and on Windows, the minGW runtime, mingwm10.dll.  The Windows and OSX packages contain those libraries, Linux and Unix users will need to install the open source Qt package (which is not a bad idea on Mac and Windows, either, if you do any C++ development).  You can get it at http://trolltech.com/downloads/opensource/appdev.
 
-To display pictures panini uses OpenGL, a low level graphics API that is tightly integrated with the system's video drivers.  OpenGL cannot be installed as a separate piece of software.  If the version of your OpenGL implementation is less than 1.2 or does not support cubic texture mapping, panini will not run.  If the OpenGL version is less than 1.5 it may not be able to display all pictures correctly.
+To display pictures Panini uses OpenGL, a low level graphics API that is tightly integrated with the system's video drivers.  OpenGL cannot be installed as a separate piece of software.  If the version of your OpenGL implementation is less than 1.2 or does not support cubic texture mapping, Panini will not run.  If the OpenGL version is less than 1.5 it may not be able to display all pictures correctly.
 
-You will get best results with OpenGL version 2.0 and above.  That means you should have either a "gaming" video card, or a recent "multimedia" one.  But ultimate gaming performance is not needed; a basic version 2 system should be perfectly adequate.  Cards to upgrade most desktop PCs to that level now cost only under $50.  
+You will get best results with OpenGL version 2.0 and above.  That means you should have either a "gaming" video card, or a recent "multimedia" one.  But ultimate gaming performance is not needed; a basic version 2 system should be adequate.  Cards to upgrade most desktop PCs to that level now cost under $50.  
 
-On ubuntu Linux you will probably need to install the manufacturer's video drivers (both nVidia and ATI now supply them).  Ubuntu does not install these drivers by default because they are not open source.
+On Ubuntu Linux you will probably need to install the manufacturer's video drivers (both nVidia and ATI now supply them).  Ubuntu does not install these drivers by default because they are not open source.
 
-The "About" dialog shows information about your system's OpenGL facilities as well as the version of panini you are running.  It reports these limits:
+The "About" dialog shows information about your system's OpenGL facilities as well as the version of Panini you are running.  It reports these limits:
   texPwr2:	must texture dimensions be powers of 2? 0 (false) preferred.
   texMax:	maximum dimension of 2D textures, the bigger the better.
   cubeMax:	maximum dimension of cubic textures, the bigger the better.
   			
-Depending on the amount of texture memory available, pictures may be shown at reduced resolution.  Cubic panoramas can generally be displayed at higher resolution than the other picture types.
+The maximum resolution Panini can display or render depends on the amount of texture memory available.  Cubic panoramas can generally be shown at higher resolution than the single image formats.
 
-To save high resolution views, your OpenGL must support offscreen frame buffers of arbitrary size.  If it does not, all saved views will be at screen resolution.  
+To save views at higher than screen resolution, your OpenGL must support offscreen frame buffers of arbitrary size.  If it does not, all saved views will be at screen resolution.  
 
-panini places no special demands on CPU speed or memory; if you can stitch panoramas, you will have no trouble viewing them.
+Panini places no special demands on CPU speed or memory; if you can stitch panoramas, you will have no trouble viewing them.
 
 Version 0.6 still cannot process PanoTools scripts or project files.
 
@@ -42,17 +41,17 @@ Version 0.6 cannot display cubic panoramas on the cylinder, so cannot apply the 
 
 BASIC VIEWING CONTROLS
 
-When you start panini without a command line, for example by double clicking an icon, it displays a wire frame model of the panosurface.  You can switch to the panocylinder by clicking either panosurface name in the presets menu.  You can try out the basic viewing controls on these wire models.
+Most viewing controls have keyboard shortcuts, shown in the View menu.  You can operate all viewing controls with the mouse.  Help menu item "mouse modes..." shows how.
 
-Most viewing commands have keyboard shortcuts, shown in the View menu.  You can operate all viewing controls with the mouse.  Help menu item "mouse modes..." shows how.
+When you start Panini without a command line, for example by double clicking an icon, it displays a wire frame model of the panosphere (you can switch to the panocylinder by clicking either panosurface name in the presets menu).  Try out the basic viewing controls on these wire models.
 
-The Yaw, Pitch and Roll controls rotate your viewing frame with respect to the panosurface, as in a flight simulator.  Yaw and Pitch let you look in different directions; Roll adjusts which way is up, and changes the directions of the Yaw and Pitch axes accordingly.  The status line shows these angles as "Y", "P", and "R", in units of degrees.
+The Yaw, Pitch and Roll controls rotate your view with respect to the panosurface, as in a flight simulator.  Yaw and Pitch let you look in different directions; Roll adjusts which way is up, and changes the directions of the Yaw and Pitch axes accordingly.  The status line shows these angles as "Y", "P", and "R", in degrees.
 
 To control Yaw and Pitch with the mouse, hold the left button and move the pointer in the direction you wish to look.  Or you can hold both mouse buttons and "fly" using Roll and Pitch. 
 
-Zoom controls magnification by changing the vertical field of view on the panosurface.  When you resize the window, the displayed image grows or shrinks to maintain the selected vertical field.  The mouse wheel (if present) adjusts zoom in coarse steps.  For finer control, move the mouse vertically while holding the right button.  Zoom is reported on the status line as "V", in units of degrees; it is the visible vertical angle on the panosphere, but has a less simple relationship to the vertical field of view on the panocylinder.
+Zoom controls magnification by changing the vertical field of view of the screen window.  When you resize the window, the displayed image grows or shrinks to maintain the selected vertical field.  The mouse wheel (if present) adjusts zoom in coarse steps.  For finer control, move the mouse vertically while holding the right button.  Zoom is reported on the status line as "V", in degrees; it is the visible vertical angle on the panosphere, but has a less simple relationship to the vertical field of view on the panocylinder.
 
-"Eye in" and "Eye out" change perspective by moving the point of view toward or away from the center of the panosurface.  With the eye at the center, the picture perspective is linear, like a normal camera lens or pano viewer.  As the eye moves out, the perspective becomes more fisheye-like, and you can zoom farther out to see wider views.  But you can zoom in to the same level of image detail at any perspective setting.  When the right button is held, horizontal mouse motion controls eye distance. Eye distance is reported on the status line as "Ez" in units of the panosurface radius.
+"Eye in" and "Eye out" change perspective by moving the point of view toward or away from the center of the panosurface.  With the eye at the center, the viewing perspective is linear, like a normal camera lens or pano viewer.  As the eye moves out, the perspective becomes more fisheye-like, and you can zoom farther out to see wider views.  But you can zoom in to the same level of image detail at any perspective setting.  When the right button is held, horizontal mouse motion controls eye distance. Eye distance is reported on the status line as "Ez" in units of the panosurface radius.
 
 With the panosphere, the perspective projections are members of a family whose protoype (at Ez = 1) is the stereographic projection.  With the panocylinder, the projections are members of a family whose prototype is the recently rediscovered "Panini projection", a combination of cylindrical and linear projections.
 
@@ -74,15 +73,17 @@ Several preset views are available via single keystrokes.  "Home" resets the yaw
 
 The Turn controls ("L" and "R" keys) rotate the image on the panosurface in increments of 90 degrees.  This rotation is not reset by "End".  Note: the projection axes do not turn along with the image, so you get strange results on the panocylinder and for the asymmetric projections (cylindrical, mercator and equirectangular).  However you can view the "transverse" forms of those projections, if you assign swapped fovs when you load the image (check "unlock Fovs").  All this will be sorted out less confusingly in future release.
 
-For convenience in viewing series of similar pictures, panini remembers the last selected Turn angle and FOV for each type of picture (but version 0.6 does not save them when you exit the program).
+For convenience in viewing series of similar pictures, Panini remembers the last selected Turn angle and FOV for each source format (but version 0.6 does not save them when you exit the program).
 
 The Preset menu also has controls for switching between the spherical and cylindrical panosurfaces, and for switching between the various non-cubic input projections.
 
-LOADING PICTURES 
+LOADING A SOURCE IMAGE 
 
-To show a picture, panini needs to know the format (projection), angular size (field of view, FOV), image dimensions and where to find the image data.  All supported sources supply image dimensions and data, and some also define projection and angular size; but in many cases you must specify the projection and field of view yourself.
+You can load an image into Panini by naming it on the command line, by selecting it with a file browser (after choosing a format from the "Source" menu) or by dragging it into the Panini window.  Details below.
 
-You do this in a dialog that shows the file name, projection, dimensions in pixels, and horizontal and vertical fields of view in degrees.  When appropriate it will let you select a projection, and in all cases you can enter the field of view.
+To show a picture, Panini needs to know the format (projection), angular size (field of view, FOV), image dimensions and where to find the image data.  All supported sources supply image dimensions and data, and some also define projection and angular size; but in many cases you must specify the projection and field of view yourself.
+
+You do this in a dialog that shows the file name, projection, dimensions in pixels, and horizontal and vertical fields of view in degrees.  If you have not already chosen a format, you can do that; and in all cases you can enter the field of view.
 
 You can specify either the horizontal or vertical field of view.  They are coupled via the dimensions and projection, so that when you change one the other changes to match.  You can uncouple the FOVs when necessary, for example to load an image with non-square pixels, or one with a "transverse" projection, by checking the box.
 
@@ -90,15 +91,15 @@ When you select a different projection, the last FOV used for that projection is
 
 Each projection has a maximum FOV, that you can not exceed.  These limits are generous, and may let you specify an FOV larger than the maximum that can actually be displayed.  In that case the image will be projected according to the given FOV, but cropped to the display limit.
 
-When a picture is loaded, the panini window's title bar shows the file name and displayed size in megapixels, which will be smaller than the source image size if there is not enough OpenGL texture memory to hold the full image.  Note that this is not the size of the view on screen, but of the texture image used to generate it.  In case loading or display fails, the title bar will show an error message instead.
+When an image is loaded, the Panini window's title bar shows the file name and a size in megapixels, which will almost always be smaller than the source image size.  This is not the size of the view on screen, but of the texture image used to generate it.  In case loading or display fails, the title bar will show an error message instead.
 
-You can load images by naming them on the command line, by selecting them via the picture menu, or by dragging them into the panini window.
+You can load images by naming them on the command line, by selecting them via the Source menu, or by dragging them into the Panini window.
 
 	via Command Line
 
-When you start panini from the command line, you can optionally specify a picture to be displayed.  If you give only a partial specification, panini will ask you for the rest of the information.
+When you start Panini from the command line, you can optionally specify an image to be displayed.  If you give only a partial specification, Panini will ask you for the rest of the information.
 
-The first command line argument can be a 4 letter picture type name, one of:
+The first command line argument can be a 4 letter format name, one of:
 	proj	PanoTools script or project
 	qtvr	QuickTime VR panorama (cubic or cylindrical)
 	cube	1 to 6 linear cube face images 
@@ -110,60 +111,63 @@ The first command line argument can be a 4 letter picture type name, one of:
 	equi	Equirectangular panorama
 	merc	Mercator panorama
 	
-The first 3 names are rarely needed, because project and qtvr files are normally recognized by their name extensions, and we usually give six file names for a cubic picture.
+The first 3 names are rarely needed, because project and qtvr files are normally recognized by their name extensions, and we usually give multiple file names for a cubic format.
 
-For the other picture types, which imply specific input projections, you need to specify the angular size; so the next argument can be a field of view, in degrees, as a floating point number.  This is always the fov of the longer image axis, if the image is not square.  
+For the other formats, which imply specific input projections, you need to specify the angular size; so the next argument can be a field of view, in degrees, as a floating point number.  This is always the fov of the longer image axis, if the image is not square.  
 
-The last thing on the command line can be a file name, or up to six file names for a cubic panorama.  panini can read tiff, jpeg and png image files, identified by the conventional file name extensions.  
+The last thing on the command line can be a file name, or up to six file names for a cubic panorama.  Panini can read tiff, jpeg and png image files, identified by the conventional file name extensions.  
 
-If you give only an image file name or names on the command line, panini will assume that two or more square images are cube faces (to load a single cube face you must give the type name) and that an image file whose width is exactly twice its height is a 360 degree equirectangular panorama.  Otherwise it will ask you to specify the projection and FOV.  On Windows and Mac, dragging files onto the panini program icon generates a files-only command line.
+If you give only an image file name or names on the command line, Panini will assume that two or more square images are cube faces (to load a single cube face you must give the type name) and that an image file whose width is exactly twice its height is a 360 degree equirectangular panorama.  Otherwise it will ask you to specify the projection and FOV.  On Windows and Mac, dragging files onto the Panini program icon generates a files-only command line.
 
-If the command line is only a picture type name (other than proj or qtvr) panini displays  labelled empty frames (just a "front" frame for most picture types; or six cube faces).
+If the command line is only a format name (other than proj or qtvr) Panini displays  labelled empty frames (just a "front" frame for most formats; or six cube faces).
 
 
-	via Picture Menu
+	via Source Menu
 
-The Picture menu lets you select a picture type, then panini asks for files and fov.  If you cancel the file selector dialog, empty frames will be displayed.  If you cancel the fov dialog, the selected file will not be loaded and the previous picture will remain.
+The Source menu lets you select a format, then Panini asks for files and fov.  If you cancel the file selector dialog, empty frames will be displayed.  If you cancel the fov dialog, the selected file will not be loaded and the previous picture will remain.
 
-You can use the "rect" picture type to display any kind of image "as filed", much as an ordinary image processing program would.  
+You can choose "none" to get back the wire frame views of the panosurfaces.
 
-The "fish" picture type uses the equisolid angle (also known as mirror sphere) projection, a classic panoramic format that is approximated by most modern fisheye lenses.  So you can use "fish" to display mirror sphere photos and computed panoramas up to 360 degrees in diameter.
+The "rect" format is appropriate for normal photos.  You can also use it to display any kind of image that you want to see all at once.  Hint: you can then do serious linear "perspective correction", in the Photoshop sense, with the Yaw and Pitch controls.
 
-The "sphr" picture type uses the equal-angle spherical projection.  Most stitchers can generate this projection, and some older or more technical fisheye lenses approximate it.
+The "fish" format uses the equisolid angle (also known as mirror sphere) projection, a classic panoramic format that is approximated by most modern fisheye lenses.  So you can use "fish" to display mirror sphere photos and computed panoramas up to 360 degrees in diameter.
 
-You can load 1 to 6 image files for the "cube" picture type.  They must be square images (but need not be the same size).  Their sorted names must fall in the conventional cube face order: front, right, back, left, top, bottom.  So if you have names like foo_front.tif, foo_right.tif,..., you would have to change them to something like foo_1.tif, foo_2.tif,....  If you give fewer than 6 cube face files, panini will display empty frames for the missing ones.  Nonexistent or unreadable files will also generate empty frames.
+The "sphr" format uses the equal-angle spherical projection.  Most stitchers can generate this projection, and some older or more technical fisheye lenses approximate it.
 
-The easy way to load cube faces is...
+You can load 1 to 6 image files for the "cube" format.  They must be square images (but need not be the same size).  Their sorted names must fall in the conventional cube face order: front, right, back, left, top, bottom.  So if you have names like foo_front.tif, foo_right.tif,..., you would have to change them to something like foo_1.tif, foo_2.tif,....  If you give fewer than 6 cube face files, Panini will display empty frames for the missing ones.  Nonexistent or unreadable files will also generate empty frames.
+
+But the easy way to load cube faces is...
 
 	via Drag-and-Drop
 
-Version 0.5 lets you load images by dragging them into the panini window.  If a cubic image (or empty cube faces) is currently displayed, and the dropped image is square, it will be put in the cube face on which it was dropped, replacing any image already there.  Otherwise, dropped files are handled as described for files named on the command line.  
+You can load any kind of image by dragging it into the Panini window.  If a cubic image (or empty cube faces) is currently displayed, and the dropped image is square, it will be put in the cube face on which it was dropped, replacing any image already there.  Otherwise, dropped files are handled as described for files named on the command line.  
 
 PROJECTIONS
 
-A photographic image is a projection of part of the world, as seen from a single point, onto a flat plane, according to some mathematical rule.  That is also true of most images created by photo processing software, which provides a much bigger choice of projection rules than camera lenses can.  For mathematical purposes, the original view of the world is equivalent to its linear projection onto a spherical surface, so the various photographic projections are considered as projections of the sphere onto the image plane.  Most were known to map makers and astronomers long before the invention of photography.  
+A photographic image is a projection of part of the world, as seen from a single point, onto a flat plane, according to some mathematical rule.  That is also true of most images created by photo processing software, which however provides a much bigger choice of projection rules than camera lenses can.  For mathematical purposes, the original view of the world is equivalent to its linear projection onto a spherical surface, so the various photographic projections are considered as projections of the sphere onto the image plane.  Most were known to map makers and astronomers long before the invention of photography.  
 
-The first job of a panorama viewer is to undo the imaging projection, in effect recreating the spherical image, and to let you look at that from the center of the sphere, so that you see the orignal view of the world as the camera saw it. 
-
-panini literally projects input images onto a sphere or cylinder, using the inverse of one of the popular imaging projections.  If that projection really was used to make the image, then panini can show you a "correct" world image, as well as various perspective transformations of it.   If a different input projection were used, then none of the views displayed by panini would be "correct" -- but some of them might be interesting or useful images anyhow. 
+The first job of a panorama viewer is to undo the source image projection, in effect recreating the spherical image, so that you see the orignal view of the world as the camera saw it.  Panini literally "de-projects" source images onto a sphere or cylinder.  
  
-Each image is assigned an input projection when it is loaded; however all but the cubic projection are actually interchangeable -- panini will happily display the same image according to any of them, and you can cycle through them without reloading the image (controls in the Preset menu; Shift-double-click also cycles through the projections).	The "End" key restores the projection assigned when the image was loaded.  
+Each image is assigned a projection when it is loaded.  If that really is the projection used to make the image, then Panini can show you a "correct" world image, as well as various perspective transformations of that.   If a different projection was used, then none of the views displayed by Panini would be "correct" -- but some of them might be interesting or useful images anyhow.  
 
-The current input projection is shown on the status bar.  Please remember that this is not the projection you are viewing, but the assumed projection of the input image.
+In fact, all source projections except the cubic are interchangeable -- Panini will happily display the same image according to any of them, and you can cycle through them without reloading the image (controls in the Preset menu; Shift-double-click also cycles through the projections).	The "End" key restores the projection assigned when the image was loaded.  
+
+The current source projection is shown on the status bar.  Please remember that this is not the projection you are viewing, but the assumed projection of the input image.
 
 FIELD OF VIEW
 
-The angular size, or field of view of an image determines how much of the panosurface it covers.  Each projection has a maximum displayable FOV, however you can specify a different FOV for any non-cubic picture.  
-
-An image is assigned a horizontal and a vertical field of view when loaded.  But for non-cubic pictures, you can adjust the apparent fields of view after the image is loaded, using the hFov and vFov controls in the View menu (also Shift-right-mouse).  These controls change the apparent horizontal and vertical FOVs independently, within a range of 10% to 100% of the displayable FOV for the current projection.  The "End" key restores the assigned FOVs and projection.
+The angular size, or field of view of an image determines how much of the panosurface it covers.  Each projection has a maximum displayable FOV, however you can specify a different FOV for any non-cubic image.  
+An image is assigned a horizontal and a vertical field of view when loaded.  But for non-cubic formats, you can adjust the apparent fields of view afterward, using the hFov and vFov controls in the View menu (also Shift-right-mouse).  These controls change the apparent horizontal and vertical FOVs independently, within a range of 10% to 100% of the displayable FOV for the current projection.  The "End" key restores the assigned FOVs and projection.
 
 Changing an FOV changes not only the apparent width or height of the picture but also the intrinsic perspective, because the image displayed through a different part of the projection function.
 
-The apparent horizontal and vertical FOVs, shown in the status bar, also change when you select a different input projection, since each projection has different relationships of image dimension to angular size.  However these are not always correct.
+The apparent horizontal and vertical FOVs, shown in the status bar, also change when you select a different input projection, since each projection has different relationships of image dimension to angular size.  However these numbers are not always correct.
+
+Hint: don't worry about the "true" fovs; adjust them so the view looks right.
 
 SAVING VIEWS
 
-You can save the current view to a jpeg image file at any time ("Save as..." in View menu, or Ctrl-S).  This is an exact copy of the displayed view, with the resolution increased 2.5 times (5.25 saved pixels for each screen pixel) if possible, typically giving a 3 to 8 megapixel image suitable for printing.  If your OpenGL does not support offscreen rendering buffers of arbitrary size, the filed view will be at screen resolution instead.  You can control the size and shape of the saved image by resizing the screen window, and center it in the frame with Shift-left mouse.
+You can save the current view to a jpeg image file at any time ("Save as..." in View menu, or Ctrl-S).  This is an exact copy of the displayed view, with the resolution increased 2.5 times (5.25 saved pixels for each screen pixel) if possible, typically giving a 3 to 8 megapixel image suitable for proof printing.  If your OpenGL does not support offscreen rendering buffers of arbitrary size, the filed view will be at screen resolution instead.  You can control the size and shape of the saved image by resizing the screen window, and center it in the frame with Shift-left mouse.
 
 RELEASE INFORMATION
 
@@ -176,17 +180,17 @@ Please consult the Release Notes for further information.  And please check the 
 
 LICENSE
 
-panini 0.6 is free software, copyright (c) 2008 Thomas K Sharpless.  
+Panini is free software, copyright (c) 2008-09 Thomas K Sharpless.  
 You can redistribute and/or modify it under the terms of the GNU General 
 Public License as published by the Free Software Foundation; either 
 version 2 of the License, or (at your option) any later version.
 
-panini is distributed in the hope that it will be useful, but WITHOUT 
+Panini is distributed in the hope that it will be useful, but WITHOUT 
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License 
 for more details.
 
 You should have received a copy of the GNU General Public License
-along with panini; if not, write to Free Software Foundation, Inc.,
+along with Panini; if not, write to Free Software Foundation, Inc.,
 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 

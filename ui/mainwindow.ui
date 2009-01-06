@@ -10,7 +10,11 @@
    </rect>
   </property>
   <property name="windowTitle" >
-   <string>panini</string>
+   <string> Panini</string>
+  </property>
+  <property name="windowIcon" >
+   <iconset resource="PaniniIcon.qrc" >
+    <normaloff>:/Icons/panini-icon-blue.jpg</normaloff>:/Icons/panini-icon-blue.jpg</iconset>
   </property>
   <widget class="QWidget" name="centralwidget" >
    <widget class="QLabel" name="projLabel" >
@@ -130,9 +134,9 @@
    </widget>
    <widget class="QMenu" name="menuLoad" >
     <property name="title" >
-     <string>&amp;Picture</string>
+     <string>&amp;Source</string>
     </property>
-    <addaction name="actionQTVR" />
+    <addaction name="actionNone_wire_model" />
     <addaction name="actionRectilinear" />
     <addaction name="actionFisheye" />
     <addaction name="actionSpherical" />
@@ -141,6 +145,7 @@
     <addaction name="actionStereographic" />
     <addaction name="actionMercator" />
     <addaction name="actionCube_faces" />
+    <addaction name="actionQTVR" />
     <addaction name="actionPT_script" />
     <addaction name="separator" />
     <addaction name="actionQuit" />
@@ -490,7 +495,14 @@
     <string>O</string>
    </property>
   </action>
+  <action name="actionNone_wire_model" >
+   <property name="text" >
+    <string>none (wire model)</string>
+   </property>
+  </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="PaniniIcon.qrc" />
+ </resources>
  <connections/>
 </ui>

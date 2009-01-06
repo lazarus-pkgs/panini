@@ -138,6 +138,7 @@ signals:
 	void reportTurn( double deg );
 	void reportFov( QSizeF fovs );
 	void reportProj( QString name );
+	void reportSurface( int surf );
 
  protected:
      void initializeGL();

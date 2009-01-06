@@ -130,8 +130,8 @@ GLwindow::GLwindow (QWidget * parent )
 	connect( this, SIGNAL(showSurface(int)),
 			 parent, SLOT(showSurface(int)) );
   if(ok) ok = 
-	connect( this, SIGNAL(showSurface(int)),
-			 glview, SLOT(setSurface(int)) );
+	connect( glview, SIGNAL(reportSurface(int)),
+			 parent, SLOT(showSurface(int)) );
   if(ok) ok = 
 	connect( parent, SIGNAL(set_surface(int)),
 			 this, SLOT(set_surface(int)) );
@@ -194,7 +194,7 @@ void GLwindow::dropEvent(QDropEvent *event)
 
 // Relay an OpenGL error report to main
 void GLwindow::OGLerror( QString errmsg){
-		QString msg = "  pvQt  " + errmsg;
+		QString msg = "  Panini  " + errmsg;
 		emit showTitle( msg );
 }
 
@@ -221,9 +221,15 @@ void GLwindow::resizeEvent( QResizeEvent * ev ){
 }
 
 // get new  picture of a specified type
+// or show wire frame if type unknown
 void GLwindow::newPicture( const char * type ){
 	picFov = QSizeF(0,0);
-	choosePictureFiles( type );
+	ipt = pictypes.picTypeIndex( type );
+	if( ipt >= 0 ) choosePictureFiles( type );
+	else {
+		pvpic->setType( pvQtPic::nil );
+		glview->showPic( 0 );
+	}
 }
 
 
@@ -237,6 +243,8 @@ void GLwindow::newPicture( const char * type ){
 	the result of trying to display the files.
 	All image file types are loaded here; project and qtvr
 	files are handled by subroutines.
+
+06 Jan 09: select panocylinder for non cubic sources
 */
 bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 	errmsg = tr("(no image file)");
@@ -270,6 +278,8 @@ bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 				pvpic->setFaceImage( pvQtPic::PicFace(i), fnm[i] );
 			}
 		}
+	  // select appropriate default panosurface
+		set_surface( picType == pvQtPic::cub ? 0 : 1 );
 	  // display the image
 		glview->showPic( pvpic );
 		ok = glview->picOK( errmsg );	// get any OGL error
@@ -283,7 +293,7 @@ bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 // c is the number of files just loaded
 void GLwindow::reportPic( bool ok, int c, QStringList fnm ) {
 	if( ok ){
-		QString msg = "  pvQt  ";
+		QString msg = "  Panini  ";
 		if( c > 0 ){
 			msg += QFileInfo(fnm[0]).fileName();
 		} else 	msg += tr("(no image file)");
@@ -292,7 +302,7 @@ void GLwindow::reportPic( bool ok, int c, QStringList fnm ) {
 		msg += QString().setNum( m, 'f', 2 ) + QString(" Mpixels");
 		emit showTitle( msg );
 	} else {
-		QString msg = "  pvQt  error: " + errmsg;
+		QString msg = "  Panini  error: " + errmsg;
 		emit showTitle( msg );
 	}
 }
@@ -455,8 +465,9 @@ void GLwindow::vFovChanged( double v ){
 bool GLwindow::commandLine( int argc, char ** argv ){
 	
 	if( !glview->OpenGLOK() ){
-//		qCritical("Your video card does not support pvQt");
-		qCritical("OpenGL version: %s", (const char *)glGetString(GL_VERSION));
+		qCritical("Your video driver does not support Panini");
+//		qCritical("OpenGL version: %s", (const char *)glGetString(GL_VERSION));
+		return false;
 	}
 
 	if( argc < 2 ) return true; // no command
@@ -637,9 +648,9 @@ void GLwindow::save_as() {
 	}
 }
 
-// handle user set surface request
+// handle set surface requests
 void GLwindow::set_surface( int surf ){
-	bool ok = pvpic->setSurface( surf );
+	bool ok = pvpic->setSurface( surf );  // check
+	glview->setSurface( pvpic->Surface());
 	emit showSurface( pvpic->Surface());
-	if( ok ) glview->picChanged();
 }

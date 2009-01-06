@@ -208,9 +208,13 @@ void MainWindow::on_action90_deg_CW_triggered(){
 	emit turn90( 1 );
 }
 
-/** Picture Menu Handlers 
+/** Source Menu Handlers 
   named so connectSlotsByName() will find them
 **/
+
+void MainWindow::on_actionNone_wire_model_triggered(){
+	emit newPicture("none");
+}
 
 void MainWindow::on_actionQTVR_triggered(){
 	emit newPicture( "qtvr" );

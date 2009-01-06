@@ -126,6 +126,7 @@ private slots:
 	void on_actionPanocylinder_triggered( bool ckd );
 
 	void on_actionHome_Eye_X_Y_triggered();
+	void on_actionNone_wire_model_triggered();
 
 };
 

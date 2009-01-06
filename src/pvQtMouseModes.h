@@ -11,7 +11,7 @@ public:
 	pvQtMouseModes( QWidget * parent = 0 )
 	: QDialog(parent) {
 		setupUi( this );
-		setWindowTitle(" panini  mouse modes");
+		setWindowTitle(" Panini  mouse modes");
 		plainTextEdit->setPlainText( QString( "\
   Key	Buttons	Horizontal	Vertical\n\
   none	  left	  Yaw	  Pitch\n\
