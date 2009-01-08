@@ -569,16 +569,12 @@ bool GLwindow::loadPictureFiles( QStringList names ){
   
 */
 bool GLwindow::choosePictureFiles( const char * ptnm ){
-	QFileDialog fd( this );
-	fd.setAcceptMode( QFileDialog::AcceptOpen );
-	fd.setFileMode( QFileDialog::ExistingFiles );
-	fd.setViewMode( QFileDialog::List );
+	QStringList files;
   // get pic type index (-1 if invalid)
 	int it = pictypes.picTypeIndex( ptnm );
-  // set dialog title
-	QString title = tr("pvQt -- Select Image Files");
+  // dialog title
+	QString title = tr(" Panini -- Select Source Image File(s)");
 	if( it >= 0 ) title += QString(": ") + QString( ptnm );
-	fd.setWindowTitle( title );
   // contruct file extension filter
 	QString filter(tr("All files (*.*)") );
 	if( !strcmp( ptnm, "proj" ) ){
@@ -593,9 +589,25 @@ bool GLwindow::choosePictureFiles( const char * ptnm ){
 		}
 		filter += ")";
 	}
+
+#if 1  // use native Win or Mac fileselectors, Qfd on Linux...
+	files = QFileDialog::getOpenFileNames(
+		this,
+		title,
+		QString(),
+		filter
+	);
+
+#else  // use Qfd everywhere
+	QFileDialog fd( this );
+	fd.setAcceptMode( QFileDialog::AcceptOpen );
+	fd.setFileMode( QFileDialog::ExistingFiles );
+	fd.setViewMode( QFileDialog::List );
+	fd.setWindowTitle( title );
 	fd.setNameFilter( filter );
-	QStringList files;
 	if( fd.exec()) files = fd.selectedFiles();
+#endif
+
   // if there are files...
 	if( files.count() > 0 ){
 		if( it < 0 ){  
