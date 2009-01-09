@@ -278,12 +278,16 @@ bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 				pvpic->setFaceImage( pvQtPic::PicFace(i), fnm[i] );
 			}
 		}
+
 	  // select appropriate default panosurface
 		set_surface( picType == pvQtPic::cub ? 0 : 1 );
+
 	  // display the image
 		glview->showPic( pvpic );
 		ok = glview->picOK( errmsg );	// get any OGL error
 		glview->turnAbs( lastTurn[ipt] );
+
+	  // display the file name & size (also post loaddir)
 		reportPic( ok, c, fnm );
 	}
 	return ok;
@@ -291,11 +295,16 @@ bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 
 // put image name & size or error message in window title
 // c is the number of files just loaded
+// sets loaddir = file's directory name
 void GLwindow::reportPic( bool ok, int c, QStringList fnm ) {
 	if( ok ){
 		QString msg = "  Panini  ";
 		if( c > 0 ){
-			msg += QFileInfo(fnm[0]).fileName();
+		  // save the directory name...
+			QFileInfo fi( fnm[0] );
+			loaddir = fi.absolutePath();
+		  // display plain file name
+			msg += fi.fileName();
 		} else 	msg += tr("(no image file)");
 		msg += QString("  ") + QString(" at ");
 		double m = pvpic->PictureSize();
@@ -590,23 +599,11 @@ bool GLwindow::choosePictureFiles( const char * ptnm ){
 		filter += ")";
 	}
 
-#if 1  // use native Win or Mac fileselectors, Qfd on Linux...
+// use native Win or Mac file selectors, Qfd on Linux...
 	files = QFileDialog::getOpenFileNames(
-		this,
-		title,
-		QString(),
-		filter
+		this, title, loaddir, filter
 	);
 
-#else  // use Qfd everywhere
-	QFileDialog fd( this );
-	fd.setAcceptMode( QFileDialog::AcceptOpen );
-	fd.setFileMode( QFileDialog::ExistingFiles );
-	fd.setViewMode( QFileDialog::List );
-	fd.setWindowTitle( title );
-	fd.setNameFilter( filter );
-	if( fd.exec()) files = fd.selectedFiles();
-#endif
 
   // if there are files...
 	if( files.count() > 0 ){
@@ -635,26 +632,23 @@ bool GLwindow::choosePictureFiles( const char * ptnm ){
 
 // save current view to an image file
 void GLwindow::save_as() {
-	QSize scrn = glview->screenSize();	// size as displayed
 	double fac = 2.5;		// linear scale factor for size
-	QString fnm = "testSaveView.jpg";
+  // dialog title
+	QString title = tr(" Panini -- Save View As");
+  // file extension filter
+	QString filter(tr("Jpeg files (*.jpg *.jpeg)") );
+  // default directory
+	if( savedir.isEmpty() ) savedir = loaddir;
+  // get file name
+	QString fnm = QFileDialog::getSaveFileName(
+		this, title, savedir, filter
+	);
 
-	QFileDialog fd( this );
-	fd.setAcceptMode( QFileDialog::AcceptSave );
-	fd.setFileMode( QFileDialog::AnyFile );
-	fd.setViewMode( QFileDialog::List );
-  // set dialog title
-	QString title = tr("pvQt -- Save View As");
-	fd.setWindowTitle( title );
-  // contruct file extension filter
-	QString filter(tr("Jpeg files (*.jpg)") );
-	fd.setNameFilter( filter );
-  // default suffix is "jpg"
-	fd.setDefaultSuffix( QString("jpg"));
-	QStringList files;
-	if( fd.exec()){
-		files = fd.selectedFiles();
-		if( !glview->saveView( files[0], fac )){
+	if( !fnm.isEmpty() ){
+	// save directory...
+		savedir = QFileInfo( fnm ).absolutePath();
+	// save file
+		if( !glview->saveView( fnm, fac )){
 			qCritical("saveView() failed");
 		}
 	}

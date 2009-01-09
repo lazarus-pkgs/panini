@@ -86,4 +86,6 @@ private:
 	double lastTurn[NpictureTypes];
 	QString errmsg;
 
+	QString loaddir, savedir;
+
 };
