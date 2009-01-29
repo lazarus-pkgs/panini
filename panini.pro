@@ -35,12 +35,19 @@ SOURCES += src/picTypeDialog.cpp src/pictureTypes.cpp
 FORMS += ui/About.ui
 HEADERS += src/About.h
 SOURCES += src/About.cpp
-HEADERS += src/quadsphere.h
-SOURCES += src/quadsphere.cpp
-FORMS += ui/ShowText.ui
-HEADERS += src/pvQtMouseModes.h
+
+HEADERS += src/panosurface.h
+SOURCES += src/panosurface.cpp
+HEADERS += src/panosphere.h
+SOURCES += src/panosphere.cpp
 HEADERS += src/panocylinder.h
 SOURCES += src/panocylinder.cpp
+
+FORMS += ui/ShowText.ui
+HEADERS += src/pvQtMouseModes.h
+FORMS += ui/TurnDialog.ui
+HEADERS += src/TurnDialog.h 
+SOURCES += src/TurnDialog.cpp
 
 RESOURCES = ui/PaniniIcon.qrc
 

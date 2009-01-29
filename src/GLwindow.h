@@ -25,6 +25,7 @@
 #include "pvQtPic.h"
 #include "picTypeDialog.h"
 #include "About.h"
+#include "TurnDialog.h"
 
 class pvQtView;
 class pvQtPic;
@@ -47,13 +48,14 @@ public slots:
 	void about_pvQt();
 	void save_as();
 	void set_surface( int surf );
+	void turn90( int t );
  // from picType dialog...
 	void picTypeChanged( int t );
 	void hFovChanged( double h );
 	void vFovChanged( double v );
   // from pvQtView...
 	void OGLerror( QString msg);
-	void reportTurn( double deg );
+	void reportTurn( int turn, double roll, double pitch );
 	
 protected:
 	void resizeEvent( QResizeEvent * ev );
@@ -71,7 +73,7 @@ private:
 	void dropEvent(QDropEvent * event);
 
 	pvQtAbout * aboutbox;
-
+    TurnDialog turndialog;
 	picTypeDialog ptd;
 	pvQtView * glview;	// display widget
 	pvQtPic * pvpic;	// picture maker
@@ -83,7 +85,9 @@ private:
 	QSizeF picFov;	// current FOV
 	QSize  picDim;	// current size
 	QSizeF lastFOV[NpictureTypes];
-	double lastTurn[NpictureTypes];
+	int lastTurn[NpictureTypes];
+	double lastRoll[NpictureTypes];
+	double lastPitch[NpictureTypes];
 	QString errmsg;
 
 	QString loaddir, savedir;

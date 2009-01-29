@@ -1,4 +1,4 @@
-/* quadsphere.cpp	for pvQt 14 Nov 2008 (3rd version)
+/* panosphere.cpp	for Panini 29 Jan 2009
 
   A sphere tessellation with texture coordinates,
   line and quad incices, in arrays usable by OpenGl
@@ -9,7 +9,7 @@
   Y-reversed images, so these texture coordinates 
   have X left, Y down (Z toward).
  *
- * Copyright (C) 2008 Thomas K Sharpless
+ * Copyright (C) 2008-2009 Thomas K Sharpless
  *
  * This file is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,16 +26,8 @@
  * 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
 */
-
-#include	"quadsphere.h"
-#include	<cmath>
-#include	<cstdio>
-
-#ifndef Pi
-#define Pi 3.1415926535897932384626433832795
-#define DEG2RAD( x ) (( x ) * Pi / 180.0)
-#define RAD2DEG( x ) (( x ) * 180.0 / Pi)
-#endif 
+#define PANOSURFACE_IMPLEMENTATION
+#include	"panosphere.h"
 
 static inline double dotp( double a[3], double b[3] ){
 	return a[0] * b[0] + a[1] * b[1] + a[2]  * b[2];
@@ -65,16 +57,6 @@ static void slerp( int divs, double v0[3], double v1[3],
 		pf += 3 * stride;
 	}
 }
-
-// debug error messages can be put here
-static char msg[80];
-
-/* texcoord utilities
-*/
-const float ninv = -0.01, pinv = 1.01;
-#define CLIP( x ) ( x < ninv ? ninv : x > pinv ? pinv : x )
-#define INVAL( t ) (t > 0 ? pinv : ninv )
-#define EVAL( t ) ( t < 0.5 ? t < 0 ? t : 0 : t > 1 ? t : 1 ) 
 
 inline void setEdgeTCs( float * base, unsigned int ic, unsigned int id ){
 		base[ic] = EVAL( base[ic - 2]);
@@ -115,16 +97,13 @@ inline void copyTCs( float * base, unsigned int ic, unsigned int id ){
 
 */
 
-quadsphere::quadsphere( int divs ){
+panosphere::panosphere( int divs ){
 
-// no error
-	errmsg = 0;	
 // make sure divs is even, or 1 (cube only)
 	divs = 2 * ((divs + 1) / 2);
 	if( divs < 1 ) divs = 1;
-/* allocate memory 
+/* calculate memory reauirements
 */
-	int dm1 = divs - 1;	// interior points per row
 	int dp1 = divs + 1;	// total points per row
 	int qpf = divs * divs;	// quads per face
 	int ppf = dp1 * dp1;	// points per face
@@ -136,17 +115,9 @@ quadsphere::quadsphere( int divs ){
 	vertpnts = 6 * ppf + dups;	// total vertices
 	linewrds = 24 * qpf;
 	quadwrds = linewrds;
-	nwords =  (3 + 2 * Nprojections) * vertpnts + linewrds + quadwrds;
-	words = new float[ nwords ];
-	if( words == 0 ){
-		errmsg = "insufficient memory";
-		return;	
-	}
-// set pointers to arrays
-	verts = words;
-	TCs = verts + 3 * vertpnts;
-	lineidx = (unsigned int *)(TCs + Nprojections * 2 * vertpnts);
-	quadidx = lineidx + linewrds;
+  // get memory or die
+	if( ! getMemory() ) return;
+
 // local TC pntrs
 	float *	rects = (float *)texCoords("rect");
 	float * fishs = (float *)texCoords("fish");
@@ -236,7 +207,7 @@ quadsphere::quadsphere( int divs ){
 	generate one face then copy with offset
   */
 	unsigned int * pq = quadidx;
-	int r, c;
+	int r;
 	for( r = 0; r < divs; r++ ){
 		unsigned int k = r * dp1;	// 1st index of row
 		for( int c = 0; c < divs; c++ ){
@@ -318,151 +289,8 @@ quadsphere::quadsphere( int divs ){
 	}
 	
 
-  /* Texture coordinates 
-	are generated from the sphere points one by one.
-	
-	The valid range of TCs is [0:1]; invalid points
-	get TCs just slightly outside that range.
-
-	Max fov for rect is read from pictureTypes;  sphr
-	and fish fov limits are set abitrarily here, because
-	I want to leave the image limits at 360
-  */
-// set angular limts from fovs in pictureTypes
-	QSizeF fovs;
-	fovs = pictypes.maxFov( pictypes.picTypeIndex( "rect" ) );
-	double amaxrect = DEG2RAD(0.5 * fovs.width());
-	double cminrect = cos( amaxrect );
-	double tmaxrect = tan( amaxrect );
-
-	fovs = pictypes.maxFov( pictypes.picTypeIndex( "cyli" ) );
-	double amaxcyli = DEG2RAD( 0.5 * fovs.height() );
-	double tmaxcyli = tan( amaxcyli );
-
-	fovs = pictypes.maxFov( pictypes.picTypeIndex( "sphr" ) );
-	double amaxsphr = DEG2RAD( 0.5 * fovs.width() );
-
-
-	fovs = pictypes.maxFov( pictypes.picTypeIndex( "fish" ) );
-	double amaxfish = DEG2RAD( 0.5 * fovs.width() );
-
-	fovs = pictypes.maxFov( pictypes.picTypeIndex( "merc" ) );
-	double amaxmerc = DEG2RAD( 0.5 * fovs.height() );
-	double smaxmerc = sin( amaxmerc );
-	double tmaxmerc = asinh(tan(amaxmerc));
-
-	fovs = pictypes.maxFov( pictypes.picTypeIndex( "ster" ) );
-	double amaxster = DEG2RAD( 0.5 * fovs.width() );
-	double tmaxster = tan( 0.5 * amaxster );
-
-	ps = verts;
-	float * pr = rects,
-		  * pf = fishs,
-		  * pc = cylis,
-		  * pe = equis,
-		  * pa = angls,
-		  * pm = mercs,
-		  * pt = sters;
-  // loop over all vertices
-	for( r = 6 * ppf; r > 0; --r ){
-  /* angles
-    Viewing 0->+Z, X left, Y up
-    xa is angle from +Z in XZ plane [-Pi:Pi],
-	ya is angle out of XZ plane [-Pi/2 : Pi/2],
-	za is angle away from +Z [0:Pi]
-	Most TCs are computed from their sines and cosines,
-	to minimize numerical error.  We use the angles
-	themselves for 'angle' TCs and some range tests
-  */
-		double xa = -atan2(ps[0], ps[2]), // horiz from +Z
-			   ya = acos(ps[1]), // vert from -Y
-			   za = acos(ps[2]);  // radial from +Z
-
-		double  sxa = -ps[0],	// sin(xa)
-				cxa = ps[2],	// cos(xa)
-				sya = ps[1],	// sin(ya)
-				cya = sqrt( ps[0] * ps[0] + ps[2] * ps[2] ),
-				sza = sqrt( ps[0] * ps[0] + ps[1] * ps[1] ),
-				cza = ps[2];
-
-	  // direction for radial fns (0: invalid)
-		double sx = 0, sy = 0;
-		if( sza >= 1.0e-4 ){
-			sx = sxa / sza;
-			sy = -sya / sza;
-		}
-
-	  // rectilinear
-		if( za > 0.45 * Pi ){
-			pr[0] = INVAL( sx );
-			pr[1] = INVAL( sy );
-		} else {
-		  s = 0.5 * (sza/cza) / tmaxrect;
-		  double x = CLIP( 0.5 + s * sx ), 
-			     y = CLIP( 0.5 + s * sy );
-		  pr[0] = float( x );
-		  pr[1] = float( y );
-		}
-
-	  // fisheye
-		if( za > amaxfish ){
-			pf[0] = INVAL( xa );
-			pf[1] = INVAL( ya - 0.5 * Pi );
-		} else {
-			s = 0.5 * sqrt(0.5 * ( 1 - cza ));
-			pf[0] = float(CLIP(0.5 + s * sx) );
-			pf[1] = float(CLIP(0.5 + s * sy) );
-		}
-
-	  // equirectangular
-		pe[0] = float( CLIP(0.5 + 0.5 * xa / Pi));
-		pe[1] = float( CLIP(ya / Pi));
-
-	  // cylindrical
-		s = ya - 0.5 * Pi;
-		if( fabs(s) > amaxcyli ){
-			pc[0] = INVAL( xa );
-			pc[1] = INVAL( s );
-		} else {
-			pc[0] = pe[0];
-			pc[1] = float(CLIP(0.5 - 0.5 * (sya/cya) / tmaxcyli));
-		}
-
-	  // equiangular sphere
-		if( za > amaxsphr ){
-			pa[0] = INVAL( xa );
-			pa[1] = INVAL( ya - 0.5 * Pi );
-		} else {
-			s = 0.5 * za / Pi;
-			pa[0] = float( CLIP(0.5 + s * sx) );
-			pa[1] = float( CLIP(0.5 + s * sy) );
-		}
-
-	  // mercator
-		pm[0] = pe[0];
-		s = ya - 0.5 * Pi;
-		if( fabs(sya) > smaxmerc ) pm[1] = INVAL( s );
-		else {
-			s = asinh(sya / cya);
-			pm[1] = float(CLIP( 0.5 -  s / tmaxmerc ));
-		}
-
-	  // stereographic
-		if( za > amaxster ){
-			pt[0] = INVAL( sx );
-			pt[1] = INVAL( sy );
-		} else {
-			s = tan( 0.5 * za ) / tmaxster;
-			pt[0] = float(CLIP(0.5 + s * sx));
-			pt[1] = float(CLIP(0.5 + s * sy));
-		}
-
-
-	  // next point
-		ps += 3; 
-		pr += 2; pf += 2; pc += 2; pe += 2; 
-		pa += 2; pm += 2; pt += 2;
-	}
+  /* generate texture coordinates for all projections  */
+	map_projections();
 
   /* Fix up the wrap seam
 	The wrap seam runs from top center thru bottom center
@@ -661,33 +489,5 @@ quadsphere::quadsphere( int divs ){
   // change indices
 	pq[-1] = idc + 2; pq[0] = idc + 3;
 #endif
-}
-
-quadsphere::~quadsphere(){
-	if( words ) delete[] words;
-}
-
-const float * quadsphere::texCoords( const char * proj ){
-	int i = pictypes.picTypeIndex( proj );
-	if( i < 0 || i >= Nprojections ) return 0;
-	return TCs + i * 2 * vertpnts;
-}
-
-unsigned int quadsphere::texCoordOffset( const char * proj ){
-	const float * p = texCoords( proj );
-	if( p == 0 ) return 0;
-	return (char *)p - (char *)verts;
-}
-
-const float * quadsphere::texCoords( pvQtPic::PicType proj ){
-	int i = pictypes.picTypeIndex( proj );
-	if( i < 0 || i >= Nprojections ) return 0;
-	return TCs + i * 2 * vertpnts;	
-}
-
-unsigned int quadsphere::texCoordOffset( pvQtPic::PicType proj ){
-	const float * p = texCoords( proj );
-	if( p == 0 ) return 0;
-	return (char *)p - (char *)verts;
 }
 

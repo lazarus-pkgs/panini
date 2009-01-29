@@ -79,6 +79,9 @@ private:
 	QString imgFnm;
 	QString projectFnm;
 	pvQtMouseModes * pmm;
+  // actions not created with Qt Designer
+	QAction * actionToggleSurface;
+	QAction * actionNext_iProj;
 
 private slots:
 	void verify(int i);
@@ -115,18 +118,14 @@ private slots:
 	void on_actionMouse_modes_triggered();
 
 	void on_actionSave_as_triggered();
-	void on_actionNext_iProj_triggered();
-	void on_actionPrev_iProj_triggered();
 	void on_actionHFovUp_triggered();
 	void on_actionHFovDn_triggered();
 	void on_actionVFovUp_triggered();
 	void on_actionVFovDn_triggered();
-
-	void on_actionPanosphere_triggered( bool ckd );
-	void on_actionPanocylinder_triggered( bool ckd );
-
 	void on_actionHome_Eye_X_Y_triggered();
 	void on_actionNone_wire_model_triggered();
+	void on_actionNext_iProj_triggered();
+	void on_actionToggleSurface_triggered( bool ckd );
 
 };
 
