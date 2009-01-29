@@ -74,14 +74,15 @@
 
 
   // create the surface tables
-	pqs = new quadsphere( 50 );
+	pqs = new panosphere( 50 );
 	ppc = new panocylinder( 200 );
 	surface = 0;	// select sphere
 
     Width = Height = 400;
 	minpan = -180; maxpan = 180;
 	mintilt = -180; maxtilt = 180;
- 	turnAngle = 0;
+ 	turnRoll = turnPitch = 0;
+	turn90 = 0;
     initView();
  }
 
@@ -146,12 +147,14 @@ bool pvQtView::OpenGLOK()
 	OGLisOK = cubeMap;
 	QS_BUF = vertBuf;
 
+
+////TODO: check for framebuffer object
+
 	if( !OGLisOK ){
 		picok = false;
 		errmsg = tr("OpenGL insufficient");
 	} 
-////TEST////
-////TEST////
+
 	return OGLisOK;
 }
 
@@ -214,45 +217,58 @@ void pvQtView::mTimeout(){
 	int dx = (mx1 - mx0) / 3,
 		dy = (my0 - my1) / 3;
 /*  mouse modes
-  Note X11 (Linux, Unix) doesn't allow Ctrl or Alt as mouse modifiers
+  Note X11 setup (Linux, Unix) may not allow Ctrl or Alt as mouse modifiers
+  Nevertheless we use them when available to select horiz-only or vert-only
 */
 	if( mb == Qt::LeftButton ){
-		if( mk == Qt::NoModifier ){ 
-		// yaw, pitch
-			ipan += dx;
-			panAngle = normalizeAngle( ipan, 1, minpan, maxpan);
-			itilt += dy;
-			tiltAngle = normalizeAngle( itilt, 1, mintilt, maxtilt);
-		} else if( mk == Qt::ShiftModifier ){	
+		if( mk & Qt::ShiftModifier ){	
 		// framing shifts
-			framex = framex0 + KLIP( fwf * dx, -1, 1 );
-			framey = framey0 + KLIP( fhf * dy, -1, 1 );
+			if( !( mk & Qt::AltModifier ) )
+				framex = framex0 + KLIP( fwf * dx, -1, 1 );
+			if( !( mk & Qt::ControlModifier ) )
+				framey = framey0 + KLIP( fhf * dy, -1, 1 );
+		} else {
+		// yaw, pitch
+			if( !( mk & Qt::AltModifier ) ){
+				ipan += dx;
+				panAngle = normalizeAngle( ipan, 1, minpan, maxpan);
+			}
+			if( !( mk & Qt::ControlModifier ) ){
+				itilt += dy;
+				tiltAngle = normalizeAngle( itilt, 1, mintilt, maxtilt);
+			}
 		}
 	} else if ( mb == Qt::RightButton ){
-		if( mk == Qt::NoModifier ){ 
-		// Eye Z, Zoom
-			stepDangl( -dx, 1 );
-			izoom -= dy;
-			setFOV( normalizeAngle( izoom, 1, minFOV, maxFOV ) );
-		} else if( mk == Qt::ShiftModifier ){	
+		if( mk & Qt::ShiftModifier ){	
 		// hFov, vFov
-			xtexmag -= 0.00225 * dx;
-			ytexmag -= 0.00225 * dy;
+			if( !( mk & Qt::AltModifier ) ) xtexmag -= 0.00225 * dx;
+			if( !( mk & Qt::ControlModifier ) ) ytexmag -= 0.00225 * dy;
 			setTexMag( xtexmag, ytexmag );
+		} else {
+		// Eye Z, Zoom
+			if( !( mk & Qt::AltModifier ) ) stepDangl( -dx, 1 );
+			if( !( mk & Qt::ControlModifier ) ) {
+				izoom -= dy;
+				setFOV( normalizeAngle( izoom, 1, minFOV, maxFOV ) );
+			}
 		} 
 	} else if( mb == Qt::LeftButton + Qt::RightButton ){
-		if( mk == Qt::NoModifier ){ 
-		// roll, pitch
-			ispin += dx;
-			spinAngle = normalizeAngle( ispin, 1, -180, 180);
-			itilt += dy;
-			tiltAngle = normalizeAngle( itilt, 1, mintilt, maxtilt);
-		} else if( mk == Qt::ShiftModifier ){	
+		if( mk & Qt::ShiftModifier ){	
 		// Eye X, Y position
-			eyex = KLIP( eyex - 0.001 * dx, -1, 1 );
-			eyey = KLIP( eyey + 0.001 * dy, -1, 1 );
+			if( !( mk & Qt::AltModifier ) ) eyex = KLIP( eyex - 0.001 * dx, -1, 1 );
+			if( !( mk & Qt::ControlModifier ) ) eyey = KLIP( eyey + 0.001 * dy, -1, 1 );
 			fcompx = - 0.5 * eyex;
 			fcompy = 0.5 * eyey;
+		} else {
+		// roll, pitch
+			if( !( mk & Qt::AltModifier ) ){
+				ispin += dx;
+				spinAngle = normalizeAngle( ispin, 1, -180, 180);
+			}
+			if( !( mk & Qt::ControlModifier ) ){
+				itilt += dy;
+				tiltAngle = normalizeAngle( itilt, 1, mintilt, maxtilt);
+			}
 		} 
 	}
 
@@ -415,21 +431,15 @@ void pvQtView::set_view( int v ){
  }
 
 
- // incremental turn picture
- void pvQtView::turn90( int d ){
-	 turnAbs( turnAngle + d * 90.0);
- }
 
-// absolute turn picture
-void pvQtView::turnAbs( double deg ){
-	 while( deg > 180 ) deg -= 360;
-	 while( deg < -180 ) deg += 360;
-	 if( deg != turnAngle ){
-		turnAngle = deg;
-		updateGL();
-		showview();
-		emit( reportTurn( turnAngle ));
-	 }
+// turn picture on panosurface
+void pvQtView::setTurn( int turn, double roll, double pitch ){
+	turn90 = turn & 3;
+	turnRoll = ( roll < -45 ? -45 : roll > 45 ? 45 : roll );
+	turnPitch = ( pitch < -90 ? -90 : pitch > 90 ? 90 : pitch );
+	updateGL();
+	showview();
+	emit reportTurn( turn90, turnRoll, turnPitch);
 }
 
 
@@ -437,8 +447,8 @@ void pvQtView::turnAbs( double deg ){
  
  void pvQtView::showview(){
 	 QString s;
-	 s.sprintf("Y %.1f  P %.1f  R %.1f  V %.1f  Ex %.2f  Ey %.2f  Ez %.2f",
-		 panAngle, tiltAngle, spinAngle, vFOV, eyex, eyey, eyeDistance);
+	 s.sprintf("Y %.1f  P %.1f  R %.1f  V %.1f  Ex %.2f  Ey %.2f  Ez %.2f  Fx %.2f  Fy %.2f",
+		 panAngle, tiltAngle, spinAngle, vFOV, eyex, eyey, eyeDistance, framex, framey);
 	 emit reportView( s );
  }
 
@@ -791,15 +801,18 @@ void pvQtView::setTexMag( double magx, double magy ){
 	glMatrixMode(GL_TEXTURE);
 	glLoadIdentity();
 	
+	double turnAngle = turn90 * 90 + turnRoll;
 	if(picType == pvQtPic::cub){
   // cube texture rotates around origin
 		glRotated( 180, 0,1,0 );
 		glRotated( 180, 0,0,1 );
+		glRotated( -turnPitch, 1, 0, 0 );
 		glRotated( -turnAngle, 0, 0, 1 );
 	} else {
   // 2D textures rotate and scale around pic center
 		glTranslated( 0.5, 0.5, 0 );
 		glScaled( xtexmag, ytexmag, 1.0 );
+///		glRotated( -turnPitch, 1, 0, 0 );
 		glRotated( -turnAngle, 0, 0, 1 );
 		glTranslated( -0.5, -0.5, 0 );
 	}
@@ -969,7 +982,6 @@ bool pvQtView::setupPic( pvQtPic * pic )
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);  // QImage row alignment
 
 		if( picType == pvQtPic::cub ){
-			surface = 0;					// cubic requires panosphere
 			for(int i = 0; i < 6; i++){
 				QImage * p = thePic->FaceImage(pvQtPic::PicFace(i));
 				if( p ){

@@ -51,6 +51,29 @@ MainWindow::MainWindow( QWidget * parent)
 {
 // install modal error message handler
 	qInstallMsgHandler( errMsgHandler );
+
+// create actions that aren't in menus
+  // toggle panosurface type
+	QAction * ats = new QAction(this);
+	actionToggleSurface = ats;
+    ats->setObjectName(QString::fromUtf8("actionToggleSurface"));
+	ats->setCheckable( true );
+	ats->setChecked( true );
+	ats->setIconText(tr("panosphere"));
+#ifndef QT_NO_TOOLTIP
+    ats->setToolTip(QApplication::translate("MainWindow", 
+		"Switch panosurface: sphere gives stereographic views; cylinder gives Pannini views", 
+		0, QApplication::UnicodeUTF8));
+#endif // QT_NO_TOOLTIP
+
+  // step thru source formats
+	actionNext_iProj = new QAction(this);
+	actionNext_iProj->setObjectName(QString::fromUtf8("actionNext_iProj"));
+#ifndef QT_NO_TOOLTIP
+    actionNext_iProj->setToolTip(QApplication::translate("MainWindow", 
+		"Change assumed source image projection", 
+		0, QApplication::UnicodeUTF8));
+#endif // QT_NO_TOOLTIP
 	
 	setupUi( this );
 	resize( 800, 800 );
@@ -97,12 +120,15 @@ if(ok) ok =
 	connect(actionReset, SIGNAL(triggered()),
 		    this, SLOT(resetView()) );
 
-// Add permanent status bar fields
+  // add actions to status buttons
+	surfaceButton->setDefaultAction( actionToggleSurface );
+	iprojButton->setDefaultAction( actionNext_iProj );
+
+  // put labels and buttons in status bar
+	statusbar->addPermanentWidget( iprojButton );
 	statusbar->addPermanentWidget( vfovLabel );
 	statusbar->addPermanentWidget( hfovLabel );
-	statusbar->addPermanentWidget( projLabel );
-	statusbar->addPermanentWidget( surfaceLabel );
-	surfaceLabel->setText(tr("panosphere"));
+	statusbar->addPermanentWidget( surfaceButton );
 	statusBar()->showMessage(tr("Ready"));
 
 if(ok){
@@ -269,7 +295,7 @@ void MainWindow::on_actionMouse_modes_triggered(){
 /* Display projection and FOV 
 */
 void MainWindow::showProj( QString name ){
-	projLabel->setText(QString("iproj %1").arg(name));
+	iprojButton->setText(QString("iproj %1").arg(name));
 }
 
 void MainWindow::showFov( QSizeF f ){
@@ -279,14 +305,6 @@ void MainWindow::showFov( QSizeF f ){
 
 void MainWindow::on_actionSave_as_triggered(){
 	emit save_as();
-}
-
-void MainWindow::on_actionNext_iProj_triggered(){
-	emit step_iproj( 1 );
-}
-
-void MainWindow::on_actionPrev_iProj_triggered(){
-	emit step_iproj( -1 );
 }
 
 void MainWindow::on_actionHFovUp_triggered(){
@@ -305,14 +323,15 @@ void MainWindow::on_actionVFovDn_triggered(){
 	emit step_vfov( -1 );
 }
 
-void MainWindow::on_actionPanosphere_triggered( bool ckd ){
+// Note true <=> panosphere
+void MainWindow::on_actionToggleSurface_triggered( bool ckd ){
 	int surf = ckd? 0 : 1;
 	showSurface( surf );
 	emit set_surface( surf );
 }
 
-void MainWindow::on_actionPanocylinder_triggered( bool ckd ){
-	on_actionPanosphere_triggered( !ckd );
+void MainWindow::on_actionNext_iProj_triggered(){
+	emit step_iproj( 1 );
 }
 
 void MainWindow::on_actionHome_Eye_X_Y_triggered(){
@@ -323,7 +342,6 @@ void MainWindow::on_actionHome_Eye_X_Y_triggered(){
 // also sets menu checks
 void MainWindow::showSurface( int surf ){
 	bool s = surf == 0;
-	surfaceLabel->setText( s? tr("panosphere") : tr("panocylinder") );
-	actionPanosphere->setChecked( s );
-	actionPanocylinder->setChecked( !s );
+	actionToggleSurface->setChecked( s );
+	actionToggleSurface->setIconText( s? tr("panosphere") : tr("panocylinder") );
 }

@@ -26,10 +26,10 @@
 
 pictureTypes::pictypnumdesc
 pictureTypes::pictypn[NpictureTypes] = {
-	{ "rect", pvQtPic::rec, 1, QString(), 10,10, 140,140, 165,165 },
+	{ "rect", pvQtPic::rec, 1, QString(), 10,10, 150,150, 165,165 },
 	{ "fish", pvQtPic::eqs, 1, QString(), 10,10, 360,360, 360,360 },
 	{ "sphr", pvQtPic::eqa, 1, QString(), 10,10, 360,360, 360,360 },
-	{ "cyli", pvQtPic::cyl, 1, QString(), 10,10, 360,140, 360,165 },
+	{ "cyli", pvQtPic::cyl, 1, QString(), 10,10, 360,150, 360,165 },
 	{ "equi", pvQtPic::eqr, 1, QString(), 10,10, 360,180, 360,180 }, 
 	{ "ster", pvQtPic::stg, 1, QString(), 10,10, 270,270, 360,360 },
 	{ "merc", pvQtPic::mrc, 1, QString(), 10,10, 360,160, 360,175 },

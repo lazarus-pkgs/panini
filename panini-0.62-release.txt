@@ -1,8 +1,13 @@
 
-	panini 0.61.xx  Release Notes	06 January 2009
+	panini 0.62.xx  Release Notes	27 January 2009
 
 At version 0.6, pvQt has been renamed "Panini".
-Version 0.61 is an update that fixes some UI bugs.
+Update 0.61 (SVN 77) fixes some UI bugs. It uses native 
+file selector dialogs on Windows and OSX because some
+Mac users have reported difficulty with the Qt dialog.
+Update 0.62 adds the ability to make Pannini views from
+cubic panoramas, and to control alignment of the image 
+on the pancylinder. 
 
 This is a beta release of software that is under active
 development and will be replaced by a better version in
@@ -44,22 +49,30 @@ Update 0.61 adds these bug fixes and UI improvements:
 -- The program has a nice icon that shows a pano of the Erasmus bridge in Rotterdam, 
    that was perspective-corrected with Panini.
 
+Update 0.62 adds these enhancements:
+-- Cubic panoramas can be shown in Pannini projections.  But hfov, vfov and iproj are not adjustable.
+-- Angular alignment of the image on the panosurface can be adjusted via a new "Turn" dialog.  Pitch can be adjusted only for cubic panos.
+-- Panosurface is now selected by clicking a button at bottom of window.  Another such button cycles through the non-cubic input projections.  Menu items for these have been removed.
+-- Mouse control can be made vertical-only by holding Alt. or horizontal-only by holding Control.  This may not work on Linux, depending on X11 option setup.
+-- Framing shifts are displayed on status line.
+-- Some more errors in the input mappings have been fixed.
+
 Known issues and limitations:
+-- Cubic pano load fails unpredicatably on some OSX systems.
+   If you are a Mac graphics expert, please help debug this!
+-- on OSX, after a failed cubic load, no cubic pano can be
+   loaded until Panini is restarted.
+-- on OSX, cancelling a qtvr load may cause subsequent loads
+   to fail.
 -- Displayed vFov angle is correct only for the panosphere
    and eye distances between 0 and 1.
--- Vertical scale and aspect ratio at picture center change
-   with eye distance.  You can fix this with view controls, 
-   but there should be some automatic compensation.
--- Initial vertical scale on panocylinder is too high.
 -- still does not read PT scripts/projects
--- Can't display cylindrical views of cubic sources
 -- To save high resolution views, your OpenGL must support 
 off-screen framebuffers of arbitrary size. 
 
-I have prepared a set of test images, made from the same 
-spherical panoramic view, that you can use to verify the
-correctness (or lack thereof) of the projections.  It is
-available for download as a separate package.
+There are no longer any test images in the souce code package.
+A set of test images, all made from one spherical panorama, 
+is available for download as a separate package.
 
 The win32 binary package has been built with Qt 4.4.3, and
 contains executable Qt libraries from that version.  But

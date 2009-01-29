@@ -43,6 +43,7 @@ GLwindow::GLwindow (QWidget * parent )
 	ipt = -1;
 	for(int i = 0; i < NpictureTypes; i++ ){
 		lastTurn[i] = 0;
+		lastRoll[i] = lastPitch[i] = 0;
 		lastFOV[i] = pictypes.maxFov( i );
 	}
 
@@ -88,14 +89,20 @@ GLwindow::GLwindow (QWidget * parent )
 	connect( parent, SIGNAL(super_wide()),
 		     glview, SLOT(super_fish()));
   if(ok) ok = 
-	connect( parent, SIGNAL(turn90( int )),
-		     glview, SLOT(turn90( int )));
+	connect( parent, SIGNAL(turn90(int)),
+		     this, SLOT(turn90(int)));
+  if(ok) ok = 
+	connect( &turndialog, SIGNAL(newTurn( int,double,double )),
+		     glview, SLOT(setTurn( int,double,double )));
   if(ok) ok = 
 	connect( parent, SIGNAL(save_as()),
 		     this, SLOT(save_as()));
   if(ok) ok = 
-	connect( glview, SIGNAL(reportTurn(double)),
-		     this, SLOT(reportTurn(double)));
+	connect( glview, SIGNAL(reportTurn(int,double,double)),
+		     this, SLOT(reportTurn(int,double,double)));
+  if(ok) ok = 
+	connect( glview, SIGNAL(reportTurn(int,double,double)),
+		     &turndialog, SLOT(setTurn(int,double,double)));
   if(ok) ok = 
 	connect( glview, SIGNAL(reportView( QString )),
 			 parent, SLOT(showStatus( QString )) );
@@ -198,9 +205,27 @@ void GLwindow::OGLerror( QString errmsg){
 		emit showTitle( msg );
 }
 
+/* Pop the image orientation dialog
+  disable Pitch for non-cubic images
+  restore previous values on cancel
+*/
+void GLwindow::turn90( int t ){
+	int twas; double rwas, pwas;
+	turndialog.getTurn( twas, rwas, pwas );
+	turndialog.enablePitch( pvpic->Type() ==  pvQtPic::cub );
+	if( !turndialog.exec() ){
+		turndialog.setTurn( twas, rwas, pwas );
+		glview->setTurn( twas, rwas, pwas );
+	}
+}
+
 // Record turn angle changes
-void GLwindow::reportTurn( double deg ){
-	if( ipt >= 0 ) lastTurn[ipt] = deg;
+void GLwindow::reportTurn( int turn, double roll, double pitch ){
+	if( ipt >= 0 ){
+		lastTurn[ipt] = turn;
+		lastRoll[ipt] = roll;
+		lastPitch[ipt] = pitch;
+	}
 }
 
 
@@ -285,7 +310,7 @@ bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 	  // display the image
 		glview->showPic( pvpic );
 		ok = glview->picOK( errmsg );	// get any OGL error
-		glview->turnAbs( lastTurn[ipt] );
+		glview->setTurn( lastTurn[ipt], lastRoll[ipt], lastPitch[ipt] );
 
 	  // display the file name & size (also post loaddir)
 		reportPic( ok, c, fnm );

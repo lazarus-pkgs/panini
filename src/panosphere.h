@@ -1,9 +1,21 @@
-/* panocylinder.h		for Panini 29 Jan 2009 TKS
+/* panosphere.h		for Panini 29 Jan 2009 TKS
 
-	Arrays of vertices on a unit cylinder and their
+	Arrays of vertices on the unit sphere and their
 	2D texture coordinates for various projections,
 	plus arrays of linear indices that map the 
 	vertices to line segments and quadrilaterals.
+
+	The sphere is subdivided starting from the corners
+	of the inscribed cube whose faces are centered on
+	the coordinate axes.  The number of subdivisions
+	along each cube edge, divs, is the c'tor argument.
+	divs will be rounded up to the next even number if
+	odd.  There are 6 * divs * divs quads in the final
+	tesselation.  
+
+	The vertices are unit 3-vectors, and are also the
+	normals OGL needs to generate cubic texture
+	coordinates.
 
  *
  * Copyright (C) 2009 Thomas K Sharpless
@@ -23,12 +35,12 @@
  * 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
 */
-#ifndef	PANOCYLINDER_H
-#define	PANOCYLINDER_H
+#ifndef	PANOSPHERE_H
+#define	PANOSPHERE_H
 #include "panosurface.h"
 
-class panocylinder : public panosurface {
+class panosphere : public panosurface {
 public:
-	panocylinder( int divs = 120 );
+	panosphere( int divs = 30 );
 };
-#endif	//ndef	PANOCYLINDER_H
+#endif	//ndef	PANOSPHERE_H

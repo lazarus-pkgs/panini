@@ -1,21 +1,12 @@
-/* quadsphere.h		for pvQt	04 Nov 2008 TKS
+/* panosurface.h  for Panini	29 Jan 2009 TKS
 
-	Arrays of vertices on the unit sphere and their
-	2D texture coordinates for various projections,
-	plus arrays of linear indices that map the 
-	vertices to line segments and quadrilaterals.
+	A panosurface is an array of vertices and their 2D
+	texture coordinates for various source projections, 
+	plus arrays of linear indices that map the vertices 
+	to line segments and quadrilaterals.
 
-	The sphere is subdivided starting from the corners
-	of the inscribed cube whose faces are centered on
-	the coordinate axes.  The number of subdivisions
-	along each cube edge, divs, is the c'tor argument.
-	divs will be rounded up to the next even number if
-	odd.  There are 6 * divs * divs quads in the final
-	tesselation.  
-
-	The vertices are unit 3-vectors, so are also the
-	unit normals OGL needs to generate cubic texture
-	coordinates.
+	The common API and common source projection functions
+	are defined here.  Subclasses create usable surfaces.
 
 	The texture coordinates are 2D (s,t) normalized
 	to [0:1] <=> max valid fov for the type.  Points
@@ -25,25 +16,18 @@
 
 	There are two index arrays, one for quads and one
 	for line segments that form a wireframe drawing of
-	the sphere.  
-
-	To avoid an interpolation artefact, vertices and
-	texture coordinates that lie on the +/- 180 degree
-	line in the YZ plane are duplicated; one copy gets 
-	the positive and one the negative coordinate.  The
-	affected quad indices point to the extra vertices 
-	and TCs needed for this.
+	the surface.  
 
 	All data are stored in one contiguous block, that
 	could be copied to an OGL data buffer.  The byte 
 	offsets	to and sizes of the various components are 
 	available.
 
-	The first nProj entries int the pictureTypes table 
-	correspond to the supported projections, which can
-	be selected by ASCII names or pvQtPic PicType codes.
+	The first nProjections entries int the pictureTypes 
+	table are the supported projections, which can be 
+	selected by ASCII names or pvQtPic PicType codes.
  *
- * Copyright (C) 2008 Thomas K Sharpless
+ * Copyright (C) 2008-2009 Thomas K Sharpless
  *
  * This file is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -60,14 +44,15 @@
  * 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
 */
-#ifndef	QUADSPHERE_H
-#define	QUADSPHERE_H
+#ifndef	PANOSURFACE_H
+#define	PANOSURFACE_H
 #include "pvQtPic.h"
+#include	<cmath>
 
-class quadsphere {
+class panosurface {
 public:
-	quadsphere( int divs = 30 );
-	~quadsphere();
+	panosurface();
+	~panosurface();
 /* c'tor reports errors by posting an error message.  
 	errMsg returns 0 if there was no error.
 */
@@ -96,7 +81,7 @@ public:
 	char * dataBlockAddr(){ return (char *)words; }
 	unsigned int dataBlockSize(){ return 15 * vertpnts * sizeof(float); }
 
-private:
+protected:
 	char * errmsg;
 	pictureTypes pictypes;
   // all memory is allocated in one block
@@ -112,5 +97,27 @@ private:
 	unsigned int   
 		  *	lineidx,
 		  * quadidx;
+  // get memory and set pointers
+	bool getMemory();
+  // compute texture coordinates 
+  // from the vertex coordinates
+	void map_projections();
 };
-#endif	//ndef	QUADSPHERE_H
+
+#ifdef PANOSURFACE_IMPLEMENTATION
+/* Stuff useful in implementation 
+*/
+const float ninv = -0.01, pinv = 1.01;
+#define CLIP( x ) ( x < ninv ? ninv : x > pinv ? pinv : x )
+#define INVAL( t ) (t > 0 ? pinv : ninv )
+#define EVAL( t ) ( t < 0.5 ? t < 0 ? t : 0 : t > 1 ? t : 1 ) 
+
+#ifndef Pi
+#define Pi 3.1415926535897932384626433832795
+#define DEG2RAD( x ) (( x ) * Pi / 180.0)
+#define RAD2DEG( x ) (( x ) * 180.0 / Pi)
+#endif 
+
+#endif	//def  PANOSURFACE_IMPLEMENTATION
+
+#endif	//ndef	PANOSURFACE_H

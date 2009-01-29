@@ -30,7 +30,7 @@
 
 #include <QtOpenGL/QGLWidget>
 #include "pvQtPic.h"
-#include "quadsphere.h"
+#include "panosphere.h"
 #include "panocylinder.h"
 
 class pvQtView : public QGLWidget
@@ -124,18 +124,19 @@ public:
 	 void home_view();	// zero view angles
 	 void home_eyeXY(); // zero eyepoint shifts
 	 void super_fish();		// Ez = 1.07, min zoom
-	 void turn90( int d ) ;	// turn picture incremental
-	 void turnAbs(double deg);	// tun absolute
   // update display of current picture
 	 void picChanged(); // from scratch
 	 void newFace( pvQtPic::PicFace face ); // one cube face
-
+  // select panosurface
 	 void setSurface( int surf );
+  // orient image on panosurface turn(0:3)= 0,90,180,270 deg
+	 void setTurn( int turn, double roll, double pitch );
+
 
 signals:
 	void reportView( QString msg );
 	void OGLerror( QString msg );
-	void reportTurn( double deg );
+	void reportTurn( int turn, double roll, double pitch );
 	void reportFov( QSizeF fovs );
 	void reportProj( QString name );
 	void reportSurface( int surf );
@@ -171,7 +172,10 @@ private slots:
 	 double Znear, Zfar;	// clipping plane distances from eye
 	 double panAngle, tiltAngle, spinAngle; // degrees
 	 double minpan, maxpan, mintilt,maxtilt;  //image limits
-	 double turnAngle;		// 90 deg picture rotation
+   // imge orientation on panosurface
+	 int turn90;		// 0:3 90 deg steps
+	 double turnRoll;	// fine -45:45 deg
+	 double turnPitch;	// -90:90 deg
 
      int ipan, panstep;
      int itilt, tiltstep;
@@ -217,7 +221,7 @@ private slots:
   	QString errmsg;	// sticky OGL error message
   	bool OGLok(const char * label);	// check, post and signal OGL errors
   // tabulated sphere points and texture coordinates
-	quadsphere  * pqs;
+	panosphere  * pqs;
 	panocylinder * ppc;
 	bool QS_BUF;	// put quadsphere data in OGL buffers
 	double xtexmag, ytexmag;  // tex coord scale factors

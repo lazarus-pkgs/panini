@@ -17,25 +17,6 @@
     <normaloff>:/Icons/panini-icon-blue.jpg</normaloff>:/Icons/panini-icon-blue.jpg</iconset>
   </property>
   <widget class="QWidget" name="centralwidget" >
-   <widget class="QLabel" name="projLabel" >
-    <property name="geometry" >
-     <rect>
-      <x>150</x>
-      <y>150</y>
-      <width>61</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="frameShape" >
-     <enum>QFrame::Panel</enum>
-    </property>
-    <property name="frameShadow" >
-     <enum>QFrame::Sunken</enum>
-    </property>
-    <property name="text" >
-     <string> proj: cube</string>
-    </property>
-   </widget>
    <widget class="QLabel" name="hfovLabel" >
     <property name="geometry" >
      <rect>
@@ -77,23 +58,33 @@
      <string>vfov 180.0</string>
     </property>
    </widget>
-   <widget class="QLabel" name="surfaceLabel" >
-    <property name="enabled" >
-     <bool>true</bool>
-    </property>
+   <widget class="QToolButton" name="iprojButton" >
     <property name="geometry" >
      <rect>
-      <x>370</x>
+      <x>384</x>
       <y>150</y>
-      <width>71</width>
-      <height>16</height>
+      <width>61</width>
+      <height>20</height>
      </rect>
     </property>
-    <property name="frameShape" >
-     <enum>QFrame::Panel</enum>
+    <property name="text" >
+     <string>iproj: cube</string>
     </property>
-    <property name="frameShadow" >
-     <enum>QFrame::Sunken</enum>
+   </widget>
+   <widget class="QToolButton" name="surfaceButton" >
+    <property name="geometry" >
+     <rect>
+      <x>464</x>
+      <y>150</y>
+      <width>71</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="sizePolicy" >
+     <sizepolicy vsizetype="Preferred" hsizetype="Preferred" >
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
     </property>
     <property name="text" >
      <string>panocylinder</string>
@@ -171,11 +162,7 @@
     <addaction name="actionReset" />
     <addaction name="separator" />
     <addaction name="action90_deg_CW" />
-    <addaction name="actionNext_iProj" />
-    <addaction name="actionPrev_iProj" />
     <addaction name="separator" />
-    <addaction name="actionPanosphere" />
-    <addaction name="actionPanocylinder" />
    </widget>
    <addaction name="menuLoad" />
    <addaction name="menu_View" />
@@ -342,7 +329,10 @@
   </action>
   <action name="action90_deg_CW" >
    <property name="text" >
-    <string>Turn 90 deg</string>
+    <string>Turn image...</string>
+   </property>
+   <property name="toolTip" >
+    <string>Turn image on panosurface</string>
    </property>
    <property name="shortcut" >
     <string>T</string>

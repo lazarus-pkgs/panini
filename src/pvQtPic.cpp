@@ -341,7 +341,7 @@ bool pvQtPic::setType( pvQtPic::PicType t )
 	getxyproj( type, xproj, yproj );
 	maxfaces = picTypes->picTypeCount( ipt );
   // legalize panosurface
-	if( type == cub || surface != cylinder ) surface = sphere;
+	if( surface != cylinder ) surface = sphere;
   // angular size limits
 	maxfovs = picTypes->maxFov( ipt ).boundedTo(SurfaceFOV());
 	if( type == cub ) minfovs = maxfovs;
@@ -374,12 +374,10 @@ bool pvQtPic::setType( pvQtPic::PicType t )
 }
 
 /* select the panosurface.
-  Rejects changes if current pic type is cubic
   adjust maxfovs and face cropping for new surface
 */
 bool pvQtPic::setSurface( int s ){
 	if( s != sphere && s != cylinder ) return false;
-	if( type == cub ) return s == sphere;
 	surface = s;
 	if(  type != nil  ){
 		maxfovs = picTypes->maxFov( ipt ).boundedTo(SurfaceFOV());
