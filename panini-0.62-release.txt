@@ -50,12 +50,12 @@ Update 0.61 adds these bug fixes and UI improvements:
    that was perspective-corrected with Panini.
 
 Update 0.62 adds these enhancements:
--- Cubic panoramas can be shown in Pannini projections.  But hfov, vfov and iproj are not adjustable.
--- Angular alignment of the image on the panosurface can be adjusted via a new "Turn" dialog.  Pitch can be adjusted only for cubic panos.
+-- Pannini projections of cubic panoramas can now be displayed.
+-- Angular alignment of the image on the panosurface can be adjusted via a new "Turn" dialog.  For cubic panos only, Yaw and pitch can be set to put the axis of the panosurface anywhere in the spherical image.
 -- Panosurface is now selected by clicking a button at bottom of window.  Another such button cycles through the non-cubic input projections.  Menu items for these have been removed.
 -- Mouse control can be made vertical-only by holding Alt. or horizontal-only by holding Control.  This may not work on Linux, depending on X11 option setup.
--- Framing shifts are displayed on status line.
--- Some more errors in the input mappings have been fixed.
+-- Framing shifts are displayed on status line, and reset along with eye shifts.
+-- More errors in the input mappings have been fixed.
 
 Known issues and limitations:
 -- Cubic pano load fails unpredicatably on some OSX systems.

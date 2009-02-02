@@ -8,18 +8,18 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>232</width>
-    <height>164</height>
+    <width>211</width>
+    <height>184</height>
    </rect>
   </property>
   <property name="windowTitle" >
-   <string> Panini - Orient Image</string>
+   <string> Panini  Turn Image</string>
   </property>
   <widget class="QDialogButtonBox" name="buttonBox" >
    <property name="geometry" >
     <rect>
-     <x>30</x>
-     <y>121</y>
+     <x>20</x>
+     <y>150</y>
      <width>161</width>
      <height>21</height>
     </rect>
@@ -34,8 +34,8 @@
   <widget class="QDoubleSpinBox" name="RollBox" >
    <property name="geometry" >
     <rect>
-     <x>130</x>
-     <y>50</y>
+     <x>120</x>
+     <y>110</y>
      <width>62</width>
      <height>22</height>
     </rect>
@@ -56,7 +56,7 @@
   <widget class="QDoubleSpinBox" name="PitchBox" >
    <property name="geometry" >
     <rect>
-     <x>130</x>
+     <x>120</x>
      <y>80</y>
      <width>62</width>
      <height>22</height>
@@ -79,7 +79,7 @@
    <property name="geometry" >
     <rect>
      <x>30</x>
-     <y>54</y>
+     <y>110</y>
      <width>91</width>
      <height>20</height>
     </rect>
@@ -92,7 +92,7 @@
    <property name="geometry" >
     <rect>
      <x>30</x>
-     <y>84</y>
+     <y>80</y>
      <width>91</width>
      <height>20</height>
     </rect>
@@ -104,8 +104,8 @@
   <widget class="QComboBox" name="TurnList" >
    <property name="geometry" >
     <rect>
-     <x>110</x>
-     <y>20</y>
+     <x>100</x>
+     <y>10</y>
      <width>81</width>
      <height>22</height>
     </rect>
@@ -114,14 +114,43 @@
   <widget class="QLabel" name="label_3" >
    <property name="geometry" >
     <rect>
-     <x>40</x>
-     <y>20</y>
+     <x>30</x>
+     <y>10</y>
      <width>61</width>
      <height>21</height>
     </rect>
    </property>
    <property name="text" >
     <string>Orientation</string>
+   </property>
+  </widget>
+  <widget class="QDoubleSpinBox" name="YawBox" >
+   <property name="geometry" >
+    <rect>
+     <x>120</x>
+     <y>50</y>
+     <width>62</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="minimum" >
+    <double>-180.000000000000000</double>
+   </property>
+   <property name="maximum" >
+    <double>180.000000000000000</double>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_4" >
+   <property name="geometry" >
+    <rect>
+     <x>30</x>
+     <y>50</y>
+     <width>61</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Yaw degrees</string>
    </property>
   </widget>
  </widget>

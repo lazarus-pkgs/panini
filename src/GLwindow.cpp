@@ -43,7 +43,7 @@ GLwindow::GLwindow (QWidget * parent )
 	ipt = -1;
 	for(int i = 0; i < NpictureTypes; i++ ){
 		lastTurn[i] = 0;
-		lastRoll[i] = lastPitch[i] = 0;
+		lastRoll[i] = lastPitch[i] = lastYaw[i] = 0;
 		lastFOV[i] = pictypes.maxFov( i );
 	}
 
@@ -92,17 +92,20 @@ GLwindow::GLwindow (QWidget * parent )
 	connect( parent, SIGNAL(turn90(int)),
 		     this, SLOT(turn90(int)));
   if(ok) ok = 
-	connect( &turndialog, SIGNAL(newTurn( int,double,double )),
-		     glview, SLOT(setTurn( int,double,double )));
+	connect( parent, SIGNAL(reset_turn()),
+		     this, SLOT(reset_turn()));
+  if(ok) ok = 
+	connect( &turndialog, SIGNAL(newTurn( int,double,double,double )),
+		     glview, SLOT(setTurn( int,double,double,double )));
   if(ok) ok = 
 	connect( parent, SIGNAL(save_as()),
 		     this, SLOT(save_as()));
   if(ok) ok = 
-	connect( glview, SIGNAL(reportTurn(int,double,double)),
-		     this, SLOT(reportTurn(int,double,double)));
+	connect( glview, SIGNAL(reportTurn(int,double,double,double)),
+		     this, SLOT(reportTurn(int,double,double,double)));
   if(ok) ok = 
-	connect( glview, SIGNAL(reportTurn(int,double,double)),
-		     &turndialog, SLOT(setTurn(int,double,double)));
+	connect( glview, SIGNAL(reportTurn(int,double,double,double)),
+		     &turndialog, SLOT(setTurn(int,double,double,double)));
   if(ok) ok = 
 	connect( glview, SIGNAL(reportView( QString )),
 			 parent, SLOT(showStatus( QString )) );
@@ -206,25 +209,32 @@ void GLwindow::OGLerror( QString errmsg){
 }
 
 /* Pop the image orientation dialog
-  disable Pitch for non-cubic images
+  disable Yaw and Pitch for non-cubic images
   restore previous values on cancel
 */
 void GLwindow::turn90( int t ){
-	int twas; double rwas, pwas;
-	turndialog.getTurn( twas, rwas, pwas );
-	turndialog.enablePitch( pvpic->Type() ==  pvQtPic::cub );
+	int twas; double rwas, pwas, ywas;
+	turndialog.getTurn( twas, rwas, pwas, ywas );
+	bool iscub = pvpic->Type() ==  pvQtPic::cub;
+	turndialog.enablePitch( iscub );
+	turndialog.enableYaw( iscub );
 	if( !turndialog.exec() ){
-		turndialog.setTurn( twas, rwas, pwas );
-		glview->setTurn( twas, rwas, pwas );
+		turndialog.setTurn( twas, rwas, pwas, ywas );
+		glview->setTurn( twas, rwas, pwas, ywas );
 	}
 }
 
+void GLwindow::reset_turn(){
+	glview->setTurn( 0,0,0,0 );
+}
+
 // Record turn angle changes
-void GLwindow::reportTurn( int turn, double roll, double pitch ){
+void GLwindow::reportTurn( int turn, double roll, double pitch, double yaw ){
 	if( ipt >= 0 ){
 		lastTurn[ipt] = turn;
 		lastRoll[ipt] = roll;
 		lastPitch[ipt] = pitch;
+		lastYaw[ipt] = yaw;
 	}
 }
 
@@ -310,7 +320,7 @@ bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 	  // display the image
 		glview->showPic( pvpic );
 		ok = glview->picOK( errmsg );	// get any OGL error
-		glview->setTurn( lastTurn[ipt], lastRoll[ipt], lastPitch[ipt] );
+		glview->setTurn( lastTurn[ipt], lastRoll[ipt], lastPitch[ipt], lastYaw[ipt] );
 
 	  // display the file name & size (also post loaddir)
 		reportPic( ok, c, fnm );

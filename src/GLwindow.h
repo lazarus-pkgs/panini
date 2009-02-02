@@ -55,7 +55,8 @@ public slots:
 	void vFovChanged( double v );
   // from pvQtView...
 	void OGLerror( QString msg);
-	void reportTurn( int turn, double roll, double pitch );
+	void reportTurn( int turn, double roll, double pitch, double yaw );
+	void reset_turn();
 	
 protected:
 	void resizeEvent( QResizeEvent * ev );
@@ -88,6 +89,7 @@ private:
 	int lastTurn[NpictureTypes];
 	double lastRoll[NpictureTypes];
 	double lastPitch[NpictureTypes];
+	double lastYaw[NpictureTypes];
 	QString errmsg;
 
 	QString loaddir, savedir;

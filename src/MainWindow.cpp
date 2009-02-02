@@ -292,15 +292,15 @@ void MainWindow::on_actionMouse_modes_triggered(){
 	pmm->show();
 }
 
-/* Display projection and FOV 
+/* Display projection and magnification
 */
 void MainWindow::showProj( QString name ){
 	iprojButton->setText(QString("iproj %1").arg(name));
 }
 
 void MainWindow::showFov( QSizeF f ){
-	hfovLabel->setText(QString("hfov %1").arg(f.width(), 0, 'f', 1));
-	vfovLabel->setText(QString("vfov %1").arg(f.height(), 0, 'f', 1));
+	hfovLabel->setText(QString("hmag %1").arg(f.width(), 0, 'f', 2));
+	vfovLabel->setText(QString("vmag %1").arg(f.height(), 0, 'f', 2));
 }
 
 void MainWindow::on_actionSave_as_triggered(){
@@ -336,6 +336,10 @@ void MainWindow::on_actionNext_iProj_triggered(){
 
 void MainWindow::on_actionHome_Eye_X_Y_triggered(){
 	emit home_eyeXY();
+}
+
+void MainWindow::on_actionReset_turn_triggered(){
+	emit reset_turn();
 }
 
 // Display panosurface.  0: sphere, 1: cylinder

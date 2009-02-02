@@ -17,6 +17,8 @@
  * 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
   pvQt is a panoramic image viewer built on the Qt4 framework and OpenGL.
+
+  Class pictureTypes defines the supported source formats.
       
   Class pvQtPic holds the specifications and data for a picture.  It 
   can be built with data already in memory, or local files, and can
@@ -67,7 +69,7 @@
   face images.   To delete a face, pass a null QImage *.
   To add or replace one, call any of the overloads.  The
   new images will be shown at the existing face dimensions. 
- */
+*/
 
 #ifndef __PVQTPIC_H__
 #define __PVQTPIC_H__
@@ -121,25 +123,31 @@ enum {
  pvQtPic( PicType type = nil );
  
 /* utility functions to interconvert pixels and angles
-  proj is an axis projection type code, from getxyproj().
+  proj is an axis projection type code, from getxyproj()
+  fov in degrees, rad in radians
 */
- bool getxyproj( PicType t, int & xproj, int & yproj );
+ static bool getxyproj( PicType t, int & xproj, int & yproj );
 // radius / fl from full fov
- double fov2rad( int proj, double fov );
+ static double fov2rad( int proj, double fov );
 // full fov from radius / fl 
- double rad2fov( int proj, double rad );
+ static double rad2fov( int proj, double rad );
+
 // new dimension from change in fov
  int  scalepix( int proj, int pix, 
 				double fov, double tofov );
 // new fov from change in dimension
  double scalefov( int proj, double fov, 
 				  int pix, int topix );
+
 // adjust a 2D FOV to match image dimensions
 // The larger axis fov sets the scale.  If the other is
 // zero, the nonzero fov goes with the longer dimension
  QSizeF adjustFov( PicType t, QSizeF fovs, QSize dims );
 // new 2D fov from change in one angle 
  QSizeF changeFovAxis( PicType t, QSizeF fovs, double fov, int axis = -1 );
+
+ /* functions that rescale the cuurent picture
+ */
 // new 2D fov from rescaling of dimensions
  QSizeF picScale2Fov( QSizeF scls );
 // new 2D fov from a change of pictype
@@ -154,7 +162,6 @@ enum {
  int 	 NumImages();	// number of faces that have source images
 
  int Surface(){ return surface; } 
- QSizeF  SurfaceFOV();
 
 // size of texture image(s)
  QSize   FaceSize(){ return facedims; }
@@ -246,7 +253,7 @@ private:
 	QSizeF		texscale;
 	QRectF		cliprect;	// fractional image clip
 	QRect		imageclip;  // same scaled to image dims
-  // display limits (current projection)
+  // display limits for current projection
 	QSizeF		maxfovs, minfovs;
   // latest arguments to fitFaceToImage
 	QSize l_maxdims;

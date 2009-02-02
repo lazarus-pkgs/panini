@@ -62,6 +62,7 @@ signals:
 	void home_view();
 	void home_eyeXY();
 	void reset_view();
+	void reset_turn();
 	void super_wide();
 	void set_view( int v );
 	void turn90( int d );
@@ -126,6 +127,7 @@ private slots:
 	void on_actionNone_wire_model_triggered();
 	void on_actionNext_iProj_triggered();
 	void on_actionToggleSurface_triggered( bool ckd );
+	void on_actionReset_turn_triggered();
 
 };
 

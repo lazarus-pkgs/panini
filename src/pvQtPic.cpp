@@ -113,8 +113,8 @@ static QColor defborders[6] = {
 };
 static QColor deffill = QColor(Qt::lightGray);
 
-/**  Exported utility functions  **
-	that don't depend on object state
+/*
+	utility functions that don't depend on object state
 */
 
 // radius from (full) field of view
@@ -126,7 +126,7 @@ double pvQtPic::fov2rad( int proj, double fov ){
 	case 1: return a;
 	case 2: return sin( 0.5 * a );
 	case 3: return tan( 0.5 * a );
-	case 4: return asinh(tan( a ));
+	case 4: return atanh(sin( a ));
 	}
 }
 // (full) field of view from radius
@@ -182,13 +182,6 @@ bool pvQtPic::getxyproj( PicType t, int & xproj, int & yproj ){
 	}
 	return true;
  }
-
-/* angular size of current display screen
-*/
-QSizeF  pvQtPic::SurfaceFOV(){
-	if(surface == cylinder ) return QSizeF(360, 150);
-	return QSizeF( 360, 360 );
-}
 
 /* limit fovs to the legal maximum for a given projection,
    preserving the linear aspect ratio
@@ -343,7 +336,7 @@ bool pvQtPic::setType( pvQtPic::PicType t )
   // legalize panosurface
 	if( surface != cylinder ) surface = sphere;
   // angular size limits
-	maxfovs = picTypes->maxFov( ipt ).boundedTo(SurfaceFOV());
+	maxfovs = picTypes->maxFov( ipt ); ///.boundedTo(SurfaceFOV());
 	if( type == cub ) minfovs = maxfovs;
 	else minfovs = QSizeF( 10, 10 );
   // default face size 
@@ -380,7 +373,7 @@ bool pvQtPic::setSurface( int s ){
 	if( s != sphere && s != cylinder ) return false;
 	surface = s;
 	if(  type != nil  ){
-		maxfovs = picTypes->maxFov( ipt ).boundedTo(SurfaceFOV());
+		maxfovs = picTypes->maxFov( ipt );  ///.boundedTo(SurfaceFOV());
 		fitFaceToImage( l_maxdims, l_pwr2 );
 	}
 	return true;
@@ -414,7 +407,7 @@ Sets:
     congruent with facefovs.  Will not exceed source image
 	pixel count by more than a factor of 2.
   texscale = texture coordinate scale factors that map 
-    facefovs to [0:1].
+		facefovs correctly.
   cliprect = fractional image clip to facefovs
   imageclip = same scaled to imagedims
 
@@ -433,19 +426,20 @@ bool pvQtPic::fitFaceToImage( QSize maxdims, bool pwr2 ){
   // linearized fovs
 	double rix = fov2rad(xproj, imagefovs.width()),
 		   riy = fov2rad(yproj, imagefovs.height()),
-		   rfx = fov2rad(xproj, facefovs.width()),
-		   rfy = fov2rad(yproj, facefovs.height()),
+		   ///rfx = fov2rad(xproj, facefovs.width()),
+		   ///rfy = fov2rad(yproj, facefovs.height()),
 		   rmx = fov2rad(xproj, maxfovs.width()),
 		   rmy = fov2rad(yproj, maxfovs.height());
 
-  // TC scale = linear max/image (assuming square pixels)
-	double rx = rmx / rix,
-		   ry = rmy / riy;
-	texscale = QSizeF( rx, ry );
   
   // fractional image clip
+	double rx = rmx / rix,
+		   ry = rmy / riy;
 	if( rx > 1 ) rx = 1;
 	if( ry > 1 ) ry = 1;
+
+	texscale = QSizeF( 1 / rx, 1 / ry );
+
 	cliprect =  QRectF( 
 		0.5 * ( 1 - rx ),
 		0.5 * ( 1 - ry ),
