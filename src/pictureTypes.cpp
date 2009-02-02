@@ -32,7 +32,7 @@ pictureTypes::pictypn[NpictureTypes] = {
 	{ "cyli", pvQtPic::cyl, 1, QString(), 10,10, 360,150, 360,165 },
 	{ "equi", pvQtPic::eqr, 1, QString(), 10,10, 360,180, 360,180 }, 
 	{ "ster", pvQtPic::stg, 1, QString(), 10,10, 270,270, 360,360 },
-	{ "merc", pvQtPic::mrc, 1, QString(), 10,10, 360,160, 360,175 },
+	{ "merc", pvQtPic::mrc, 1, QString(), 10,10, 360,150, 360,175 },
 	{ "cube", pvQtPic::cub, 6, QString(), 90,90, 90,90, 90,90 },
 	{ "proj", pvQtPic::nil, 1, QString(), 0,0,0,0,0,0 },
 	{ "qtvr", pvQtPic::nil, 1, QString(), 0,0,0,0,0,0 }

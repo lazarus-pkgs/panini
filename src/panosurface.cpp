@@ -99,6 +99,15 @@ unsigned int panosurface::texCoordOffset( pvQtPic::PicType proj ){
   The valid range of TCs is [0:1]; invalid points
   get TCs just slightly outside that range.
 
+  The TC ranges for a given projection correspond to 
+  the absolute max Fovs returned by pictureTypes. If
+  the panosurface subtends a smaller angle, the TC
+  range will be truncated accordingly.  
+  
+  To correctly map images with angular sizes smaller than 
+  maxFov, TC's need to be scaled up appopriately.  The 
+  function getTCScale() can be used for that.
+  
 */
 
 void panosurface::map_projections(){
@@ -123,7 +132,7 @@ void panosurface::map_projections(){
 	fovs = pictypes.maxFov( pictypes.picTypeIndex( "merc" ) );
 	double amaxmerc = DEG2RAD( 0.5 * fovs.height() );
 	double smaxmerc = sin( amaxmerc );
-	double tmaxmerc = atanh(smaxmerc);
+	double tmaxmerc = atanh( smaxmerc );
 
 	fovs = pictypes.maxFov( pictypes.picTypeIndex( "ster" ) );
 	double amaxster = DEG2RAD( 0.5 * fovs.width() );
@@ -244,3 +253,40 @@ void panosurface::map_projections(){
 	}
 }
 
+/* 
+  texture coordinate scale factors to correctly map 
+  an image of a given projection and angular size.
+    xfov, yfov are full angular sizes in degrees
+    xscale, yscale are factors by which the tabulated TC's should
+		be multiplied.
+*/
+bool panosurface::texScale(  int ipt,
+				double xfov, double yfov, 
+				double& xscale, double& yscale){
+	xscale = yscale = 1;
+	if( ipt < 0 || ipt >= Nprojections ) return false;
+	QSizeF fovs = pictypes.maxFov( ipt );
+	pvQtPic::PicType ppt = pictypes.PicType( ipt );
+	int ptx, pty;
+	pvQtPic::getxyproj( ppt, ptx, pty );
+	double d;
+	d = pvQtPic::fov2rad( ptx, fovs.width() );
+	xscale = d / pvQtPic::fov2rad( ptx, xfov );
+	d = pvQtPic::fov2rad( pty, fovs.height() );
+	yscale = d / pvQtPic::fov2rad( ptx, yfov );
+	return true;
+}
+
+bool panosurface::texScale( const char * proj, 
+				double xfov, double yfov, 
+				double& xscale, double& yscale){
+	return texScale( pictypes.picTypeIndex( proj ),
+					 xfov, yfov, xscale, yscale );
+}
+
+bool panosurface::texScale( pvQtPic::PicType proj,
+				double xfov, double yfov, 
+				double& xscale, double& yscale  ){
+	return texScale( pictypes.picTypeIndex( proj ),
+					 xfov, yfov, xscale, yscale );
+}

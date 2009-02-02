@@ -37,19 +37,21 @@ class TurnDialog
 	Q_OBJECT
 public:
 	TurnDialog( QWidget * parent = 0 );
-	void getTurn( int& turn, double& roll, double& pitch );
+	void getTurn( int& turn, double& roll, double& pitch, double& yaw );
+	void enableYaw( bool enb = true );
 	void enablePitch( bool enb = true );
 	void enableTurn( bool enb = true );
 signals:
-	void newTurn( int turn, double roll, double pitch );
+	void newTurn( int turn, double roll, double pitch, double yaw );
 public slots:
-	void setTurn( int turn, double roll, double pitch );
+	void setTurn( int turn, double roll, double pitch, double yaw );
 private slots:
 	void on_TurnList_currentIndexChanged();
 	void on_RollBox_valueChanged();
 	void on_PitchBox_valueChanged();
+	void on_YawBox_valueChanged();
 private:
 	bool turnEnb;
-	bool pitchEnb;
+	bool pitchEnb, yawEnb;
 };
 #endif	//ndef TURNDIALOG_H

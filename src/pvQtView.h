@@ -130,13 +130,13 @@ public:
   // select panosurface
 	 void setSurface( int surf );
   // orient image on panosurface turn(0:3)= 0,90,180,270 deg
-	 void setTurn( int turn, double roll, double pitch );
+	 void setTurn( int turn, double roll, double pitch, double yaw );
 
 
 signals:
 	void reportView( QString msg );
 	void OGLerror( QString msg );
-	void reportTurn( int turn, double roll, double pitch );
+	void reportTurn( int turn, double roll, double pitch, double yaw );
 	void reportFov( QSizeF fovs );
 	void reportProj( QString name );
 	void reportSurface( int surf );
@@ -176,6 +176,7 @@ private slots:
 	 int turn90;		// 0:3 90 deg steps
 	 double turnRoll;	// fine -45:45 deg
 	 double turnPitch;	// -90:90 deg
+	 double turnYaw;	// -180:180 deg
 
      int ipan, panstep;
      int itilt, tiltstep;

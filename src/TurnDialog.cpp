@@ -29,20 +29,22 @@ TurnDialog::TurnDialog( QWidget * parent )
 	TurnList->addItem(tr(" 90 deg CCW"));
 	enableTurn();
 	enablePitch();
-	setTurn( 0, 0, 0 );
+	setTurn( 0, 0, 0, 0 );
 }
 
-void TurnDialog::getTurn( int& turn, double& roll, double& pitch ){
+void TurnDialog::getTurn( int& turn, double& roll, double& pitch, double &yaw ){
 	turn = TurnList->currentIndex();
 	roll = RollBox->value();
 	pitch = PitchBox->value();
+	yaw = YawBox->value();
 }
 
-void TurnDialog::setTurn( int turn, double roll, double pitch ){
+void TurnDialog::setTurn( int turn, double roll, double pitch, double yaw ){
 	blockSignals( true );
 	TurnList->setCurrentIndex( turn & 3 );
 	RollBox->setValue( roll );
 	PitchBox->setValue( pitch );
+	YawBox->setValue( yaw );
 	blockSignals( false );
 }
 
@@ -58,18 +60,33 @@ void TurnDialog::enablePitch( bool enb ){
 	pitchEnb = enb;
 }
 
+void TurnDialog::enableYaw( bool enb ){
+	YawBox->setEnabled( enb );
+	if( !enb || !yawEnb ) YawBox->setValue( 0 );
+	yawEnb = enb;
+}
+
 void TurnDialog::on_TurnList_currentIndexChanged(){
 	if( turnEnb ) emit newTurn( TurnList->currentIndex(),
-		          RollBox->value(), PitchBox->value() );
+		          RollBox->value(), PitchBox->value(),
+				  YawBox->value() );
 }
 
 void TurnDialog::on_RollBox_valueChanged(){
 	emit newTurn( TurnList->currentIndex(),
-		          RollBox->value(), PitchBox->value() );
+		          RollBox->value(), PitchBox->value(),
+				  YawBox->value() );
 }
 
 void TurnDialog::on_PitchBox_valueChanged(){
 	if( pitchEnb ) emit newTurn( TurnList->currentIndex(),
-		          RollBox->value(), PitchBox->value() );
+		          RollBox->value(), PitchBox->value(),
+				  YawBox->value() );
+}
+
+void TurnDialog::on_YawBox_valueChanged(){
+	if( pitchEnb ) emit newTurn( TurnList->currentIndex(),
+		          RollBox->value(), PitchBox->value(),
+				  YawBox->value() );
 }
 

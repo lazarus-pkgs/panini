@@ -433,13 +433,14 @@ void pvQtView::set_view( int v ){
 
 
 // turn picture on panosurface
-void pvQtView::setTurn( int turn, double roll, double pitch ){
+void pvQtView::setTurn( int turn, double roll, double pitch, double yaw ){
 	turn90 = turn & 3;
 	turnRoll = ( roll < -45 ? -45 : roll > 45 ? 45 : roll );
 	turnPitch = ( pitch < -90 ? -90 : pitch > 90 ? 90 : pitch );
+	turnYaw = ( yaw < -180 ? -180 : yaw > 180 ? 180 : yaw );
 	updateGL();
 	showview();
-	emit reportTurn( turn90, turnRoll, turnPitch);
+	emit reportTurn( turn90, turnRoll, turnPitch, turnYaw );
 }
 
 
@@ -620,10 +621,14 @@ bool pvQtView::OGLok( const char * label ){
 */
  void pvQtView::initializeGL()
  {
-  // debug check for quadsphere setup error
+  // check for panosurface setup errors
  	const char * erm = pqs->errMsg();
 	if( erm != 0 ){
-		qFatal("quadsphere: %s", erm );
+		qFatal("panosphere: %s", erm );
+	}
+	erm = ppc->errMsg();
+	if( erm != 0 ){
+		qFatal("panocylinder: %s", erm );
 	}
 
   // abort if the OpenGL version is insufficient
@@ -767,10 +772,10 @@ void pvQtView::setTexMag( double magx, double magy ){
 	} else {
 		xtexmag = ytexmag = 1.0;
 	}
-  // report the apparent image FOV
+  // report the settings
 	if( thePic ){
-		curr_fovs = thePic->picScale2Fov( QSizeF( xtexmag, ytexmag ) );
-		emit reportFov( curr_fovs );
+		curr_fovs = thePic->picScale2Fov( QSizeF( xtexmag, ytexmag ));
+		emit reportFov( QSizeF( 1 / xtexmag, 1 / ytexmag ) );
 	}
 }
 
@@ -806,14 +811,15 @@ void pvQtView::setTexMag( double magx, double magy ){
   // cube texture rotates around origin
 		glRotated( 180, 0,1,0 );
 		glRotated( 180, 0,0,1 );
+		glRotated( -turnYaw, 0, 1, 0 );
 		glRotated( -turnPitch, 1, 0, 0 );
 		glRotated( -turnAngle, 0, 0, 1 );
 	} else {
   // 2D textures rotate and scale around pic center
 		glTranslated( 0.5, 0.5, 0 );
-		glScaled( xtexmag, ytexmag, 1.0 );
 ///		glRotated( -turnPitch, 1, 0, 0 );
 		glRotated( -turnAngle, 0, 0, 1 );
+		glScaled( xtexmag, ytexmag, 1.0 );
 		glTranslated( -0.5, -0.5, 0 );
 	}
 

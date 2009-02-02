@@ -80,6 +80,24 @@ public:
 // everything except the indices as a block of bytes
 	char * dataBlockAddr(){ return (char *)words; }
 	unsigned int dataBlockSize(){ return 15 * vertpnts * sizeof(float); }
+/* 
+  texture coordinate scale factors to correctly map 
+  an image of a given projection and angular size.
+    xfov, yfov are full angular sizes in degrees
+    xscale, yscale are factors by which the tabulated TC's should
+		be multiplied.
+*/
+	bool texScale(  int pictypeindex,
+					double xfov, double yfov, 
+					double& xscale, double& yscale);
+  // convenience overloads
+	bool texScale( const char * proj, 
+					double xfov, double yfov, 
+					double& xscale, double& yscale);
+
+	bool texScale( pvQtPic::PicType proj,
+					double xfov, double yfov, 
+					double& xscale, double& yscale  );
 
 protected:
 	char * errmsg;
