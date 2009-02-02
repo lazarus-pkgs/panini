@@ -775,7 +775,7 @@ void pvQtView::setTexMag( double magx, double magy ){
   // report the settings
 	if( thePic ){
 		curr_fovs = thePic->picScale2Fov( QSizeF( xtexmag, ytexmag ));
-		emit reportFov( QSizeF( 1 / xtexmag, 1 / ytexmag ) );
+		emit reportFov( curr_fovs );
 	}
 }
 

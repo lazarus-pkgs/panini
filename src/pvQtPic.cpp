@@ -148,7 +148,7 @@ double pvQtPic::rad2fov( int proj, double rad ){
 		a = 2 * atan( rad );
 		break;
 	case 4: 
-		a = atan( sinh( rad ));
+		a = asin( tanh( rad ));
 		break;
 	}
 	return 2 * RAD2DEG( a );
@@ -431,15 +431,14 @@ bool pvQtPic::fitFaceToImage( QSize maxdims, bool pwr2 ){
 		   rmx = fov2rad(xproj, maxfovs.width()),
 		   rmy = fov2rad(yproj, maxfovs.height());
 
-  
-  // fractional image clip
+  // texture coordinate scaling  
 	double rx = rmx / rix,
 		   ry = rmy / riy;
+	texscale = QSizeF( rx, ry );
+
+  // fractional image clip
 	if( rx > 1 ) rx = 1;
 	if( ry > 1 ) ry = 1;
-
-	texscale = QSizeF( 1 / rx, 1 / ry );
-
 	cliprect =  QRectF( 
 		0.5 * ( 1 - rx ),
 		0.5 * ( 1 - ry ),

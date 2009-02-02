@@ -299,8 +299,8 @@ void MainWindow::showProj( QString name ){
 }
 
 void MainWindow::showFov( QSizeF f ){
-	hfovLabel->setText(QString("hmag %1").arg(f.width(), 0, 'f', 2));
-	vfovLabel->setText(QString("vmag %1").arg(f.height(), 0, 'f', 2));
+	hfovLabel->setText(QString("hfov %1").arg(f.width(), 0, 'f', 2));
+	vfovLabel->setText(QString("vfov %1").arg(f.height(), 0, 'f', 2));
 }
 
 void MainWindow::on_actionSave_as_triggered(){
