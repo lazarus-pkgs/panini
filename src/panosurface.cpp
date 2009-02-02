@@ -232,7 +232,7 @@ void panosurface::map_projections(){
 		if( fabs(sya) > smaxmerc ) pm[1] = INVAL( s );
 		else {
 			s = atanh(sya);
-			pm[1] = float(CLIP( 0.5 -  s / tmaxmerc ));
+			pm[1] = float(CLIP( 0.5 -  0.5 * s / tmaxmerc ));
 		}
 
 	  // stereographic
@@ -240,7 +240,7 @@ void panosurface::map_projections(){
 			pt[0] = INVAL( sx );
 			pt[1] = INVAL( sy );
 		} else {
-			s = tan( 0.5 * za ) / tmaxster;
+			s = 0.5 * tan( 0.5 * za ) / tmaxster;
 			pt[0] = float(CLIP(0.5 + s * sx));
 			pt[1] = float(CLIP(0.5 + s * sy));
 		}
