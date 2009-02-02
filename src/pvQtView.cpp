@@ -1,3 +1,4 @@
+
 /* pvQtView.cpp for pvQt  08Sep2008 TKS
  * Copyright (C) 2008 Thomas K Sharpless
  *
@@ -409,6 +410,7 @@ void pvQtView::wheelEvent(QWheelEvent *event){
 void pvQtView::home_eyeXY(){
 	eyex = eyey = 0;
 	fcompx = fcompy = 0;
+	framex = framey = 0;		// also reset framing shifts
 	updateGL();
 	showview();
 }
@@ -448,8 +450,8 @@ void pvQtView::setTurn( int turn, double roll, double pitch, double yaw ){
  
  void pvQtView::showview(){
 	 QString s;
-	 s.sprintf("Y %.1f  P %.1f  R %.1f  V %.1f  Ex %.2f  Ey %.2f  Ez %.2f  Fx %.2f  Fy %.2f",
-		 panAngle, tiltAngle, spinAngle, vFOV, eyex, eyey, eyeDistance, framex, framey);
+	 s.sprintf("Y %.1f P %.1f R %.1f  V %.1f  D %.2f   Ex %.2f Ey %.2f  Fx %.2f Fy %.2f",
+		 panAngle, tiltAngle, spinAngle, vFOV, eyeDistance, eyex, eyey, framex, framey);
 	 emit reportView( s );
  }
 
