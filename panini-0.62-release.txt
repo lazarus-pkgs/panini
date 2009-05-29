@@ -1,5 +1,5 @@
 
-	panini 0.62.xx  Release Notes	27 January 2009
+	panini 0.63.xx  Release Notes	28 May 2009
 
 At version 0.6, pvQt has been renamed "Panini".
 Update 0.61 (SVN 77) fixes some UI bugs. It uses native 
@@ -7,7 +7,11 @@ file selector dialogs on Windows and OSX because some
 Mac users have reported difficulty with the Qt dialog.
 Update 0.62 adds the ability to make Pannini views from
 cubic panoramas, and to control alignment of the image 
-on the pancylinder. 
+on the pancylinder.  
+
+Update 0.63 adds persistent settings, including the
+last-used window size and a Mac-specific limit on the 
+size of cubic images.
 
 This is a beta release of software that is under active
 development and will be replaced by a better version in
@@ -56,6 +60,10 @@ Update 0.62 adds these enhancements:
 -- Mouse control can be made vertical-only by holding Alt. or horizontal-only by holding Control.  This may not work on Linux, depending on X11 option setup.
 -- Framing shifts are displayed on status line, and reset along with eye shifts.
 -- More errors in the input mappings have been fixed.
+
+Update 0.63 addds two persistent settings:
+-- window size is saved at shutdown and restored at launch.  The initial default size is now smaller to accommodate the small wide-format screens on some newer laptops.
+-- cubic image resolution is limited on Macs to solve an OSX bug that causes garbled display or even system crashes with large cubic texture maps.  The default limit of 1536 x 1536 (13.5 megapixels) should work on many recent Macs, but if yours needs a smaller limit, or you want to push the limit higher, you can change it via "cube size" in the Presets menu.
 
 Known issues and limitations:
 -- Cubic pano load fails unpredicatably on some OSX systems.

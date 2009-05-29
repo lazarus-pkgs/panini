@@ -228,6 +228,10 @@ void GLwindow::reset_turn(){
 	glview->setTurn( 0,0,0,0 );
 }
 
+void GLwindow::setCubeLimit( int lim ){
+    glview->setCubeLimit( lim );
+}
+
 // Record turn angle changes
 void GLwindow::reportTurn( int turn, double roll, double pitch, double yaw ){
 	if( ipt >= 0 ){

@@ -1,7 +1,8 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow" >
-  <property name="geometry" >
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
@@ -9,16 +10,16 @@
     <height>211</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string> Panini</string>
   </property>
-  <property name="windowIcon" >
-   <iconset resource="PaniniIcon.qrc" >
+  <property name="windowIcon">
+   <iconset>
     <normaloff>:/Icons/panini-icon-blue.jpg</normaloff>:/Icons/panini-icon-blue.jpg</iconset>
   </property>
-  <widget class="QWidget" name="centralwidget" >
-   <widget class="QLabel" name="hfovLabel" >
-    <property name="geometry" >
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QLabel" name="hfovLabel">
+    <property name="geometry">
      <rect>
       <x>230</x>
       <y>150</y>
@@ -26,21 +27,21 @@
       <height>16</height>
      </rect>
     </property>
-    <property name="frameShape" >
+    <property name="frameShape">
      <enum>QFrame::Panel</enum>
     </property>
-    <property name="frameShadow" >
+    <property name="frameShadow">
      <enum>QFrame::Sunken</enum>
     </property>
-    <property name="text" >
+    <property name="text">
      <string>hfov 360.0</string>
     </property>
    </widget>
-   <widget class="QLabel" name="vfovLabel" >
-    <property name="enabled" >
+   <widget class="QLabel" name="vfovLabel">
+    <property name="enabled">
      <bool>true</bool>
     </property>
-    <property name="geometry" >
+    <property name="geometry">
      <rect>
       <x>300</x>
       <y>150</y>
@@ -48,18 +49,18 @@
       <height>16</height>
      </rect>
     </property>
-    <property name="frameShape" >
+    <property name="frameShape">
      <enum>QFrame::Panel</enum>
     </property>
-    <property name="frameShadow" >
+    <property name="frameShadow">
      <enum>QFrame::Sunken</enum>
     </property>
-    <property name="text" >
+    <property name="text">
      <string>vfov 180.0</string>
     </property>
    </widget>
-   <widget class="QToolButton" name="iprojButton" >
-    <property name="geometry" >
+   <widget class="QToolButton" name="iprojButton">
+    <property name="geometry">
      <rect>
       <x>384</x>
       <y>150</y>
@@ -67,12 +68,12 @@
       <height>20</height>
      </rect>
     </property>
-    <property name="text" >
+    <property name="text">
      <string>iproj: cube</string>
     </property>
    </widget>
-   <widget class="QToolButton" name="surfaceButton" >
-    <property name="geometry" >
+   <widget class="QToolButton" name="surfaceButton">
+    <property name="geometry">
      <rect>
       <x>464</x>
       <y>150</y>
@@ -80,19 +81,19 @@
       <height>20</height>
      </rect>
     </property>
-    <property name="sizePolicy" >
-     <sizepolicy vsizetype="Preferred" hsizetype="Preferred" >
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
       <horstretch>0</horstretch>
       <verstretch>0</verstretch>
      </sizepolicy>
     </property>
-    <property name="text" >
+    <property name="text">
      <string>panocylinder</string>
     </property>
    </widget>
   </widget>
-  <widget class="QMenuBar" name="menubar" >
-   <property name="geometry" >
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
@@ -100,407 +101,420 @@
      <height>22</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menu_View" >
-    <property name="title" >
+   <widget class="QMenu" name="menu_View">
+    <property name="title">
      <string>&amp;View</string>
     </property>
-    <addaction name="actionPan_Right" />
-    <addaction name="actionPan_Left" />
-    <addaction name="actionTilt_Up" />
-    <addaction name="actionTilt_Down" />
-    <addaction name="actionRoll_Right" />
-    <addaction name="actionRoll_Left" />
-    <addaction name="separator" />
-    <addaction name="actionZoom_In" />
-    <addaction name="actionZoom_Out" />
-    <addaction name="actionEye_In" />
-    <addaction name="actionEye_Out" />
-    <addaction name="separator" />
-    <addaction name="actionHFovUp" />
-    <addaction name="actionHFovDn" />
-    <addaction name="actionVFovUp" />
-    <addaction name="actionVFovDn" />
-    <addaction name="separator" />
-    <addaction name="actionSave_as" />
+    <addaction name="actionPan_Right"/>
+    <addaction name="actionPan_Left"/>
+    <addaction name="actionTilt_Up"/>
+    <addaction name="actionTilt_Down"/>
+    <addaction name="actionRoll_Right"/>
+    <addaction name="actionRoll_Left"/>
+    <addaction name="separator"/>
+    <addaction name="actionZoom_In"/>
+    <addaction name="actionZoom_Out"/>
+    <addaction name="actionEye_In"/>
+    <addaction name="actionEye_Out"/>
+    <addaction name="separator"/>
+    <addaction name="actionHFovUp"/>
+    <addaction name="actionHFovDn"/>
+    <addaction name="actionVFovUp"/>
+    <addaction name="actionVFovDn"/>
+    <addaction name="separator"/>
+    <addaction name="actionSave_as"/>
    </widget>
-   <widget class="QMenu" name="menuLoad" >
-    <property name="title" >
+   <widget class="QMenu" name="menuLoad">
+    <property name="title">
      <string>&amp;Source</string>
     </property>
-    <addaction name="actionNone_wire_model" />
-    <addaction name="actionRectilinear" />
-    <addaction name="actionFisheye" />
-    <addaction name="actionSpherical" />
-    <addaction name="actionCylindrical" />
-    <addaction name="actionEquirectangular" />
-    <addaction name="actionStereographic" />
-    <addaction name="actionMercator" />
-    <addaction name="actionCube_faces" />
-    <addaction name="actionQTVR" />
-    <addaction name="actionPT_script" />
-    <addaction name="separator" />
-    <addaction name="actionQuit" />
+    <addaction name="actionNone_wire_model"/>
+    <addaction name="actionRectilinear"/>
+    <addaction name="actionFisheye"/>
+    <addaction name="actionSpherical"/>
+    <addaction name="actionCylindrical"/>
+    <addaction name="actionEquirectangular"/>
+    <addaction name="actionStereographic"/>
+    <addaction name="actionMercator"/>
+    <addaction name="actionCube_faces"/>
+    <addaction name="actionQTVR"/>
+    <addaction name="actionPT_script"/>
+    <addaction name="separator"/>
+    <addaction name="actionQuit"/>
    </widget>
-   <widget class="QMenu" name="menuHelp" >
-    <property name="title" >
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
      <string>Help</string>
     </property>
-    <addaction name="actionAbout_pvQt" />
-    <addaction name="actionMouse_modes" />
+    <addaction name="actionAbout_pvQt"/>
+    <addaction name="actionMouse_modes"/>
    </widget>
-   <widget class="QMenu" name="menuPresets" >
-    <property name="title" >
+   <widget class="QMenu" name="menuPresets">
+    <property name="title">
      <string>Presets</string>
     </property>
-    <addaction name="actionLinear_proj" />
-    <addaction name="actionPanini_proj" />
-    <addaction name="actionOrtho_proj" />
-    <addaction name="actionSuper_wide" />
-    <addaction name="separator" />
-    <addaction name="action_Home" />
-    <addaction name="actionHome_Eye_X_Y" />
-    <addaction name="actionReset" />
-    <addaction name="separator" />
-    <addaction name="action90_deg_CW" />
-    <addaction name="actionReset_turn" />
+    <addaction name="actionLinear_proj"/>
+    <addaction name="actionPanini_proj"/>
+    <addaction name="actionOrtho_proj"/>
+    <addaction name="actionSuper_wide"/>
+    <addaction name="separator"/>
+    <addaction name="action_Home"/>
+    <addaction name="actionHome_Eye_X_Y"/>
+    <addaction name="actionReset"/>
+    <addaction name="separator"/>
+    <addaction name="action90_deg_CW"/>
+    <addaction name="actionReset_turn"/>
+    <addaction name="actionCube_limit"/>
    </widget>
-   <addaction name="menuLoad" />
-   <addaction name="menu_View" />
-   <addaction name="menuPresets" />
-   <addaction name="menuHelp" />
+   <addaction name="menuLoad"/>
+   <addaction name="menu_View"/>
+   <addaction name="menuPresets"/>
+   <addaction name="menuHelp"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar" />
-  <action name="action_Home" >
-   <property name="text" >
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="action_Home">
+   <property name="text">
     <string>Home Y,P,R</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Home</string>
    </property>
   </action>
-  <action name="actionZoom_In" >
-   <property name="text" >
+  <action name="actionZoom_In">
+   <property name="text">
     <string>Zoom &amp;in</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Ctrl+Up</string>
    </property>
   </action>
-  <action name="actionZoom_Out" >
-   <property name="text" >
+  <action name="actionZoom_Out">
+   <property name="text">
     <string>Zoom &amp;out</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Ctrl+Down</string>
    </property>
   </action>
-  <action name="actionPan_Left" >
-   <property name="text" >
+  <action name="actionPan_Left">
+   <property name="text">
     <string>Yaw &amp;left</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Left</string>
    </property>
   </action>
-  <action name="actionPan_Right" >
-   <property name="text" >
+  <action name="actionPan_Right">
+   <property name="text">
     <string>Yaw &amp;right</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Right</string>
    </property>
   </action>
-  <action name="actionTilt_Up" >
-   <property name="text" >
+  <action name="actionTilt_Up">
+   <property name="text">
     <string>Pitch &amp;up</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Up</string>
    </property>
   </action>
-  <action name="actionTilt_Down" >
-   <property name="text" >
+  <action name="actionTilt_Down">
+   <property name="text">
     <string>Pitch &amp;down</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Down</string>
    </property>
   </action>
-  <action name="actionEye_In" >
-   <property name="text" >
+  <action name="actionEye_In">
+   <property name="text">
     <string>Eye &amp;near</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Ctrl+Right</string>
    </property>
   </action>
-  <action name="actionEye_Out" >
-   <property name="text" >
+  <action name="actionEye_Out">
+   <property name="text">
     <string>Eye &amp;far</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Ctrl+Left</string>
    </property>
   </action>
-  <action name="actionFullFrame" >
-   <property name="text" >
+  <action name="actionFullFrame">
+   <property name="text">
     <string>Fullframe</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>PgDown</string>
    </property>
   </action>
-  <action name="action_SuperFish" >
-   <property name="text" >
+  <action name="action_SuperFish">
+   <property name="text">
     <string>SuperFish</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>PgUp</string>
    </property>
   </action>
-  <action name="actionReset" >
-   <property name="text" >
+  <action name="actionReset">
+   <property name="text">
     <string>Home all</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>End</string>
    </property>
   </action>
-  <action name="actionRectilinear" >
-   <property name="text" >
+  <action name="actionRectilinear">
+   <property name="text">
     <string>rectilinear</string>
    </property>
   </action>
-  <action name="actionFisheye" >
-   <property name="text" >
+  <action name="actionFisheye">
+   <property name="text">
     <string>fisheye</string>
    </property>
   </action>
-  <action name="actionCylindrical" >
-   <property name="text" >
+  <action name="actionCylindrical">
+   <property name="text">
     <string>cylindrical</string>
    </property>
   </action>
-  <action name="actionEquirectangular" >
-   <property name="text" >
+  <action name="actionEquirectangular">
+   <property name="text">
     <string>equirectangular</string>
    </property>
   </action>
-  <action name="actionCube_faces" >
-   <property name="text" >
+  <action name="actionCube_faces">
+   <property name="text">
     <string>cube faces</string>
    </property>
   </action>
-  <action name="actionQuit" >
-   <property name="text" >
+  <action name="actionQuit">
+   <property name="text">
     <string>Quit</string>
    </property>
   </action>
-  <action name="actionQTVR" >
-   <property name="text" >
+  <action name="actionQTVR">
+   <property name="text">
     <string>QTVR</string>
    </property>
   </action>
-  <action name="actionPT_script" >
-   <property name="text" >
+  <action name="actionPT_script">
+   <property name="text">
     <string>PT script</string>
    </property>
   </action>
-  <action name="actionAbout_pvQt" >
-   <property name="text" >
+  <action name="actionAbout_pvQt">
+   <property name="text">
     <string>About...</string>
    </property>
   </action>
-  <action name="actionPanini_proj" >
-   <property name="text" >
+  <action name="actionPanini_proj">
+   <property name="text">
     <string>Panini proj</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>P</string>
    </property>
   </action>
-  <action name="actionSuper_wide" >
-   <property name="text" >
+  <action name="actionSuper_wide">
+   <property name="text">
     <string>Super fish</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>S</string>
    </property>
   </action>
-  <action name="action90_deg_CW" >
-   <property name="text" >
+  <action name="action90_deg_CW">
+   <property name="text">
     <string>Turn image...</string>
    </property>
-   <property name="toolTip" >
+   <property name="toolTip">
     <string>Turn image on panosurface</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>T</string>
    </property>
   </action>
-  <action name="actionSpherical" >
-   <property name="text" >
+  <action name="actionSpherical">
+   <property name="text">
     <string>spherical</string>
    </property>
   </action>
-  <action name="actionStereographic" >
-   <property name="text" >
+  <action name="actionStereographic">
+   <property name="text">
     <string>stereographic</string>
    </property>
   </action>
-  <action name="actionMercator" >
-   <property name="text" >
+  <action name="actionMercator">
+   <property name="text">
     <string>mercator</string>
    </property>
   </action>
-  <action name="actionHFovUp" >
-   <property name="text" >
+  <action name="actionHFovUp">
+   <property name="text">
     <string>hFov+</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Shift+Right</string>
    </property>
   </action>
-  <action name="actionHFovDn" >
-   <property name="text" >
+  <action name="actionHFovDn">
+   <property name="text">
     <string>hFov-</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Shift+Left</string>
    </property>
   </action>
-  <action name="actionVFovUp" >
-   <property name="text" >
+  <action name="actionVFovUp">
+   <property name="text">
     <string>vFov+</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Shift+Up</string>
    </property>
   </action>
-  <action name="actionVFovDn" >
-   <property name="text" >
+  <action name="actionVFovDn">
+   <property name="text">
     <string>vFov-</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Shift+Down</string>
    </property>
   </action>
-  <action name="actionSave_as" >
-   <property name="text" >
+  <action name="actionSave_as">
+   <property name="text">
     <string>Save as...</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Ctrl+S</string>
    </property>
   </action>
-  <action name="actionNext_iProj" >
-   <property name="text" >
+  <action name="actionNext_iProj">
+   <property name="text">
     <string>Next iProj</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Shift+PgUp</string>
    </property>
   </action>
-  <action name="actionPrev_iProj" >
-   <property name="text" >
+  <action name="actionPrev_iProj">
+   <property name="text">
     <string>Prev iProj</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Shift+PgDown</string>
    </property>
   </action>
-  <action name="actionMouse_modes" >
-   <property name="text" >
+  <action name="actionMouse_modes">
+   <property name="text">
     <string>Mouse modes...</string>
    </property>
   </action>
-  <action name="actionRoll_Right" >
-   <property name="text" >
+  <action name="actionRoll_Right">
+   <property name="text">
     <string>Roll CW</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Alt+Right</string>
    </property>
   </action>
-  <action name="actionRoll_Left" >
-   <property name="text" >
+  <action name="actionRoll_Left">
+   <property name="text">
     <string>Roll CCW</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Alt+Left</string>
    </property>
   </action>
-  <action name="actionPanosphere" >
-   <property name="checkable" >
+  <action name="actionPanosphere">
+   <property name="checkable">
     <bool>true</bool>
    </property>
-   <property name="checked" >
+   <property name="checked">
     <bool>true</bool>
    </property>
-   <property name="enabled" >
+   <property name="enabled">
     <bool>false</bool>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>panosphere</string>
    </property>
-   <property name="toolTip" >
+   <property name="toolTip">
     <string>project on sphere</string>
    </property>
   </action>
-  <action name="actionPanocylinder" >
-   <property name="checkable" >
+  <action name="actionPanocylinder">
+   <property name="checkable">
     <bool>true</bool>
    </property>
-   <property name="enabled" >
+   <property name="enabled">
     <bool>false</bool>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>panocylinder</string>
    </property>
-   <property name="toolTip" >
+   <property name="toolTip">
     <string>project on cylinder</string>
    </property>
   </action>
-  <action name="actionHome_Eye_X_Y" >
-   <property name="text" >
+  <action name="actionHome_Eye_X_Y">
+   <property name="text">
     <string>Home Eye, Frame</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Shift+Home</string>
    </property>
   </action>
-  <action name="actionLinear_proj" >
-   <property name="text" >
+  <action name="actionLinear_proj">
+   <property name="text">
     <string>Linear proj</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>L</string>
    </property>
   </action>
-  <action name="actionOrtho_proj" >
-   <property name="text" >
+  <action name="actionOrtho_proj">
+   <property name="text">
     <string>Ortho proj</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>O</string>
    </property>
   </action>
-  <action name="actionNone_wire_model" >
-   <property name="text" >
+  <action name="actionNone_wire_model">
+   <property name="text">
     <string>none (wire model)</string>
    </property>
   </action>
-  <action name="actionReset_turn" >
-   <property name="text" >
+  <action name="actionReset_turn">
+   <property name="text">
     <string>Reset turn</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Alt+End</string>
    </property>
   </action>
+  <action name="actionCube_limit">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Cube limit...</string>
+   </property>
+   <property name="toolTip">
+    <string>Show/set cube face size limit for Mac OS</string>
+   </property>
+   <property name="autoRepeat">
+    <bool>false</bool>
+   </property>
+  </action>
  </widget>
- <resources>
-  <include location="PaniniIcon.qrc" />
- </resources>
+ <resources/>
  <connections/>
 </ui>

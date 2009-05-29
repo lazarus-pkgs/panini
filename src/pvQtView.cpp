@@ -72,7 +72,7 @@
 	textgt = 0;
 	texname = 0;
 	textgt = 0;
-
+    MacCubeLimit = 0;
 
   // create the surface tables
 	pqs = new panosphere( 50 );
@@ -157,6 +157,12 @@ bool pvQtView::OpenGLOK()
 	} 
 
 	return OGLisOK;
+}
+
+// accept a limit on cube texture dimension,
+// that is applied only on Mac OSX
+void pvQtView::setCubeLimit( int lim ){
+    MacCubeLimit = lim;
 }
 
 /**  GUI Interactions  **/

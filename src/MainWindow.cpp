@@ -18,9 +18,10 @@
 */
 
 #include <QtGui>
-
+#include <QSettings>
 #include "MainWindow.h"
 #include "GLwindow.h"
+#include "CubeLimit_dialog.h"
 
 /* modal error message display
   Note QErrorMessage::qtHandler installs a non-modal handler, so
@@ -76,7 +77,12 @@ MainWindow::MainWindow( QWidget * parent)
 #endif // QT_NO_TOOLTIP
 	
 	setupUi( this );
-	resize( 800, 800 );
+
+// load & apply persistent window settings
+	pqs = new QSettings("PaniniPerspective", "Panini-0.6");
+    resize( pqs->value("window/size", QSize(640, 480) ).toSize() );
+    move( pqs->value("window/posn", QPoint(0, 0) ).toPoint() );
+
 	pmm = new pvQtMouseModes( this );
 
 bool ok = true;
@@ -131,14 +137,24 @@ if(ok) ok =
 	statusbar->addPermanentWidget( surfaceButton );
 	statusBar()->showMessage(tr("Ready"));
 
-if(ok){
-	glwindow = new GLwindow(this);
-	ok = glwindow->isOK();
-	setCentralWidget( glwindow );
-}
+    if(ok){
+        glwindow = new GLwindow(this);
+        ok = glwindow->isOK();
+    }
 
   if( !ok ) qFatal("MainWindow setup failed");
- 
+
+  setCentralWidget( glwindow );
+
+  int cubelim = pqs->value("Mac/cube_limit", 1536 ).toInt();
+  pcld = new CubeLimit_dialog( cubelim, this );
+  glwindow->setCubeLimit( cubelim );
+#ifdef __APPLE__
+  actionCube_limit->setEnabled( true );
+#else
+  actionCube_limit->setEnabled( false );
+#endif
+
 // enable panosurface switch 
   actionPanosphere->setEnabled(true);
   actionPanocylinder->setEnabled(true);
@@ -153,7 +169,15 @@ bool MainWindow::postArgs( int argc, char **argv ){
 	return glwindow->commandLine( argc, argv );
 }
 
+void MainWindow::resizeEvent( QResizeEvent * ev ){
+}
+
 void MainWindow::closeEvent( QCloseEvent * ev ){
+  // save window size and position
+    pqs->setValue("window/size", size());
+    pqs->setValue("window/posn", pos());
+    pqs->sync();
+    ev->accept();
 }
 
 void MainWindow::showStatus( QString msg ){
@@ -348,4 +372,16 @@ void MainWindow::showSurface( int surf ){
 	bool s = surf == 0;
 	actionToggleSurface->setChecked( s );
 	actionToggleSurface->setIconText( s? tr("panosphere") : tr("panocylinder") );
+}
+
+void MainWindow::on_actionCube_limit_triggered(){
+    int t = pcld->limit();
+    if( pcld->exec() ){
+        t = pcld->limit();
+        glwindow->setCubeLimit( t );
+        pqs->setValue("Mac/cube_limit", t );
+        pqs->sync();
+    } else {
+        pcld->setLimit( t );
+    }
 }
