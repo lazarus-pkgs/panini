@@ -159,8 +159,8 @@ bool pvQtView::OpenGLOK()
 	return OGLisOK;
 }
 
-// accept a limit on cube texture dimension,
-// that is applied only on Mac OSX
+// accept a limit on cube texture dimension
+// (used only on Mac OSX)
 void pvQtView::setCubeLimit( int lim ){
     MacCubeLimit = lim;
 }
@@ -984,8 +984,11 @@ bool pvQtView::setupPic( pvQtPic * pic )
 		maxdims = maxTex2Drec;
 		break;
 	case pvQtPic::cub:
-		maxdims = maxTexCube;
-		break;
+        maxdims = maxTexCube;
+#ifdef __APPLE__
+        maxdims = QSize(MacCubeLimit, MacCubeLimit);
+#endif
+        break;
 	}
 
 	if( !maxdims.isEmpty() ){
