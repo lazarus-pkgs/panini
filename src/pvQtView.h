@@ -131,6 +131,8 @@ public:
 	 void setSurface( int surf );
   // orient image on panosurface turn(0:3)= 0,90,180,270 deg
 	 void setTurn( int turn, double roll, double pitch, double yaw );
+  // Mac cube texture dimension limit
+    void setCubeLimit( int lim );
 
 
 signals:
@@ -241,6 +243,7 @@ private slots:
 		   framex0, framey0,
 		   fwf, fhf;
 
+    int MacCubeLimit;
 };
 
 #endif //ndef PVQTVIEW_H

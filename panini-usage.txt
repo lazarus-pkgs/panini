@@ -1,4 +1,4 @@
-How to use Panini version 0.62.xx   02 February 2009
+How to use Panini version 0.63.xx   28 May 2009
 
 Panini is a tool for creating perspective views from panoramic and wide angle images. 
  
@@ -10,7 +10,7 @@ All of this works interactively at "mouse speed" thanks to the OpenGL video grap
 
 WHY "Panini"?
 
-The name honors 18th century artist and professor of perspective Gianpaolo Pannini (also spelled "Panini"), who painted grand views of Rome and taught a generation of artists that included Canaletto and Piranesi.  Their impressive wide angle views of building interiors and urban landscapes were famous throughout Europe.  These pictures seem to be in true perspective, but can't be: the standard linear perspective projection creates serious distortions at much smaller view angles.  Instead, they used clever combinations of cylindrical and linear projections.  These techniques were probably invented in Holland a century or more earlier, which is one reason why Panini's icon is a picture of the Erasmus Bridge in Rotterdam.
+The name honors 18th century artist and professor of perspective Gian Paolo Pannini (also spelled "Panini"), who painted grand views of Rome and taught a generation of artists that included Canaletto and Piranesi.  Their impressive wide angle views of building interiors and urban landscapes were famous throughout Europe.  These pictures seem to be in true perspective, but can't be: the standard linear perspective projection creates serious distortions at much smaller view angles.  Instead, they used clever combinations of cylindrical and linear projections.  These techniques were probably invented in Holland a century or more earlier, which is one reason why Panini's icon is a picture of the Erasmus Bridge in Rotterdam.
 
 Bruno Postle recently deduced one very simple but effective way of combining the cylindrical and linear projections by studying a Pannini painting of St. Peter's; so we are calling that the "Pannini projection".  It is a linear perspective view of a cylindrical image -- the cylindrical analog of the stereographic projection of a sphere.  The Baroque artists may or may not have used this construction explictly, but it produces images that look a lot like some of the ones they drew.
 
@@ -29,9 +29,7 @@ The "About" dialog shows information about your system's OpenGL facilities as we
   texMax:	maximum dimension of 2D textures, the bigger the better.
   cubeMax:	maximum dimension of cubic textures, the bigger the better.
   			
-The maximum resolution Panini can display or render depends on the amount of texture memory available.  Cubic panoramas can generally be shown at higher resolution than the single image formats.
-
-To save views at higher than screen resolution, your OpenGL must support offscreen frame buffers of arbitrary size.  If it does not, all saved views will be at screen resolution.  
+The maximum resolution Panini can display or render depends on the amount of texture memory available.  Cubic images generally support somewhat larger texture maps than the flat formats.  Saved image resolution is normally several times screen resolution, however that too may be limited by OpenGL resources.  If your OpenGL does not support offscreen frame buffers of arbitrary size, all saved views will be at screen resolution.  
 
 Panini places no special demands on CPU speed or memory; if you can stitch panoramas, you will have no trouble viewing them.
 
@@ -72,6 +70,10 @@ The Turn controls dialog ("Turn image" in preset menu, or T key) lets you rotate
 Hint: The main use of Turn is to align the cylinder axis with lines that you want to keep straight in the Pannini projections.  The projection axes do not turn along with the image, however you can get rather messy "transverse" forms of some projections by adjusting the hfov and vfov.  A future release will have proper transverse projections.
 
 For convenience in viewing series of related pictures, Panini remembers the last selected Turn angles and FOV for each source format (but version 0.6 does not save them when you exit the program).
+
+Version 0.63 does save a few items at exit, and restore them at startup.  One is a limit on the displayed size of cube faces, effective only on Macs, to work around a bug in OSX that can cause system crashes as well as garbled display of cubic images.  You can see and change this limit via the "cube limit" item on the Presets menu.  The default limit will probably work for you, but if it gives bad displays of large cubic QTVRs, reduce it until they are displayed correctly.  Otherwise you may want to increase the limit until you find the largest size your system will display comfortably (note that the source cube face size also limits the displayed size).
+
+Version 0.63 also saves and restores the window size.  The initial default size is smaller than before so that the window will not overflow small laptop screens, which can be awkward to correct on some systems. 
 
 
 LOADING A SOURCE IMAGE 

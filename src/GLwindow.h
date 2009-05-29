@@ -49,6 +49,7 @@ public slots:
 	void save_as();
 	void set_surface( int surf );
 	void turn90( int t );
+    void setCubeLimit( int );
  // from picType dialog...
 	void picTypeChanged( int t );
 	void hFovChanged( double h );

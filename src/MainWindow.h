@@ -31,6 +31,8 @@
 class GLwindow;
 class QActionGroup;
 class QErrorMessage;
+class QSettings;
+class CubeLimit_dialog;
 #include "pvQtMouseModes.h"
 
 class MainWindow :
@@ -73,7 +75,8 @@ signals:
 	void about_pvQt();
 
 protected:
-	void closeEvent( QCloseEvent * ev );
+	virtual void resizeEvent( QResizeEvent * ev );
+	virtual void closeEvent( QCloseEvent * ev );
 	QErrorMessage * errorMsgHandler;
 private:
 	GLwindow * glwindow;
@@ -83,6 +86,10 @@ private:
   // actions not created with Qt Designer
 	QAction * actionToggleSurface;
 	QAction * actionNext_iProj;
+  // persistent settings
+	QSettings * pqs;
+  // Mac cube limit dialog
+    CubeLimit_dialog * pcld;
 
 private slots:
 	void verify(int i);
@@ -128,7 +135,7 @@ private slots:
 	void on_actionNext_iProj_triggered();
 	void on_actionToggleSurface_triggered( bool ckd );
 	void on_actionReset_turn_triggered();
-
+    void on_actionCube_limit_triggered();
 };
 
 #endif //ndef MAINWINDOW_H
