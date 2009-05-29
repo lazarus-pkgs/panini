@@ -230,6 +230,8 @@ void GLwindow::reset_turn(){
 
 void GLwindow::setCubeLimit( int lim ){
     glview->setCubeLimit( lim );
+    glview->picChanged();
+    reportPic();  // refresh size display
 }
 
 // Record turn angle changes
@@ -332,19 +334,27 @@ bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 	return ok;
 }
 
-// put image name & size or error message in window title
-// c is the number of files just loaded
-// sets loaddir = file's directory name
+/* put image name & size or error message in window title
+   c is the number of files just loaded (0 if no current
+   file, -1 to refresh )
+   if c > 0 saves the first file name and its directory name;
+   replays those if c < 0
+*/
+
 void GLwindow::reportPic( bool ok, int c, QStringList fnm ) {
 	if( ok ){
-		QString msg = "  Panini  ";
+        if( c >= 0 ) loadcount = c;
 		if( c > 0 ){
 		  // save the directory name...
 			QFileInfo fi( fnm[0] );
 			loaddir = fi.absolutePath();
 		  // display plain file name
-			msg += fi.fileName();
-		} else 	msg += tr("(no image file)");
+            loadname = fi.fileName();
+        } else if (c == 0){
+            loadname = tr("(no image file)");
+        }
+        QString msg = "  Panini  ";
+        msg += loadname;
 		msg += QString("  ") + QString(" at ");
 		double m = pvpic->PictureSize();
 		msg += QString().setNum( m, 'f', 2 ) + QString(" Mpixels");

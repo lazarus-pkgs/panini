@@ -70,7 +70,7 @@ private:
 	const char * askPicType( QStringList files, 
 							 const char * ptyp = 0 );
 	bool loadTypedFiles( const char * type, QStringList files );
-	void reportPic( bool ok, int c, QStringList files );
+    void reportPic( bool ok = true, int c = -1, QStringList files = QStringList() );
 	void dragEnterEvent(QDragEnterEvent * event);
 	void dropEvent(QDropEvent * event);
 
@@ -94,5 +94,6 @@ private:
 	QString errmsg;
 
 	QString loaddir, savedir;
-
+    int loadcount;  // no. of image files now loaded
+    QString loadname;  // filename displayed in title
 };

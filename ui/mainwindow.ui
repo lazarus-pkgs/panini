@@ -14,7 +14,7 @@
    <string> Panini</string>
   </property>
   <property name="windowIcon">
-   <iconset>
+   <iconset resource="PaniniIcon.qrc">
     <normaloff>:/Icons/panini-icon-blue.jpg</normaloff>:/Icons/panini-icon-blue.jpg</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
@@ -505,16 +505,18 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Cube limit...</string>
+    <string>Mac cube size...</string>
    </property>
    <property name="toolTip">
-    <string>Show/set cube face size limit for Mac OS</string>
+    <string>Cube face size limit for Mac OSX</string>
    </property>
    <property name="autoRepeat">
     <bool>false</bool>
    </property>
   </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="PaniniIcon.qrc"/>
+ </resources>
  <connections/>
 </ui>
