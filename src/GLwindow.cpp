@@ -321,7 +321,7 @@ bool GLwindow::loadTypedFiles( const char * tnm, QStringList fnm ){
 		}
 
 	  // select appropriate default panosurface
-		set_surface( picType == pvQtPic::cub ? 0 : 1 );
+    ////	set_surface( picType == pvQtPic::cub ? 0 : 1 );
 
 	  // display the image
 		glview->showPic( pvpic );

@@ -272,6 +272,10 @@ private:
 	bool	addimgsize( int iface, QSize dims );
 // pixels <=> fov angle
 	int 	xproj, yproj;	// axis projection types
+
+// delete and zero a QImage*
+// used to remove cached source images
+    void removeImg( int i );
 // load local images for a face
 	QImage * loadEmpty( int face );
 	QImage * loadFile( int face );
