@@ -309,6 +309,10 @@ QSizeF pvQtPic::changeFovType( PicType t, QSizeF fovs,
 
 pvQtPic::pvQtPic( pvQtPic::PicType t )
 {
+  // zero the cached image pointers so
+  // we won't try to delete them
+    for(int i = 0; i < 6; i++ ) addrs[i] = 0;
+  // set up for the given pic type, or none
 	picTypes = new pictureTypes();
 	if( !setType( t ) ) setType( nil );
 	surface = sphere;
@@ -326,8 +330,21 @@ bool pvQtPic::setType( pvQtPic::PicType t )
  */  
  	
 	type = nil;		// disable API
+
+  // pixel format for face images
+    faceformat = PVQT_PIC_FACE_FORMAT;
+  // no face images assigned
+    numimgs = 0;
+  // clear face image info; set empty face style
+    for( int i = 0; i < 6; i++ ){
+        removeImg( i );
+        labels[i] = FaceName( PicFace(i) );
+        borders[i] = defborders[i];
+        fills[i] = deffill;
+    }
+
 	ipt = picTypes->picTypeIndex(t);
-	if( ipt < 0 )return false;
+    if( ipt < 0 )return false;  // bad type
 
   // accept the type
 	type = t;
@@ -345,25 +362,27 @@ bool pvQtPic::setType( pvQtPic::PicType t )
 	double r = facefovs.width() / facefovs.height();
 	if( r < 1 ) facedims.setWidth( 256 );
 	else if( r > 1 ) facedims.setHeight( 256 );
-  // default image == max
+  // default image == maxfovs, no pixels
 	imagefovs = maxfovs;
+    imagedims = QSize(0,0);
 
-  // pixel format for face images
-	faceformat = PVQT_PIC_FACE_FORMAT; 
-  // no face images assigned
-	numimgs = 0;
-  // clear source image info; set empty face style
-	for( int i = 0; i < 6; i++ ){
-		accept[i] = false;
-		kinds[i] = 0;			// coded source type
-		idims[i] = QSize(0,0);	// source dimensions
-		addrs[i] = 0	;		// address if in-core
-		names[i]  = QString();	// path or url
-		labels[i] = FaceName( PicFace(i) );
-		borders[i] = defborders[i];
-		fills[i] = deffill;
-	}
 	return true;
+}
+
+// Clear a face image info entry
+// after deleting any associated QImage
+// note raster images are not deleted
+// note preserves label, border and fill
+void pvQtPic::removeImg( int i ){
+    if( i < 0 || i >= 6 ) return;
+    if(	kinds[i] == QIMAGE_KIND
+     && addrs[i] != 0 )
+        delete (QImage *)addrs[i];
+    accept[i] = false;
+    kinds[i] = 0;			// coded source type
+    idims[i] = QSize(0,0);	// source dimensions
+    names[i]  = QString();	// path or url
+    formats[i] = 0;     // pixel format
 }
 
 /* select the panosurface.
@@ -495,7 +514,7 @@ QSizeF pvQtPic::picScale2Fov( QSizeF scl ){
 /* Effective displayed image size in megapixels
 */
 double pvQtPic::PictureSize(){
-	if( type == nil || facedims.isNull() ) return 0;
+    if( type == nil ) return 0;
 	double d = facedims.height() * numimgs;
 	d *= facedims.width();
 	d /= 1000000;
@@ -578,19 +597,16 @@ bool pvQtPic::setFaceImage( pvQtPic::PicFace face, QImage * img )
 	
 	if( img == 0 ){	// remove any assigned image
 		if( kinds[i] && numimgs > 0 ) --numimgs;
-		kinds[i] = 0;			// coded source type
-		idims[i] = QSize(0,0);	// source dimensions
-		addrs[i] = 0	;		// address if in-core
-		names[i]  = QString();		// url if external
+        removeImg( i );
 		return true;
 	}
 	
 	if( type != cub && kinds[i] != 0 ) return false;
 	
-	kinds[i] = QIMAGE_KIND;
-	addrs[i] = img;
+    removeImg( i );
+    kinds[i] = QIMAGE_KIND;
+    addrs[i] = img;
 	formats[i] = img->format();
-	names[i] = QString();
 
 	return addimgsize( i, img->size() );
 }
@@ -605,11 +621,10 @@ bool pvQtPic::setFaceImage( pvQtPic::PicFace face,
 	int i = int(face);
 	if( type != cub && kinds[i] != 0 ) return false;
 
-	kinds[i] = RASTER_KIND;
-	addrs[i] = addr;
-	formats[i] = kcode(bitsPerColor,colorsPerPixel,
+    removeImg( i );
+    kinds[i] = RASTER_KIND;
+    formats[i] = kcode(bitsPerColor,colorsPerPixel,
 					floatValues, packedPixels, alignBytes );
-	names[i] = QString();
 	
 	return addimgsize( i, QSize(width,height) );
 }
@@ -625,9 +640,8 @@ bool pvQtPic::setFaceImage( pvQtPic::PicFace face, QString path )
 	QImageReader ir( path );
 	if( !ir.canRead() ) return false;
 
-	kinds[i] = FILE_KIND;
-	addrs[i] = 0;
-	formats[i] = 0;
+    removeImg( i );
+    kinds[i] = FILE_KIND;
 	names[i] = path;
 	
 	return addimgsize( i, ir.size() );
@@ -642,10 +656,9 @@ bool pvQtPic::setFaceImage( pvQtPic::PicFace face, QUrl url )
 	if( face < front || face >= PicFace(maxfaces) ) return false;
 	int i = int(face);
 	if( type != cub && kinds[i] != 0 ) return false;
- 	
+
+    removeImg( i );
 	kinds[i] = URL_KIND;
-	addrs[i] = 0;
-	formats[i] = 0;
 	names[i] = QString();
 
   /* call a virtual function to deal with this url.
@@ -757,7 +770,7 @@ QColor	pvQtPic::getFill( PicFace face )
   FaceImage() delivers a displayable image, which it gets
   by calling a reader for the appropriate source.  Readers
   return new images of size facedims in the native pixel
-  format of the source; FaceImage converts pixel format it
+  format of the source; FaceImage converts pixel format if
   necessary.
   
 **/
@@ -784,13 +797,13 @@ QImage * pvQtPic::FaceImage( PicFace face ){
 
 		switch( kinds[i] ){
 		case QIMAGE_KIND: 
-			pim = loadQImage( i );
+            pim = loadQImage( i );
 			break;
 		case RASTER_KIND: 
 			pim = loadRaster( i );
 			break;
 		case FILE_KIND:	
-			pim = loadFile( i );
+            pim = loadFile( i );
 			break;
 		case URL_KIND: 
 			pim =  loadURL( QUrl( names[i] ) );
@@ -855,6 +868,7 @@ QImage * pvQtPic::loadFile( int face )
 			Qt::SmoothTransformation
 		)
 	);
+
 #else	// can use this if bug gets fixed:
 	ir.setClipRect( imageclip );
 	ir.setScaledSize( facedims );
@@ -876,6 +890,7 @@ QImage * pvQtPic::loadQImage( int face )
 				Qt::SmoothTransformation
 			)
 	);
+
 	return pim;
 }
 
