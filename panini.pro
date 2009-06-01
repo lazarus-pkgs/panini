@@ -1,16 +1,13 @@
 # # qmake project for panini ##
 TEMPLATE = app
 CONFIG += debug_and_release
-CONFIG(debug, debug|release):TARGET = panini-d
-else:TARGET = panini
+CONFIG(release, debug|release):TARGET = Panini
+else:TARGET = Panini-d
 
 # # framework ##
-QT = gui \
-    core
-QT += opengl
+QT = gui core opengl
 
 # # Directories ##
-DESTDIR = bin
 OBJECTS_DIR = build
 MOC_DIR = build
 UI_DIR = build
