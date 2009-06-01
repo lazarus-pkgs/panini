@@ -40,7 +40,6 @@ SOURCES += src/picTypeDialog.cpp \
     src/pictureTypes.cpp
 FORMS += ui/About.ui
 HEADERS += src/About.h
-SOURCES += src/About.cpp
 HEADERS += src/panosurface.h
 SOURCES += src/panosurface.cpp
 HEADERS += src/panosphere.h
@@ -55,12 +54,12 @@ SOURCES += src/TurnDialog.cpp
 RESOURCES = ui/PaniniIcon.qrc
 FORMS += ui/CubeLimit_dialog.ui
 
-# # Version ##
-# major.minor rev numbers are in version0.h
+## Version Number ##
+# edit major.minor rev numbers in version0.h
 # patch = SVN version number, or ??? if unknown
-HEADERS += version0.h \
-    SVNnoVersion.h \
-    version1.h
+HEADERS += version0.h SVNnoVersion.h version1.h
+HEADERS += src/pvQtVersion.h
+SOURCES += src/About.cpp
 
 # capture SVN revision number in a file
 !svn:system(svnversion -n > SVNversion.h ):CONFIG += svn
@@ -70,6 +69,7 @@ HEADERS += version0.h \
     else:system(cp SVNnoVersion.h SVNversion.h)
 }
 
-# construct pvQtVersion.h
-win32:system(wbin\cat Version0.h SVNversion.h Version1.h > build\pvQtVersion.h)
-else:system(cat Version0.h SVNversion.h Version1.h > build/pvQtVersion.h)
+# construct pvQtVersion.h 
+win32:system(wbin\cat Version0.h SVNversion.h Version1.h > src\pvQtVersion.h)
+else:system(cat Version0.h SVNversion.h Version1.h > src/pvQtVersion.h)
+ 
