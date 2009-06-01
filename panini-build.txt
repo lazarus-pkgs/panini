@@ -1,27 +1,29 @@
-How to Build panini
+How to Build Panini  (updated 01 June 2009)
 
-First, you need to get and install Qt version 4.4.2 or newer, if you don't already have it.  Most Unix and Linux distributions provide a prebuilt Qt4.4 via their package managers; failing that, you can download and install a suitable version at http://trolltech.com/downloads/opensource/appdev. 
+First, you need to get and install Qt version 4.4.2 or newer.  If you get version 4.5 (recommended) then you will be able to build with the Qt Creator IDE on any platform.  Most Unix and Linux distributions provide a prebuilt Qt via their package managers; or you can download and install a suitable version at http://trolltech.com/downloads/opensource/appdev. 
  
-On Windows, the open source Qt distribution requires the MinGW port of the Gnu build tools.  If you don't already have that, the easiest way to get it is to install the Qt package that includes MinGW.
+On Windows, the open source Qt distribution requires the MinGW port of the Gnu build tools.  If you don't already have that, the easiest way to get it is to install the Qt package that includes MinGW.  Open source version 4.5 for Windows installs MinGW by default.
 
-To build on OSX you must have the Apple XCode package (version 3) installed.  Qt 4.4.0 may have OpenGL isues on OSX, so Mac users should install version 4.4.2 or later.  Note Qt does not support pre-OSX Mac systems.   
+To build on OSX, with or without Qt creator you must have the Apple XCode package (version 3) installed.  Qt 4.4.0 may have OpenGL isues on OSX, so Mac users should install version 4.4.2 or later.  Note Qt does not support pre-OSX Mac systems.  
 
 Qt is a big package (120 MB zipped, 150MB with MinGW) so you need a fast connection and plenty of disk space.  But it installs without a glitch 99% of the time.  And is very well worth having.
 
 The only other required package is the zlib file compression library.  Most Unix/Linux systems (including OSX) will already have that, if not, their package managers will.  Or get it from the Gnu archives.  For Windows, download a prebuilt zlib from the GnuWin32 project at sourceforge.net and install it in the MinGW include and lib directories.
 
-Once Qt and the build tools are in place, you can build panini from a command shell (on Windows, use the one supplied with Qt).  In the panini directory, on Linux or Windows type 
+To build Panini with Qt Creator, open "Panini.pro" (a simple double click should work) and select "build all" or "build project" on the Build menu.  
+
+To build from a command shell (on Windows, use the one supplied with Qt):  In the panini directory, type
 		"qmake panini.pro"
-On OSX that command will create an XCode project, that you can open and build; or to get a Makefile, use 
+On Linux or Windows that command will create Makefiles, on OSX it creates an XCode project, that you can open and build; to get a Makefile, use 
 		"qmake -spec macx-g++"
 To build on Windows or Linux (or from a Mac Makefile) type
-		"make release"  
+		"make release"  or "make debug"
 
-The resulting executable will be in panini/bin and can be copied anywhere.  On Windows, you might have to add the Qt4 bin directory to the "all users" search path.  This is important because that directory contains required plugin subdirectories as well as the Qt DLLs (DON'T copy Qt DLL's to Windows\System32.  Any system which requires that is too old to run panini).  If you have a preexisting installation of MingGW, it is OK to put the MinGW DLL in System32; but if you installed it from the Qt distribution, there will be a copy of the MinGW DLL in Qt4 bin.
+The resulting executable will be Panini (release) or Panini-d (debug) and can be copied anywhere.  On Windows, you might have to add the Qt4 bin directory to the "all users" search path.  This is important because that directory contains required plugin subdirectories as well as the Qt DLLs (DON'T copy Qt DLL's to Windows\System32.  Any system which requires that is too old to run Panini).  If you have a preexisting installation of MingGW, it is OK to put the MinGW DLL in System32; but if you installed it from the Qt distribution, there will be a copy of the MinGW DLL in Qt4 bin.
 
-The qmake project file, panini.pro, is set up to build both debug and release versions.  This has some quirks which you should be aware of.  There are two subordinate Makefiles. "make release" runs one, building executable bin/panini and "make debug" runs the other, building bin/panini-d; plain "make" runs the debug build.  However these builds use the same object file names, and make cannot detect which version was built last.  So if you run "make debug" then "make release", it will incorrectly create panini by linking the existing debug object files (and vice versa).  So you have to "make clean" when switching build targets.  The release exe size is about 160 KB while the debug one is over 7 MB, so it is easy to tell which is which.
+The qmake project file, panini.pro, is set up to build both debug and release versions.  This has some quirks which you should be aware of.  There are two subordinate Makefiles. "make release" runs one, building executable bin/panini and "make debug" runs the other, building bin/panini-d; plain "make" runs the default build, which is release for Panini 0.63.  However these builds use the same object file names, and make cannot detect which version was built last.  So if you run "make debug" then "make release", it will incorrectly create panini by linking the existing debug object files (and vice versa).  So you have to "make clean" when switching build targets.  On Windows and Linux the release exe size is a few hundred KB while the debug one is over 7 MB, so it is easy to tell which is which.
 
-Run Qt Assistant for very good documentation of qmake and the whole Qt framework.  Or if you have what seems to be a platform specific issue, the Trolltech website could be helpful.  Start at http://trolltech.com/developer.
+Run Qt Assistant (= the Help tab of Qt Creator) for very good documentation of qmake and the whole Qt framework.  Or if you have what seems to be a platform specific issue, the Trolltech website could be helpful.  Start at http://trolltech.com/developer.
 
 If you need help, or have constructive suggestions, feature requests, bug reports, etc, please use the panini project pages on SourceForge to communicate with me (https://sourceforge.net/projects/pvqt/).  I may not be the best one to ask about some things, but will be glad to try to help.
 
@@ -36,8 +38,10 @@ If you have an idea for developing panini in a whole new direction, ask me first
 	Source Code
 
 The Unix command to download the current source tree into a subdirectory called "panini" is 
-    svn co https://pvqt.svn.sourceforge.net/svnroot/pvqt pvqt
-On windows, you give Tortoise svn the url and specify the target directory separately.  In either case, the target directory should be empty or nonexistent; if you don't name one, your current working directory will become the root of the panini source tree.  You don't need a username or password for this.
+    svn co https://pvqt.svn.sourceforge.net/svnroot/pvqt panini
+On windows, you give Tortoise svn the url and specify the target directory separately.  In either case, the target directory should be empty or nonexistent; if you don't name one, your current working directory will become the root of the panini source tree.  You don't need a username or password for this.  
+
+On Mac OSX, if you use XCode to build, you have to delete the existing panini directory and check out a whole fresh copy to get the latest source code.  Just doing an svn update and running qmake corrupts the project environment and you won't be able to build (even with Qt Creator).  If you use Qt Creator only, updates will probably work.
 
 	Coding Standards
 

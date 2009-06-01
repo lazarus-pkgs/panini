@@ -1,11 +1,11 @@
 # complete-bundle.sh, May 2009, Harry van der Wolf
-# This shell cript is neccessary to create a complete 
+# This shell script is neccessary to create a complete 
 # and portable Panini for MacOSX 10.4 and newer.
 
 
 # The App_path should contain the complete full path from / to where
 # your source code folder is
-Panini_path=/Users/Shared/development/Panini0.63.86
+Panini_path=/Users/Shared/development/Panini_all/Panini0.63.90
 
 
 ####################################################################
@@ -23,14 +23,9 @@ rsync -av --exclude 'Headers/*' /Library/Frameworks/QtCore.framework $FrameW_pat
 rsync -av --exclude 'Headers/*' /Library/Frameworks/QtGui.framework $FrameW_path
 rsync -av --exclude 'Headers/*' /Library/Frameworks/QtOpenGL.framework $FrameW_path
 
-# Copy QT plugins
+# Copy QT plugins and config
 mkdir -p $plugins_path
-#rsync -av /Developer/Applications/Qt/plugins/imageformats $plugins_path
-mkdir -p $plugins_path/imageformats
-cp /Developer/Applications/Qt/plugins/imageformats/libqjpeg.dylib $plugins_path/imageformats
-cp /Developer/Applications/Qt/plugins/imageformats/libqtiff.dylib $plugins_path/imageformats
-cp /Developer/Applications/Qt/plugins/imageformats/libqico.dylib $plugins_path/imageformats
-cp /Developer/Applications/Qt/plugins/imageformats/libqgif.dylib $plugins_path/imageformats
+rsync -av /Developer/Applications/Qt/plugins/imageformats $plugins_path
 mkdir -p $Resources_path
 cp $Basic_path/qt.conf $Resources_path
 
