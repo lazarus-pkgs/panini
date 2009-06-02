@@ -1,8 +1,7 @@
 # # qmake project for panini ##
 TEMPLATE = app
-CONFIG += debug_and_release
-CONFIG(release, debug|release):TARGET = Panini
-else:TARGET = Panini-d
+TARGET = Panini
+CONFIG = debug_and_release
 
 # # framework ##
 QT = gui core opengl
