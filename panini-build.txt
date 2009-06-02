@@ -1,12 +1,12 @@
-How to Build Panini  (updated 01 June 2009)
+How to Build Panini  (updated 03 June 2009)
 
 First, you need to get and install Qt version 4.4.2 or newer.  If you get version 4.5 (recommended) then you will be able to build with the Qt Creator IDE on any platform.  Most Unix and Linux distributions provide a prebuilt Qt via their package managers; or you can download and install a suitable version at http://trolltech.com/downloads/opensource/appdev. 
  
-On Windows, the open source Qt distribution requires the MinGW port of the Gnu build tools.  If you don't already have that, the easiest way to get it is to install the Qt package that includes MinGW.  Open source version 4.5 for Windows installs MinGW by default.
+On Windows, the open source Qt distribution requires the MinGW port of the Gnu build tools.  If you don't already have that, the easiest way to get it is to install a Qt package that includes MinGW.  Open source version 4.5 for Windows installs its own private copy of MinGW by default.
 
-To build on OSX, with or without Qt creator you must have the Apple XCode package (version 3) installed.  Qt 4.4.0 may have OpenGL isues on OSX, so Mac users should install version 4.4.2 or later.  Note Qt does not support pre-OSX Mac systems.  
+Qt is a big package (>120 MB zipped, >150MB with MinGW) so you need a fast connection and plenty of disk space.  But it installs without a glitch 99% of the time.  And is very well worth having.
 
-Qt is a big package (120 MB zipped, 150MB with MinGW) so you need a fast connection and plenty of disk space.  But it installs without a glitch 99% of the time.  And is very well worth having.
+To build on OSX, with or without an IDE you must install the Apple XCode package (version 3).  That supplies the gnu build tools as well as the XCode IDE.  Qt 4.4.0 may have OpenGL isues on OSX, so Mac users should install version 4.4.2 or later.  Note Qt does not support pre-OSX Mac systems, and Panini will probably not run on anything earlier than OSX 10.4.
 
 The only other required package is the zlib file compression library.  Most Unix/Linux systems (including OSX) will already have that, if not, their package managers will.  Or get it from the Gnu archives.  For Windows, download a prebuilt zlib from the GnuWin32 project at sourceforge.net and install it in the MinGW include and lib directories.
 
@@ -14,26 +14,31 @@ To build Panini with Qt Creator, open "Panini.pro" (a simple double click should
 
 To build from a command shell (on Windows, use the one supplied with Qt):  In the panini directory, type
 		"qmake panini.pro"
-On Linux or Windows that command will create Makefiles, on OSX it creates an XCode project, that you can open and build; to get a Makefile, use 
-		"qmake -spec macx-g++"
+On Linux or Windows that command will create Makefiles, on OSX it creates an XCode project, that you can open and build; to get a Makefile instead, use
+        "qmake -spec macx-g++" (Qt Creator issues this command, too)
+NOTE the XCode project will have the debug build target selected by default, you should change that to release before building.
+
+The Qt project file tries to run the svnversion command to get the SVN revision number that is displayed as the 3rd field of Panini's version number.  If that fails, it uses the contents of SVNnoVersion.h.  So if you want to modify Panini and archive the results with SVN, you need the svn command line tools (even if you are using a GUI SVN client).  Otherwise, just ignore the qmake error message about svnversion.
+
 To build on Windows or Linux (or from a Mac Makefile) type
 		"make release"  or "make debug"
+The resulting executable will be Release/Panini or Debug/Panini on Windows or Linux; on OSX, possibly just Panini.app in the package root.
 
-The resulting executable will be Release/Panini or Debug/Panini-d on Windows and Linux; on OSX, Panini.app or Panini-d.app in the package root, if you built with Qt Creator.  With XCode the latest build will probably just be Panini.app.
+To install, just copy Panini.exe or Panini.app to wherever you like. On Windows, you may have to add the Qt4 bin directory to the "all users" search path, though that will probably have been done when Qt was installed.  This is important because that directory contains required plugin subdirectories as well as the Qt DLLs (DON'T copy Qt DLL's to Windows\System32.  Any system which requires that is too old to run Panini).  If you have a preexisting installation of MingGW, it is OK to put the MinGW DLL in System32; but if you installed MinGw with Qt, there will be a copy of the MinGW DLL in Qt4 bin.
 
-Installing:  You can copy Panini.exe to wherever you like. On Windows, you may have to add the Qt4 bin directory to the "all users" search path, though that will probably have been done when Qt was installed.  This is important because that directory contains required plugin subdirectories as well as the Qt DLLs (DON'T copy Qt DLL's to Windows\System32.  Any system which requires that is too old to run Panini).  If you have a preexisting installation of MingGW, it is OK to put the MinGW DLL in System32; but if you installed MinGw with Qt, there will be a copy of the MinGW DLL in Qt4 bin.
+The qmake project file, Panini.pro, is set up to build both debug and release versions (release by default, except XCode always defaults to debug).  This has some quirks which you should be aware of.  There are two subordinate Makefiles. "make release" runs one, building executable bin/panini and "make debug" runs the other, building bin/panini-d; plain "make" runs the default build.  However both builds use the same object file names; so if you run "make release" then "make debug", it may incorrectly create panini by linking the existing release object files, which lack symbol tables and so won't work with the debugger, or vice versa.  The safest thing is to "make clean" when swtiching configurations.
 
-The qmake project file, panini.pro, is set up to build both debug and release versions (release by default).  This has some quirks which you should be aware of.  There are two subordinate Makefiles. "make release" runs one, building executable bin/panini and "make debug" runs the other, building bin/panini-d; plain "make" runs the default build.  However both builds use the same object file names, and make cannot detect which version was built last.  So if you run "make release" then "make debug", it will incorrectly create panini by linking the existing release object files, which lack symbol tables (and vice versa).  So you have to "make clean" when switching build configurations.  On Windows and Linux the release exe size is a few hundred KB while the debug one is over 7 MB, so it is easy to tell which is which.
+Qt Creator (version 4.5) will show release and debug build configurations and a single "run configuration" just called Panini.  That actually runs the exe corresponding to the current build configuration (both the "run" and the "debug" buttons do this) so to debug you have to first select the debug build.
 
-Qt Creator (version 4.5) shows release and debug build configurations but is not smart enough to run the corresponding exe automatically.  To debug, you have to first create a "custom run configuration" targeting Panini-d in the Projects/Run Configuration tab, and switch between "run configurations" by hand (Build menu).  If you forget to do that after switching build configurations, the run commands (debug or normal) will not run the exe you just built, which can be confusing.
-
-Run Qt Assistant (= the Help tab of Qt Creator) for very good documentation of qmake and the whole Qt framework.  Or if you have what seems to be a platform specific issue, the Trolltech website could be helpful.  Start at http://trolltech.com/developer.
+Run Qt Assistant (= the Help tab of Qt Creator) for good documentation of qmake and the whole Qt framework.  Or if you have what seems to be a platform specific issue, the Trolltech website http://trolltech.com/developer could be helpful.
 
 If you need help, or have constructive suggestions, feature requests, bug reports, etc, please use the panini project pages on SourceForge to communicate with me (https://sourceforge.net/projects/pvqt/).  I may not be the best one to ask about some things, but will be glad to try to help.
 
 How to Develop panini
 
-If you want to build from the curent development sources, you will need an SVN client to download the curent source from SourceForge.  On Windows I use Tortoise SVN, and on Linux and OSX the Unix command line version.  You should install the svn commandline client package even on Windows because the qmake project calls the svnversion command to get the SVN revision for the third ("patch") field of the panini version.  You can build without this but then the patch number will be "???".  
+If you want to build from the curent development sources, you will need an SVN client to download the curent source from SourceForge.  On Windows I use Tortoise SVN, and on Linux and OSX the Unix command line version.  You should install the svn commandline client package even on Windows because the qmake project calls the svnversion command to get the SVN revision for the third ("patch") field of the panini version.  You can build without this but then the patch number will be "???" if you checked the source out from SourceForge SVN; or if you started with a release source package, it will be the SVN revision of that release.
+
+Mac OSX comes with an outdated svnversion command that won't handle current SVN files; so there, too, you should install a current svn command set. Unfortunately the svn support in XCode is built-in as well as outdated, and you can't do anything about that.
 
 If you want to contribute to the public development of panini you will also need my permission to put changes into the source archive.  Specifically, you must have a member account on SourceForge, and I must register you as an authorized panini developer (please request this on the panini "Open Discussion forum, https://sourceforge.net/forum/forum.php?forum_id=874270) .  Then you can commit source changes using your SF username and password.  If you are new to SVN, "committing" can feel a little scary, but don't worry: anything you do can be undone.  So commit early and often -- but please, only code that compiles without error and more or less works, and note in the message what platform(s) it has been tested on. 
 
@@ -41,11 +46,11 @@ If you have an idea for developing panini in a whole new direction, ask me first
 
 	Source Code
 
-The Unix command to download the current source tree into a subdirectory called "panini" is 
+The Unix shell command to download the current source tree into a subdirectory called "panini" is
     svn co https://pvqt.svn.sourceforge.net/svnroot/pvqt panini
-On windows, you give Tortoise svn the url and specify the target directory separately.  In either case, the target directory should be empty or nonexistent; if you don't name one, your current working directory will become the root of the panini source tree.  You don't need a username or password for this.  
+With a GUI SVN client you normally specify the URL and target directory separately.  In either case, the target directory should be empty or nonexistent; CATUION if you don't name one, your current working directory may become the root of the panini source tree.  You don't need a username or password for this checkout.
 
-On Mac OSX, if you use XCode to build, you have to delete the existing panini directory and check out a whole fresh copy to get the latest source code.  Just doing an svn update and running qmake corrupts the project environment and you won't be able to build (even with Qt Creator).  If you use Qt Creator only, updates will probably work.
+On Mac OSX, if you use XCode to build, you have to delete the existing panini directory and check out a whole fresh copy to get the latest source code.  Just doing an svn update and running qmake corrupts the project environment and you won't be able to build (even with Qt Creator).  If you use Qt Creator or command line tools only, SVN updates will probably work.
 
 	Coding Standards
 
@@ -57,15 +62,19 @@ To ensure that panini will work with non-Latin file names, use only Qt methods w
 
 	IDEs
 
-On Linux, you can use Elipse (there is an official support package for that from Trolltech) or KDevelop, which natively supports Qt projects.  There is also a pretty good Qt-specific IDE, called QDevelop, which I find less baffling than the big IDE's, but it does crash oftener (indeed it stopped working altogether after I installed an apparently unrelated 'upgrade' to my ubuntu/amd64 system).
+I strongly suggest you install Qt version 5+ and use Qt Creator.  But if you want to stick with 4.2-4.4....
 
-On Windows I use Microsoft Visual Studio in "makefile" mode to edit source code and trigger builds.  Source directory MSVS-project has Visual Studio project files set up for this.  Of course the gcc compiler output is not integrated with Visual Studio, and you can't use the MS debugger.  If you are lucky enough to own a commercial license for Qt you can build and debug with the Microsoft tools. 
+On Linux, you can use Elipse (there is an official support package for that from Trolltech) or KDevelop, which natively supports Qt projects.  There is also a fairly good Qt-specific IDE, called QDevelop, which I find less baffling than the big IDE's, but it does crash oftener (indeed it stopped working altogether after I installed an apparently unrelated 'upgrade' to my ubuntu/amd64 system).
+
+On Windows you can use Microsoft Visual Studio in "makefile" mode to edit source code and trigger builds.  Source directory MSVS-project has Visual Studio project files set up for this.  Of course the gcc compiler output is not integrated with Visual Studio, and you can't use the MS debugger.  Of course if you are lucky enough to own a commercial license for Qt you can build and debug with the Microsoft tools.
 
 	Debuggers
-	
-I use the Insight/gdb package (available on SourceForge) for debugging on both Linux and Windows, and XCode on the Mac.
 
-Cheers, Tom Sharpless, 28 December 2008 
+Again, the Qt Creator front end to gdb is the best choice.  It displays most Qt-defined data types better than a generic gdb can.
+	
+I have also used the Insight/gdb package (available on SourceForge) for debugging on both Linux and Windows, and XCode/gdb on the Mac.
+
+Cheers, Tom Sharpless
 tksharpless@gmail.com
 
 
