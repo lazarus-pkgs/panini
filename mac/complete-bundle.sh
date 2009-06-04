@@ -1,11 +1,12 @@
 # complete-bundle.sh, May 2009, Harry van der Wolf
 # This shell script is neccessary to create a complete 
 # and portable Panini for MacOSX 10.4 and newer.
+# Version 0.2, 2009-06-04
 
 
 # The App_path should contain the complete full path from / to where
 # your source code folder is
-Panini_path=/Users/Shared/development/Panini_all/Panini0.63.90
+Panini_path=/Users/<user name>/development/Panini0.63.94
 
 
 ####################################################################
@@ -25,7 +26,10 @@ rsync -av --exclude 'Headers/*' /Library/Frameworks/QtOpenGL.framework $FrameW_p
 
 # Copy QT plugins and config
 mkdir -p $plugins_path
-rsync -av /Developer/Applications/Qt/plugins/imageformats $plugins_path
+mkdir -p $plugins_path/imageformats
+#rsync -av /Developer/Applications/Qt/plugins/imageformats $plugins_path
+cp -f /Developer/Applications/Qt/plugins/imageformats/libqjpeg.dylib $plugins_path/imageformats
+cp -f /Developer/Applications/Qt/plugins/imageformats/libqtiff.dylib $plugins_path/imageformats
 mkdir -p $Resources_path
 cp $Basic_path/qt.conf $Resources_path
 
@@ -39,10 +43,12 @@ install_name_tool -id "@executable_path/../Frameworks/QtGui.framework/QtGui" "$F
 install_name_tool -id "@executable_path/../Frameworks/QtOpenGL.framework/QtOpenGL" "$FrameW_path/QtOpenGL.framework/QtOpenGL"
 
 binaries="$FrameW_path/QtCore.framework/QtCore $FrameW_path/QtOpenGL.framework/QtOpenGL $FrameW_path/QtGui.framework/QtGui $App_path/Contents/MacOS/*"
+# $plugins_path/imageformats/*.dylib
 #binaries="$App_path/Contents/MacOS/*"
 #old_install_name_dirname="Qt"
 new_install_name_dirname="@executable_path/../Frameworks"
 
+#First the Frameworks
 for exec_file in $binaries
 do
 # for lib in $(otool -L $exec_file | grep Qt  | sed -e 's/ (.*$//' -e 's/^.*\///')
@@ -51,7 +57,16 @@ do
   echo " Changing install name for: $lib"
   install_name_tool -change "$lib" "$new_install_name_dirname/$lib" $exec_file
  done
-
+done
+#Now the plugins
+binaries="$plugins_path/imageformats/*.dylib"
+for exec_file in $binaries
+do
+ for lib in $(otool -L $exec_file | grep Qt)
+ do
+  echo " Changing install name for: $lib"
+  install_name_tool -change "$lib" "$new_install_name_dirname/$lib" $exec_file
+ done
 done
 
 
