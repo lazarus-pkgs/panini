@@ -6,7 +6,7 @@
 
 # The App_path should contain the complete full path from / to where
 # your source code folder is
-Panini_path=/Users/<user name>/development/Panini0.63.94
+Panini_path=/Users/<user name>/panini-0.63.94R-src
 
 
 ####################################################################
@@ -30,6 +30,7 @@ mkdir -p $plugins_path/imageformats
 #rsync -av /Developer/Applications/Qt/plugins/imageformats $plugins_path
 cp -f /Developer/Applications/Qt/plugins/imageformats/libqjpeg.dylib $plugins_path/imageformats
 cp -f /Developer/Applications/Qt/plugins/imageformats/libqtiff.dylib $plugins_path/imageformats
+cp -f /Developer/Applications/Qt/plugins/imageformats/libqmng.dylib $plugins_path/imageformats
 mkdir -p $Resources_path
 cp $Basic_path/qt.conf $Resources_path
 
