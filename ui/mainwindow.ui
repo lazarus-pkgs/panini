@@ -111,11 +111,15 @@
     <addaction name="actionTilt_Down"/>
     <addaction name="actionRoll_Right"/>
     <addaction name="actionRoll_Left"/>
-    <addaction name="separator"/>
     <addaction name="actionZoom_In"/>
     <addaction name="actionZoom_Out"/>
+    <addaction name="separator"/>
     <addaction name="actionEye_In"/>
     <addaction name="actionEye_Out"/>
+    <addaction name="actionEye_right"/>
+    <addaction name="actionEye_left"/>
+    <addaction name="actionEye_up"/>
+    <addaction name="actionEye_down"/>
     <addaction name="separator"/>
     <addaction name="actionHFovUp"/>
     <addaction name="actionHFovDn"/>
@@ -165,10 +169,21 @@
     <addaction name="action90_deg_CW"/>
     <addaction name="actionReset_turn"/>
     <addaction name="actionCube_limit"/>
+    <addaction name="actionRecenter_mode"/>
+   </widget>
+   <widget class="QMenu" name="menuOverlay">
+    <property name="title">
+     <string>Overlay</string>
+    </property>
+    <addaction name="actionLoad_overlay"/>
+    <addaction name="actionRemove"/>
+    <addaction name="actionShow_Hide"/>
+    <addaction name="actionFade"/>
    </widget>
    <addaction name="menuLoad"/>
    <addaction name="menu_View"/>
    <addaction name="menuPresets"/>
+   <addaction name="menuOverlay"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -357,7 +372,7 @@
   </action>
   <action name="actionHFovUp">
    <property name="text">
-    <string>hFov+</string>
+    <string>Frame right</string>
    </property>
    <property name="shortcut">
     <string>Shift+Right</string>
@@ -365,7 +380,7 @@
   </action>
   <action name="actionHFovDn">
    <property name="text">
-    <string>hFov-</string>
+    <string>Frame left</string>
    </property>
    <property name="shortcut">
     <string>Shift+Left</string>
@@ -373,7 +388,7 @@
   </action>
   <action name="actionVFovUp">
    <property name="text">
-    <string>vFov+</string>
+    <string>Frame up</string>
    </property>
    <property name="shortcut">
     <string>Shift+Up</string>
@@ -381,7 +396,7 @@
   </action>
   <action name="actionVFovDn">
    <property name="text">
-    <string>vFov-</string>
+    <string>Frame down</string>
    </property>
    <property name="shortcut">
     <string>Shift+Down</string>
@@ -421,7 +436,7 @@
     <string>Roll CW</string>
    </property>
    <property name="shortcut">
-    <string>Alt+Right</string>
+    <string>Ctrl+Alt+Right</string>
    </property>
   </action>
   <action name="actionRoll_Left">
@@ -429,7 +444,7 @@
     <string>Roll CCW</string>
    </property>
    <property name="shortcut">
-    <string>Alt+Left</string>
+    <string>Ctrl+Alt+Left</string>
    </property>
   </action>
   <action name="actionPanosphere">
@@ -512,6 +527,80 @@
    </property>
    <property name="autoRepeat">
     <bool>false</bool>
+   </property>
+  </action>
+  <action name="actionLoad_overlay">
+   <property name="text">
+    <string>Load image...</string>
+   </property>
+  </action>
+  <action name="actionShow_Hide">
+   <property name="text">
+    <string>Show/Hide</string>
+   </property>
+   <property name="shortcut">
+    <string>V</string>
+   </property>
+  </action>
+  <action name="actionHide">
+   <property name="text">
+    <string>Hide</string>
+   </property>
+  </action>
+  <action name="actionFade">
+   <property name="text">
+    <string>Fade</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+V</string>
+   </property>
+  </action>
+  <action name="actionRemove">
+   <property name="text">
+    <string>Remove</string>
+   </property>
+  </action>
+  <action name="actionRecenter_mode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Recenter mode</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="actionEye_right">
+   <property name="text">
+    <string>Eye right</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Right</string>
+   </property>
+  </action>
+  <action name="actionEye_left">
+   <property name="text">
+    <string>Eye left</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Left</string>
+   </property>
+  </action>
+  <action name="actionEye_up">
+   <property name="text">
+    <string>Eye up</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Up</string>
+   </property>
+  </action>
+  <action name="actionEye_down">
+   <property name="text">
+    <string>Eye down</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+Down</string>
    </property>
   </action>
  </widget>

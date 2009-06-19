@@ -4,34 +4,34 @@
 #include "ui_ShowText.h"
 
 class pvQtMouseModes
-	: public QDialog, public Ui_ShowText
+    : public QDialog, public Ui_ShowText
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	pvQtMouseModes( QWidget * parent = 0 )
-	: QDialog(parent) {
-		setupUi( this );
-		setWindowTitle(" Panini  Mouse Modes");
-		plainTextEdit->setPlainText( QString( "\
+    pvQtMouseModes( QWidget * parent = 0 )
+    : QDialog(parent) {
+        setupUi( this );
+        setWindowTitle(" Panini  Mouse Modes");
+        plainTextEdit->setPlainText( QString( "\
   Key	Buttons	Horizontal	Vertical\n\
-      	  left	  Yaw	  Pitch\n\
-      	  right	  EyeZ	  Zoom\n\
-      	  both	  Roll	  Pitch\n\
+          left	  Yaw	  Pitch\n\
+          right	  EyeZ	  Zoom\n\
+          both	  Roll	  Pitch\n\
   Shift	  left	  FrameX	  FrameY\n\
-  Shift	  right	  hFov	  vFov\n\
-  Shift	  both	  EyeX	  EyeY\n\
+  Shift	  right	  EyeX	  EyeY\n\
+  Shift	  both	  hFov	  vFov\n\
   \n\
   Hold Control key for horizontal-only\n\
   Hold Alt key for vertical-only\n\
   \n\
   Scroll wheel: Zoom "));
-	}
+    }
 protected:
-	void resizeEvent( QResizeEvent * ev ){
-		int r = ev->size().width(),
-			b = ev->size().height();
-	    plainTextEdit->setGeometry(QRect(10, 10, r - 18, b - 18));
-	}
+    void resizeEvent( QResizeEvent * ev ){
+        int r = ev->size().width(),
+            b = ev->size().height();
+        plainTextEdit->setGeometry(QRect(10, 10, r - 18, b - 18));
+    }
 
 };
 
