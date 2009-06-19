@@ -572,10 +572,10 @@ void pvQtView::setTurn( int turn, double roll, double pitch, double yaw ){
  void pvQtView::showview(){
     QString s;
     if( recenter ){
-      s.sprintf("Y%.1f P%.1f R%.1f  V%.1f  E(%.2f, %.2f, %.2f)  Fx%.2f Fy%.2f",
+      s.sprintf("Y%.1f P%.1f R%.1f V%.1f E(%.2f, %.2f, %.2f) F(%.2f, %.2f)",
          panAngle, tiltAngle, spinAngle, vFOV, eyex, eyey, eyez, framex, framey);
     } else {
-      s.sprintf("Y%.1f P%.1f R%.1f  V%.1f  D%.2f  E(%.2f, %.2f)  F(%.2f, %.2f)",
+      s.sprintf("Y%.1f P%.1f R%.1f V%.1f D%.2f E(%.2f, %.2f) F(%.2f, %.2f)",
          panAngle, tiltAngle, spinAngle, vFOV, eyeDistance, eyex, eyey, framex, framey);
     }
     emit reportView( s );

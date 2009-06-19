@@ -831,7 +831,7 @@ void GLwindow::diceImgAlpha( QImage * pim, double alpha, int dw ){
         register qint32 t = *pw & 0x00ffffff;
         register int d = 1;
         if( dw ){  // dice...
-            d = ((r + c) / dw) ^ ((r - c) / dw);
+            d = ((r + c) / dw) ^ ((r + w - c) / dw);
         }
         if( d & 1 ) t += m;
         *pw++ = t;
