@@ -1,19 +1,13 @@
 # complete-bundle.sh, May 2009, Harry van der Wolf
 # This shell script is neccessary to create a complete 
 # and portable Panini for MacOSX 10.4 and newer.
-# Version 0.2, 2009-06-04
-
-
-# The App_path should contain the complete full path from / to where
-# your source code folder is
-Panini_path=/Users/<user name>/panini-0.63.94R-src
-
+# Version 0.3, 2009-06-20
 
 ####################################################################
 # You should not need to modify anything below these comment lines #
 ####################################################################
-App_path=$Panini_path/build/Release/Panini.app
-Basic_path=$Panini_path/mac
+App_path=./build/Release/Panini.app
+Basic_path=./mac
 FrameW_path=$App_path/Contents/Frameworks
 plugins_path=$App_path/Contents/plugins
 Resources_path=$App_path/Contents/Resources
