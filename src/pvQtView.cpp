@@ -246,9 +246,6 @@ void pvQtView::setCubeLimit( int lim ){
  /**  Mouse control  **/
 
 void pvQtView::mouseDoubleClickEvent( QMouseEvent * pme ){
-  if( mk == Qt::ShiftModifier ){
-      step_iproj( 1 );
-  }
 }
 
 void pvQtView::mousePressEvent( QMouseEvent * pme ){
@@ -314,8 +311,8 @@ void pvQtView::mTimeout(){
     } else if ( mb == Qt::RightButton ){
         if( mk & Qt::ShiftModifier ){
         // Eye X, Y position
-            if( !( mk & Qt::AltModifier ) ) eyex = eyex - 0.001 * dx;
-            if( !( mk & Qt::ControlModifier ) ) eyey = eyey + 0.001 * dy;
+            if( !( mk & Qt::AltModifier ) ) eyex = eyex + 0.001 * dx;
+            if( !( mk & Qt::ControlModifier ) ) eyey = eyey - 0.001 * dy;
             clipEyePosition();
         } else {
         // Eye distance or  Z, Zoom
@@ -422,51 +419,67 @@ void pvQtView::wheelEvent(QWheelEvent *event){
  }
 
  void pvQtView::step_eyex( int dp ){
-     eyex -= 0.01 * dp;
-     clipEyePosition();
+    if( recenter ){
+         ihangl -= dp * hanglstep;
+         hangle = normalizeAngle( ihangl, hanglstep, -180, 180 );
+    } else {
+        eyex -= 0.01 * dp;
+    }
+    clipEyePosition();
     updateGL();
     showview();
  }
 
  void pvQtView::step_eyey( int dp ){
-     eyey -= 0.01 * dp;
-     clipEyePosition();
+    if( recenter ){
+         ivangl -= dp * vanglstep;
+         vangle = normalizeAngle( ivangl, vanglstep, -90, 90 );
+    } else {
+        eyey -= 0.01 * dp;
+    }
+    clipEyePosition();
     updateGL();
     showview();
  }
 
 
-/* legalize  the eye position, accoding to view mode
+/* legalize  the eye position, according to view mode
    normal:  x, y in (-1:1), post compensating shifts
-   recenter: (x,y,z) in sphere R = 1, shifts = 0
+   recenter: (hangle, vangle, dist) => (x,y,z), shifts = 0
 */
 void pvQtView::clipEyePosition(){
     if( recenter ){
-        register double s = sqrt( eyex*eyex + eyey*eyey + eyez*eyez );
-        if( s > 1 ){
-            s = 1.0 / s;
-            eyex *= s;
-            eyey *= s;
-            eyez *= s;
-        }
+        double alt = RAD( vangle );
+        double azi = RAD( hangle );
+        double c = -cos( alt ),
+               x = c * sin(azi),
+               y = sin(alt),
+               z = c * cos(azi);
+        register double s = eyeDistance;
+    // the cube texture is only 1 radius wide
+        if( picType == pvQtPic::cub ) s *= 0.5;
+        eyex = x * s;
+        eyey = y * s;
+        eyez = z * s;
+
         fcompx = fcompy = 0;
     } else {
         eyex = KLIP( eyex, -1, 1 );
         eyey = KLIP( eyey, -1, 1 );
-        fcompx = - 0.5 * eyex;
-        fcompy = 0.5 * eyey;
+        eyez = eyeDistance;
+        fcompx = eyex;
+        fcompy = -eyey;
     }
 }
 
-/* Adjust the eye Z coordinate, according to view mode:
-   normal: eyeDist nonlinear positive only
-   recenter: eyez linear
+/* Adjust the eye radius, according to view mode:
+   normal: eyeDist nonlinear [0:about 30]
+   recenter: eyeDist linear [0:1]
 */
  void pvQtView::stepDangl( int dp, int stp ){
      if( recenter ){
-         double d = abs(stp) > 1 ? 0.01 : 0.001;
-         eyez -= dp * d;
-         clipEyePosition();
+         double d = abs(stp) > 1 ? 0.0025 : 0.00025;
+         setDist( KLIP( eyeDistance + dp * d, 0, 0.927 ) );
      } else {
          idangl += dp * stp;
          if( idangl < 0 ) idangl = 0;
@@ -572,10 +585,10 @@ void pvQtView::setTurn( int turn, double roll, double pitch, double yaw ){
  void pvQtView::showview(){
     QString s;
     if( recenter ){
-      s.sprintf("Y%.1f P%.1f R%.1f V%.1f E(%.2f, %.2f, %.2f) F(%.2f, %.2f)",
-         panAngle, tiltAngle, spinAngle, vFOV, eyex, eyey, eyez, framex, framey);
+      s.sprintf("Y%.1f P%.1f R%.1f V%.1f eD%.2f eA(%.1f, %.1f) fS(%.2f, %.2f)",
+         panAngle, tiltAngle, spinAngle, vFOV, eyeDistance, -hangle, -vangle, framex, framey);
     } else {
-      s.sprintf("Y%.1f P%.1f R%.1f V%.1f D%.2f E(%.2f, %.2f) F(%.2f, %.2f)",
+      s.sprintf("Y%.1f P%.1f R%.1f V%.1f eD%.2f eS(%.2f, %.2f) fS(%.2f, %.2f)",
          panAngle, tiltAngle, spinAngle, vFOV, eyeDistance, eyex, eyey, framex, framey);
     }
     emit reportView( s );
@@ -649,6 +662,9 @@ void pvQtView::initView()
   // keyboard commands
     panstep = tiltstep = spinstep = 32;	// 2 degrees
     idangl = 0; danglstep = 16;
+    ihangl = 0; hanglstep = 16;
+    ivangl = 0; vanglstep = 16;
+    hangle = vangle = 0;
     panAngle = tiltAngle = spinAngle = 0;
     ipan = itilt = ispin = 0;
 
@@ -677,17 +693,14 @@ void pvQtView::setDist( double d ){
 /*  set distance of eye from sphere center,
     Post new vFOV limits.
     Then update the screen.
-    For V0.7, resets recenter mode
 */
-    recenter = false;
-    emit reportRecenter( false );
-
     if( d < 0 ) d = 0;
     if( d > MAXDIST ) d = MAXDIST;
     idangl = iAngle( DEG(atan( d )));
     eyeDistance = d;
-
+    clipEyePosition();
     double m = MAXPROJFOV * (d > 1 ? 2 : d + 1 );
+    if( recenter && m > 175 ) m = 175;
     if( m < minFOV ) m = minFOV;
     maxFOV = m;
     setFOV( );
@@ -989,10 +1002,10 @@ void pvQtView::setTexMag( double magx, double magy ){
         glRotated( panAngle, 0, 1, 0 );
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
-        glTranslated( -0.5*eyex, -0.5*eyey, -0.5*eyez );
+        glTranslated( eyex, eyey, eyez );
     } else {
     // eye rotates around panocenter
-        glTranslated( eyex, eyey, eyeDistance );
+        glTranslated( eyex, eyey, eyez );
         glRotated( -spinAngle, 0, 0, 1 );
         glRotated( tiltAngle, 1, 0, 0 );
         glRotated( panAngle, 0, 1, 0 );
@@ -1355,7 +1368,12 @@ bool pvQtView::showOverlay( QImage * ovl ){
 
 void pvQtView::recenterMode( bool ckd ){
     recenter = ckd;
-    setFOV();
+    hangle = -panAngle;
+    vangle = -tiltAngle;
+    ihangl = -ipan;
+    ivangl = -itilt;
+    eyex = eyey = eyez = 0;
+    setDist( 0 );
     updateGL();
     showview();
 }
