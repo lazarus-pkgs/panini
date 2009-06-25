@@ -1,0 +1,11 @@
+                                                                     
+                                             
+[Desktop Entry]
+Name=Panini
+GenericName=Panini perspective tool
+Comment=Perspective views from panoramic images
+Exec=Panini %f
+Terminal=false
+Type=Application
+Categories=Graphics;
+MimeType=video/quicktime;image/jpeg;image/tiff;image/png;
