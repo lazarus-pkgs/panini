@@ -179,6 +179,13 @@ private slots:
      double minFOV, maxFOV; // limits on vFOV
      double wFOV;  // vert angle at eye (deg) sets magnification
      double eyeDistance;	// of eye from origin, in sphere radii
+ // working eye position, in radii
+    double eyex, eyey, eyez;
+ // framing shifts
+    double framex, framey,	// user controlled
+           fcompx, fcompy,	// to compensate eye shifts
+           framex0, framey0,
+           fwf, fhf;
 
      int Width, Height;		// screen pixel dimensions
      double portAR;			// width/height
@@ -196,7 +203,9 @@ private slots:
      int ispin, spinstep;
      int izoom, zoomstep;
      int idangl, danglstep;
-
+     int ihangl, hanglstep;
+     int ivangl, vanglstep;
+    double hangle, vangle;    // recenter eye dir
     int mx0, my0, mx1, my1;	// mouse coordinates
     Qt::MouseButtons mb;
     Qt::KeyboardModifiers mk;
@@ -247,12 +256,6 @@ private slots:
     QSizeF	stdTexScale;
 
     int surface;	// 0: sphere, 1: cylinder
- // shifts perpendicular to view axis
-    double eyex, eyey;
-    double framex, framey,	// user controlled
-           fcompx, fcompy,	// to compensate eye shifts
-           framex0, framey0,
-           fwf, fhf;
 
     int MacCubeLimit;
 
@@ -260,7 +263,6 @@ private slots:
     QImage * povly;
     // for recenter mode
     bool recenter;
-    double eyez;
     void clipEyePosition();
 
 };

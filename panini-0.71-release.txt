@@ -1,5 +1,9 @@
 
-    Panini 0.70.xx  Release Notes	20 June 2009
+    Panini 0.71.xx  Release Notes	25 June 2009
+
+Version 0.71 improves the eye position controls and
+eliminates a difference between cubic and 2D panos in
+Recenter mode.
 
 Version 0.7 adds two new features requested by users:
 
@@ -104,6 +108,24 @@ Version 0.70 fixes these bugs:
 -- initial window position was under menu bar on Mac
 -- save file name extension now defaults to ".jpg" on Mac as it does
    on Linux and Windows.
+
+Version 0.71 revises the controls as follows
+-- in Recenter mode, eye Distance now sets the radial distance from
+   panocenter, as in normal mode; however maximum eye radius is 0.95
+   (was 0.5; but Peter Gawthrop prefers the larger limit).
+-- in Recenter mode, eye X and Y now control Yaw and Pitch angles
+   that specify the direction of the eye point shift.  They are set to 
+   the current view direction when you switch to Recenter mode.
+-- Status display shows eye Distance in radii as "eD".  In normal mode
+   it shows eye Shifts in radii as "eS(x, y)".  In Recenter mode it
+   shows eye Angles in degrees as "eA(yaw, pitch)"; this is the
+   view direction along which the eye position is shifted.  It now
+   shows the Framing shifts, in radii, as "fS(x, y)".
+-- Eye position now moves in mouse direction (was reversed).
+-- The view no longer shifts much when eye position changes.
+-- Homing the view direction no longer exits Recenter mode.
+-- A secret mouse mode that could cause unexpected results has been
+   removed.
 
 Known issues and limitations:
 -- Due to a bug in OSX, it is not possible to display cubic images
