@@ -8,24 +8,24 @@
  *
  *  $Id: QTVRDecoder.h 64 2006-10-08 10:54:23Z dangelo $
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; version 2.1 of
- * the License
+  * This file is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This software is distributed in the hope that it will be useful,
+ * This file is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * You should have received a copy of the GNU General Public License
+ * along with this file; if not, write to Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
  */
 
 /*  declares a slightly stripped down version of QTVRDecoder.
-	 
+
  */
 
 #ifndef QT_QTVR_H
@@ -79,7 +79,7 @@ public:
     const char * getError(){ return m_error; }
 
 private:
-        
+
 long ReadMovieAtom(void);
 long ReadQTMovieAtom(void);
 void ReadAtom_DCOM(long size);
@@ -122,7 +122,7 @@ int         gVideoSampleSize[MAX_IMAGE_OFFSETS];
 
 int32       gTileSize[MAX_TILES_PER_FACE];
 
-    FILE *gFile;  
+    FILE *gFile;
     FILE * m_mainFile;
     FILE * m_cmovFile;
 
