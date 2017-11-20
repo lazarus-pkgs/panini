@@ -3,7 +3,7 @@ TEMPLATE = app
 TARGET = Panini
 CONFIG += debug_and_release
 QT = gui core opengl
-LIBS += -lz
+LIBS += -lz -lGLU
 
 # # Directories ##
 OBJECTS_DIR = build
