@@ -19,6 +19,7 @@
 
 #include <QtGui>
 #include <QSettings>
+#include <QMessageBox>
 #include "MainWindow.h"
 #include "GLwindow.h"
 #include "CubeLimit_dialog.h"
