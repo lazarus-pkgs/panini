@@ -34,6 +34,7 @@
 #include "GLwindow.h"
 #include "pvQtView.h"
 #include "pvQt_QTVR.h"
+#include "MainWindow.h"
 
 GLwindow::GLwindow (QWidget * parent )
 : QWidget(parent)
@@ -52,129 +53,91 @@ GLwindow::GLwindow (QWidget * parent )
 
   ok = (glview != 0 && pvpic != 0 );
 
-  if(ok) ok =
-    connect( parent, SIGNAL(step_pan( int )),
-             glview, SLOT(step_pan( int )));
-  if(ok) ok =
-    connect( parent, SIGNAL(step_tilt( int )),
-             glview, SLOT(step_tilt( int )));
-  if(ok) ok =
-    connect( parent, SIGNAL(step_zoom( int )),
-             glview, SLOT(step_zoom( int )));
-  if(ok) ok =
-    connect( parent, SIGNAL(step_roll( int )),
-             glview, SLOT(step_roll( int )));
-  if(ok) ok =
-    connect( parent, SIGNAL(step_dist( int )),
-             glview, SLOT(step_dist( int )));
-  if(ok) ok =
-    connect( parent, SIGNAL(step_hfov( int )),
-             glview, SLOT(step_hfov( int )));
-  if(ok) ok =
-    connect( parent, SIGNAL(step_vfov( int )),
-             glview, SLOT(step_vfov( int )));
-  if(ok) ok =
-    connect( parent, SIGNAL(step_iproj( int )),
-             glview, SLOT(step_iproj( int )));
-  if(ok) ok =
-    connect( parent, SIGNAL(home_eyeXY()),
-             glview, SLOT(home_eyeXY()));
-  if(ok) ok =
-    connect( parent, SIGNAL(home_view()),
-             glview, SLOT(home_view()));
-  if(ok) ok =
-    connect( parent, SIGNAL(reset_view()),
-             glview, SLOT(reset_view()));
-  if(ok) ok =
-    connect( parent, SIGNAL(set_view(int)),
-             glview, SLOT(set_view(int)));
-  if(ok) ok =
-    connect( parent, SIGNAL(super_wide()),
-             glview, SLOT(super_fish()));
-  if(ok) ok =
-    connect( parent, SIGNAL(turn90(int)),
-             this, SLOT(turn90(int)));
-  if(ok) ok =
-    connect( parent, SIGNAL(reset_turn()),
-             this, SLOT(reset_turn()));
-  if(ok) ok =
-    connect( &turndialog, SIGNAL(newTurn( int,double,double,double )),
-             glview, SLOT(setTurn( int,double,double,double )));
-  if(ok) ok =
-    connect( parent, SIGNAL(save_as()),
-             this, SLOT(save_as()));
-  if(ok) ok =
-    connect( glview, SIGNAL(reportTurn(int,double,double,double)),
-             this, SLOT(reportTurn(int,double,double,double)));
-  if(ok) ok =
-    connect( glview, SIGNAL(reportTurn(int,double,double,double)),
-             &turndialog, SLOT(setTurn(int,double,double,double)));
-  if(ok) ok =
-    connect( glview, SIGNAL(reportView( QString )),
-             parent, SLOT(showStatus( QString )) );
-  if(ok) ok =
-    connect( parent, SIGNAL(newPicture( const char * )),
-             this, SLOT(newPicture( const char * )) );
-  if(ok) ok =
-    connect( parent, SIGNAL(about_pvQt()),
-             this, SLOT(about_pvQt()) );
-  if(ok) ok =
-    connect( this, SIGNAL(showTitle(QString)),
-             parent, SLOT(showTitle(QString)) );
-  if(ok) ok =
-    connect( &ptd, SIGNAL(picTypeSelected( int )),
-             this, SLOT(picTypeChanged( int )) );
-  if(ok) ok =
-    connect( &ptd, SIGNAL(hFovChanged( double )),
-             this, SLOT(hFovChanged( double )) );
-  if(ok) ok =
-    connect( &ptd, SIGNAL(vFovChanged( double )),
-             this, SLOT(vFovChanged( double )) );
-  if(ok) ok =
-    connect( glview, SIGNAL(OGLerror( QString )),
-             this, SLOT(OGLerror( QString )) );
-  if(ok) ok =
-    connect( this, SIGNAL(showProj( QString )),
-             parent, SLOT(showProj( QString )) );
-  if(ok) ok =
-    connect( this, SIGNAL(showFov(QSizeF)),
-             parent, SLOT(showFov(QSizeF)) );
-  if(ok) ok =
-    connect( this, SIGNAL(showSurface(int)),
-             parent, SLOT(showSurface(int)) );
-  if(ok) ok =
-    connect( glview, SIGNAL(reportSurface(int)),
-             parent, SLOT(showSurface(int)) );
-  if(ok) ok =
-    connect( parent, SIGNAL(set_surface(int)),
-             this, SLOT(set_surface(int)) );
-  if(ok) ok =
-    connect( glview, SIGNAL(reportProj( QString )),
-             this, SIGNAL(showProj( QString )) );
-  if(ok) ok =
-    connect( glview, SIGNAL(reportFov(QSizeF)),
-             this, SIGNAL(showFov(QSizeF)) );
-  if(ok) ok =
-    connect( parent, SIGNAL(overlayCtl(int)),
-             this, SLOT(overlayCtl(int)) );
-  if(ok) ok =
-    connect( parent, SIGNAL(recenterMode(bool)),
-             glview, SLOT(recenterMode(bool)) );
-  if(ok) ok =
-    connect( glview, SIGNAL(reportRecenter(bool)),
-             parent, SLOT(showRecenter(bool)) );
-  if(ok) ok =
-    connect( parent, SIGNAL(step_eyex(int)),
-             glview, SLOT(step_eyex(int)) );
-  if(ok) ok =
-    connect( parent, SIGNAL(step_eyey(int)),
-             glview, SLOT(step_eyey(int)) );
+  if(ok)
+     ok = connect( (MainWindow*)parent, &MainWindow::step_pan, glview, &pvQtView::step_pan);
+  if(ok)
+     ok = connect( (MainWindow*)parent, &MainWindow::step_tilt, glview, &pvQtView::step_tilt);
+  if(ok)
+     ok = connect( (MainWindow*)parent, &MainWindow::step_zoom, glview, &pvQtView::step_zoom);
+  if(ok)
+     ok = connect( (MainWindow*)parent, &MainWindow::step_roll, glview, &pvQtView::step_roll);
+  if(ok)
+     ok = connect( (MainWindow*)parent, &MainWindow::step_dist, glview, &pvQtView::step_dist);
+  if(ok)
+     ok = connect( (MainWindow*)parent, &MainWindow::step_hfov, glview, &pvQtView::step_hfov);
+  if(ok)
+     ok = connect( (MainWindow*)parent, &MainWindow::step_vfov, glview, &pvQtView::step_vfov);
+  if(ok)
+     ok = connect( (MainWindow*)parent, &MainWindow::step_iproj, glview, &pvQtView::step_iproj);
+  if(ok)
+     ok = connect( (MainWindow*)parent, &MainWindow::home_eyeXY, glview, &pvQtView::home_eyeXY);
+  if(ok)
+     ok = connect( (MainWindow*)parent, &MainWindow::home_view, glview, &pvQtView::home_view);
+  if(ok)
+     ok = connect( (MainWindow*)parent, &MainWindow::reset_view, glview, &pvQtView::reset_view);
+  if(ok)
+     ok = connect( (MainWindow*)parent, &MainWindow::set_view, glview, &pvQtView::set_view);
+  if(ok)
+     ok = connect( (MainWindow*)parent, &MainWindow::super_wide, glview, &pvQtView::super_fish);
+  if(ok)
+     ok = connect( (MainWindow*)parent, &MainWindow::turn90, this, &GLwindow::turn90);
+  if(ok)
+     ok = connect( (MainWindow*)parent, &MainWindow::reset_turn, this, &GLwindow::reset_turn);
+  // adr at turndialog right?
+  if(ok)
+     ok = connect( &turndialog, &TurnDialog::newTurn, glview, &pvQtView::setTurn);
+  if(ok)
+     ok = connect( (MainWindow*)parent, &MainWindow::save_as, this, &GLwindow::save_as);
+  if(ok)
+     ok = connect( glview, &pvQtView::reportTurn, this, &GLwindow::reportTurn);
+  if(ok)
+     ok = connect( glview, &pvQtView::reportTurn, &turndialog, &TurnDialog::setTurn);
+  if(ok)
+     ok = connect( glview, &pvQtView::reportView, (MainWindow*)parent, &MainWindow::showStatus);
+  if(ok)
+     ok = connect( (MainWindow*)parent, &MainWindow::newPicture, this, &GLwindow::newPicture);
+  if(ok)
+     ok = connect( (MainWindow*)parent, &MainWindow::about_pvQt, this, &GLwindow::about_pvQt);
+  if(ok)
+     ok = connect( this, &GLwindow::showTitle, (MainWindow*)parent, &MainWindow::showTitle);
+  if(ok)
+     ok = connect( &ptd, &picTypeDialog::picTypeSelected, this, &GLwindow::picTypeChanged);
+  if(ok)
+     ok = connect( &ptd, &picTypeDialog::hFovChanged, this, &GLwindow::hFovChanged);
+  if(ok)
+     ok = connect( &ptd, &picTypeDialog::vFovChanged, this, &GLwindow::vFovChanged);
+  if(ok)
+     ok = connect( glview, &pvQtView::OGLerror, this, &GLwindow::OGLerror);
+  if(ok)
+     ok = connect( this, &GLwindow::showProj, (MainWindow*)parent, &MainWindow::showProj);
+  if(ok)
+     ok = connect( this, &GLwindow::showFov, (MainWindow*)parent, &MainWindow::showFov);
+  if(ok)
+     ok = connect( this, &GLwindow::showSurface, (MainWindow*)parent, &MainWindow::showSurface);
+  if(ok)
+     ok = connect( glview, &pvQtView::reportSurface, (MainWindow*)parent, &MainWindow::showSurface);
+  if(ok)
+     ok = connect( (MainWindow*)parent, &MainWindow::set_surface, this, &GLwindow::set_surface);
+  if(ok)
+     ok = connect( glview, &pvQtView::reportProj, this, &GLwindow::showProj);
+  if(ok)
+     ok = connect( glview, &pvQtView::reportFov, this, &GLwindow::showFov);
+  if(ok)
+     ok = connect( (MainWindow*)parent, &MainWindow::overlayCtl, this, &GLwindow::overlayCtl);
+  if(ok)
+     ok = connect( (MainWindow*)parent, &MainWindow::recenterMode, glview, &pvQtView::recenterMode);
+  if(ok)
+     ok = connect( glview, &pvQtView::reportRecenter, (MainWindow*)parent, &MainWindow::showRecenter);
+  if(ok)
+     ok = connect( (MainWindow*)parent, &MainWindow::step_eyex, glview, &pvQtView::step_eyex);
+  if(ok)
+     ok = connect( (MainWindow*)parent, &MainWindow::step_eyey, glview, &pvQtView::step_eyey);
+
   if(!ok) {
       qFatal("GLwindow setup failed");
   }
   // enable image file dropping
-    setAcceptDrops( true );
-
+  setAcceptDrops( true );
 }
 
 void GLwindow::dragEnterEvent(QDragEnterEvent *event)

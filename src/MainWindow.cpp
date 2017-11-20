@@ -51,87 +51,87 @@ static void errMsgHandler( QtMsgType type, const QMessageLogContext &context, co
 
 MainWindow::MainWindow( QWidget * parent)
 {
-// install modal error message handler
-    qInstallMessageHandler( errMsgHandler );
+   // install modal error message handler
+   qInstallMessageHandler( errMsgHandler );
 
-// create actions that aren't in menus
-  // toggle panosurface type
-    QAction * ats = new QAction(this);
-    actionToggleSurface = ats;
-    ats->setObjectName(QString::fromUtf8("actionToggleSurface"));
-    ats->setCheckable( true );
-    ats->setChecked( true );
-    ats->setIconText(tr("panosphere"));
+   //create actions that aren't in menus
+   // toggle panosurface type
+   QAction * ats = new QAction(this);
+   actionToggleSurface = ats;
+   ats->setObjectName(QString::fromUtf8("actionToggleSurface"));
+   ats->setCheckable( true );
+   ats->setChecked( true );
+   ats->setIconText(tr("panosphere"));
 #ifndef QT_NO_TOOLTIP
-    ats->setToolTip(QApplication::translate("MainWindow",
-        "Switch panosurface: sphere gives stereographic views; cylinder gives Pannini views",
-        0));
+   ats->setToolTip(QApplication::translate("MainWindow",
+       "Switch panosurface: sphere gives stereographic views; cylinder gives Pannini views",
+       0));
 #endif // QT_NO_TOOLTIP
 
-  // step thru source formats
-    actionNext_iProj = new QAction(this);
-    actionNext_iProj->setObjectName(QString::fromUtf8("actionNext_iProj"));
+   // step thru source formats
+   actionNext_iProj = new QAction(this);
+   actionNext_iProj->setObjectName(QString::fromUtf8("actionNext_iProj"));
 #ifndef QT_NO_TOOLTIP
-    actionNext_iProj->setToolTip(QApplication::translate("MainWindow",
-        "Change assumed source image projection",
-        0));
+   actionNext_iProj->setToolTip(QApplication::translate("MainWindow",
+      "Change assumed source image projection",
+      0));
 #endif // QT_NO_TOOLTIP
 
-    setupUi( this );
+   setupUi( this );
 
-// load & apply persistent window settings
+   // load & apply persistent window settings
     pqs = new QSettings("PaniniPerspective", "Panini-0.6");
     resize( pqs->value("window/size", QSize(400, 400) ).toSize() );
     move( pqs->value("window/posn", QPoint(40, 40) ).toPoint() );
 
     pmm = new pvQtMouseModes( this );
 
-bool ok = true;
-if(ok) ok =
-    connect(actionQuit, SIGNAL(triggered()),
-            qApp, SLOT( quit()) );
-if(ok) ok =
-    connect(actionPan_Left, SIGNAL(triggered()),
-            this, SLOT( panLft()) );
-if(ok) ok =
-    connect(actionPan_Right, SIGNAL(triggered()),
-            this, SLOT(panRgt()) );
-if(ok) ok =
-    connect(actionTilt_Up, SIGNAL(triggered()),
-            this, SLOT(tiltUp()) );
-if(ok) ok =
-    connect(actionTilt_Down, SIGNAL(triggered()),
-            this, SLOT(tiltDwn()) );
-if(ok) ok =
-    connect(actionZoom_In, SIGNAL(triggered()),
-            this, SLOT(zoomIn()) );
-if(ok) ok =
-    connect(actionZoom_Out, SIGNAL(triggered()),
-            this, SLOT(zoomOut()) );
-if(ok) ok =
-    connect(actionRoll_Right, SIGNAL(triggered()),
-            this, SLOT(rollRight()) );
-if(ok) ok =
-    connect(actionRoll_Left, SIGNAL(triggered()),
-            this, SLOT(rollLeft()) );
-if(ok) ok =
-    connect(actionEye_In, SIGNAL(triggered()),
-            this, SLOT(eyeIn()) );
-if(ok) ok =
-    connect(actionEye_Out, SIGNAL(triggered()),
-            this, SLOT(eyeOut()) );
-if(ok) ok =
-    connect(action_Home, SIGNAL(triggered()),
-            this, SLOT(homeView()) );
-if(ok) ok =
-    connect(actionReset, SIGNAL(triggered()),
-            this, SLOT(resetView()) );
+    bool ok = true;
+    if(ok) ok =
+          connect(actionQuit, &QAction::triggered,
+                  qApp, &QApplication::quit);
+    if(ok) ok =
+          connect(actionPan_Left, &QAction::triggered,
+                  this, &MainWindow::panLft);
+    if(ok) ok =
+          connect(actionPan_Right, &QAction::triggered,
+                  this, &MainWindow::panRgt);
+    if(ok) ok =
+          connect(actionTilt_Up, &QAction::triggered,
+                  this, &MainWindow::tiltUp);
+    if(ok) ok =
+          connect(actionTilt_Down, &QAction::triggered,
+                  this, &MainWindow::tiltDwn);
+    if(ok) ok =
+          connect(actionZoom_In, &QAction::triggered,
+                  this, &MainWindow::zoomIn);
+    if(ok) ok =
+          connect(actionZoom_Out, &QAction::triggered,
+                  this, &MainWindow::zoomOut);
+    if(ok) ok =
+          connect(actionRoll_Right, &QAction::triggered,
+                  this, &MainWindow::rollRight);
+    if(ok) ok =
+          connect(actionRoll_Left, &QAction::triggered,
+                  this, &MainWindow::rollLeft);
+    if(ok) ok =
+          connect(actionEye_In, &QAction::triggered,
+                  this, &MainWindow::eyeIn);
+    if(ok) ok =
+          connect(actionEye_Out, &QAction::triggered,
+                  this, &MainWindow::eyeOut);
+    if(ok) ok =
+          connect(action_Home, &QAction::triggered,
+                  this, &MainWindow::homeView);
+    if(ok) ok =
+          connect(actionReset, &QAction::triggered,
+                  this, &MainWindow::resetView);
 
-  // add actions to status buttons
+    // add actions to status buttons
     surfaceButton->setDefaultAction( actionToggleSurface );
     iprojButton->setDefaultAction( actionNext_iProj );
 
-  // put labels and buttons in status bar
+    // put labels and buttons in status bar
     statusbar->addPermanentWidget( iprojButton );
     statusbar->addPermanentWidget( vfovLabel );
     statusbar->addPermanentWidget( hfovLabel );
@@ -156,10 +156,9 @@ if(ok) ok =
   actionCube_limit->setEnabled( false );
 #endif
 
-// enable panosurface switch
+  // enable panosurface switch
   actionPanosphere->setEnabled(true);
   actionPanocylinder->setEnabled(true);
-
 }
 
 /* handle command line argumnents

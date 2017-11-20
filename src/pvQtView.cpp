@@ -121,8 +121,7 @@ void glWindowPos4dv(const double v[4])                  {glWindowPos4f(v[0],v[1]
  // set up mouse control timer
     mTimer.setInterval( 50 );
     mTimer.setSingleShot( true );
-    connect( &mTimer, SIGNAL(timeout()),
-             this, SLOT( mTimeout()) );
+    connect( &mTimer, &QTimer::timeout, this, &pvQtView::mTimeout);
 
  // post unusable OGL capabilities
     OGLv20 = OGLisOK = false;

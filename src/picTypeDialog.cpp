@@ -26,15 +26,15 @@ picTypeDialog::picTypeDialog( QWidget * parent)
     setMinFOV( QSizeF( 5, 5 ));
     setMaxFOV( QSizeF( 360, 360 ));
 
-    connect( typesBox, SIGNAL(currentIndexChanged( int )),
-            this, SIGNAL( picTypeSelected( int )) );
-    connect( nonSqOK, SIGNAL(toggled( bool )),
-            this, SLOT( freeToggled( bool )) );
+    connect(typesBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+            this, &picTypeDialog::picTypeSelected);
+    connect(nonSqOK, &QCheckBox::toggled,
+            this, &picTypeDialog::freeToggled);
 
-    connect ( hfovBox, SIGNAL(valueChanged(double)),
-              this, SIGNAL(hFovChanged(double)));
-    connect ( vfovBox, SIGNAL(valueChanged(double)),
-              this, SIGNAL(vFovChanged(double)));
+    connect(hfovBox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+              this, &picTypeDialog::hFovChanged);
+    connect(vfovBox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+              this, &picTypeDialog::vFovChanged);
 }
 
 void picTypeDialog::setNameLabel( QString name ){
