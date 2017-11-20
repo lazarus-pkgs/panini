@@ -173,21 +173,3 @@ The version number shown in the "about" dialog has the form: major.minor.rev.  M
 Rev will have two revision numbers separated by a colon (:) if the program was built from a mixture of SVN revisions, and an "M" at the end if it was built from a locally modified copy of the archived code.  It may also be "???" if the program was built from an unknown source code revision.
 
 Please consult the Release Notes for further information.  And please check the project site (https://sourceforge.net/projects/pvqt/) to see if you have the latest version.  
-
-
-LICENSE
-
-Panini is free software, copyright (c) 2008-09 Thomas K Sharpless.  
-You can redistribute and/or modify it under the terms of the GNU General 
-Public License as published by the Free Software Foundation; either 
-version 3 of the License, or (at your option) any later version.
-
-Panini is distributed in the hope that it will be useful, but WITHOUT 
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License 
-for more details.
-
-You should have received a copy of the GNU General Public License
-along with Panini; if not, write to Free Software Foundation, Inc.,
-59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
