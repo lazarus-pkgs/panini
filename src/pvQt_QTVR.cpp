@@ -802,14 +802,19 @@ int				numEntries;
                 //
 
     atom = (ChunkOffsetAtom *) malloc(size);
+	if (atom == NULL)
+	{
+		m_error = "ReadAtom_STCO:  malloc() failed!";
+		return;
+	}
 
-
-                /* READ IT */
+   /* READ IT */
 
     fread(atom, size, 1, gFile);
     if (ferror(gFile))
     {
         m_error = "ReadAtom_STCO:  fread() failed!";
+		free(atom);
         return;
     }
 
@@ -931,28 +936,33 @@ void QTVRDecoder::ReadAtom_STSZ(long size)
 SampleSizeAtom	*atom;
 int32			numEntries, i;
 
-            /*****************/
-            /* READ THE ATOM */
-            /*****************/
+    /*****************/
+    /* READ THE ATOM */
+    /*****************/
 
     fseek(gFile, -8, SEEK_CUR);
 
 
 
-                /* ALLOC MEMORY FOR IT */
-                //
-                // This is a variable size structure, so we need to allocated based on the size of the atom that's passed in
-                //
+    /* ALLOC MEMORY FOR IT */
+    //
+    // This is a variable size structure, so we need to allocated based on the size of the atom that's passed in
+    //
 
     atom = (SampleSizeAtom *) malloc(size);
+	if (atom == NULL)
+	{
+		m_error = "ReadAtom_STSZ:  malloc() failed!";
+		return;
+	}
 
-
-                /* READ IT */
+    /* READ IT */
 
     fread(atom, size, 1, gFile);
     if (ferror(gFile))
     {
         m_error = "ReadAtom_STSZ:  fread() failed!";
+		free(atom);
         return;
     }
 
@@ -1096,32 +1106,35 @@ HandlerAtom		*atom;
 PublicHandlerInfo	*info;
 int32			componentSubType;
 
-            /*****************/
-            /* READ THE ATOM */
-            /*****************/
+	/*****************/
+	/* READ THE ATOM */
+	/*****************/
 
     fseek(gFile, -8, SEEK_CUR);
 
-
-
-                /* ALLOC MEMORY FOR IT */
-                //
-                // This is a variable size structure, so we need to allocated based on the size of the atom that's passed in
-                //
+	/* ALLOC MEMORY FOR IT */
+	//
+	// This is a variable size structure, so we need to allocated based on the size of the atom that's passed in
+	//
 
     atom = (HandlerAtom *) malloc(size);
+	if (atom == NULL)
+	{
+		m_error = "ReadAtom_HDLR:  malloc() failed!";
+		return;
+	}
 
-
-                /* READ IT */
+	/* READ IT */
 
     fread(atom, size, 1, gFile);
     if (ferror(gFile))
     {
         m_error = "ReadAtom_HDLR:  fread() failed!";
+		free(atom);
         return;
     }
 
-            /* POINT TO HANDLER INFO */
+	/* POINT TO HANDLER INFO */
 
     info = &atom->hInfo;
 
@@ -1255,26 +1268,31 @@ void QTVRDecoder::ReadAtom_QTVR_PDAT(long size)
 VRPanoSampleAtom *atom;
 //int32			numEntries, i;
 
-            /*****************/
-            /* READ THE ATOM */
-            /*****************/
+/*****************/
+/* READ THE ATOM */
+/*****************/
 
 
 
-                /* ALLOC MEMORY FOR IT */
-                //
-                // This is a variable size structure, so we need to allocated based on the size of the atom that's passed in
-                //
+	/* ALLOC MEMORY FOR IT */
+	//
+	// This is a variable size structure, so we need to allocated based on the size of the atom that's passed in
+	//
 
     atom = (VRPanoSampleAtom *) malloc(size);
+	if (atom == NULL)
+	{
+		m_error = "ReadAtom_QTVR_PDAT:  malloc() failed!";
+		return;
+	}
 
-
-                /* READ IT */
+	/* READ IT */
 
     size_t sz = fread(atom, size, 1, gFile);
     if (ferror(gFile) || sz != 1)
     {
         m_error = "ReadAtom_PDAT:  fread() failed!";
+		free(atom);
         return;
     }
 
