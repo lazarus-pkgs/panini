@@ -1,5 +1,6 @@
-# # qmake project for panini 0.63 ##
+## qmake project for panini ##
 TEMPLATE = app
+VERSION = 0.72.0
 TARGET = Panini
 CONFIG += debug_and_release
 QT = gui core opengl
@@ -55,25 +56,7 @@ HEADERS += src/TurnDialog.h
 SOURCES += src/TurnDialog.cpp
 RESOURCES = ui/PaniniIcon.qrc
 FORMS += ui/CubeLimit_dialog.ui
-
-HEADERS += version0.h SVNnoVersion.h version1.h
-HEADERS += src/pvQtVersion.h
 SOURCES += src/About.cpp
 
 ## Version Number ##
-
-# You can edit major.minor rev numbers in version0.h
-# here we set patch = SVN version number, or contents
-# of SVNnoVersion.h if the svnversion command fails
-# 1) capture SVN revision number in a file
-!svn:system(svnversion -n > SVNversion.h ):CONFIG += svn
-!svn { # no SVN version available, use default
-    message(could not run svnversion -- is it installed?)
-    win32:system(copy SVNnoVersion.h SVNversion.h)
-    else:system(cp SVNnoVersion.h SVNversion.h)
-}
-# 2) generate src/pvQtVersion.h
-win32:system(wbin\cat Version0.h SVNversion.h Version1.h > src\pvQtVersion.h)
-else:system(cat Version0.h SVNversion.h Version1.h > src/pvQtVersion.h)
- 
-
+DEFINES += VERSION=\\\"$$VERSION\\\"

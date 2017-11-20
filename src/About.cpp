@@ -18,13 +18,12 @@
  **/
 
 #include "About.h"
-#include "pvQtVersion.h"
 
 pvQtAbout::pvQtAbout( QWidget * parent )
 : QDialog( parent )
 {
     setupUi( this );
-    VersionLabel->setText( QString(pvQtVersion) );
+    VersionLabel->setText( QString(VERSION) );
 }
 
 void pvQtAbout::setInfo( QString info )

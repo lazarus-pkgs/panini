@@ -18,7 +18,7 @@ On Linux or Windows that command will create Makefiles, on OSX it creates an XCo
         "qmake -spec macx-g++" (Qt Creator issues this command, too)
 NOTE the XCode project will have the debug build target selected by default, you should change that to release before building.
 
-The Qt project file tries to run the svnversion command to get the SVN revision number that is displayed as the 3rd field of Panini's version number.  If that fails, it uses the contents of SVNnoVersion.h.  So if you want to modify Panini and archive the results with SVN, you need the svn command line tools (even if you are using a GUI SVN client).  Otherwise, just ignore the qmake error message about svnversion.
+The version is defined in the Qt project file.
 
 To build on Windows or Linux (or from a Mac Makefile) type
 		"make release"  or "make debug"
