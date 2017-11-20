@@ -30,6 +30,7 @@
 
 */
 #include <QtCore>
+#include <QFileDialog>
 #include "GLwindow.h"
 #include "pvQtView.h"
 #include "pvQt_QTVR.h"
