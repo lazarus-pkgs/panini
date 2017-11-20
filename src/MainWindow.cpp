@@ -64,7 +64,7 @@ MainWindow::MainWindow( QWidget * parent)
 #ifndef QT_NO_TOOLTIP
     ats->setToolTip(QApplication::translate("MainWindow",
         "Switch panosurface: sphere gives stereographic views; cylinder gives Pannini views",
-        0, QApplication::UnicodeUTF8));
+        0));
 #endif // QT_NO_TOOLTIP
 
   // step thru source formats
@@ -73,7 +73,7 @@ MainWindow::MainWindow( QWidget * parent)
 #ifndef QT_NO_TOOLTIP
     actionNext_iProj->setToolTip(QApplication::translate("MainWindow",
         "Change assumed source image projection",
-        0, QApplication::UnicodeUTF8));
+        0));
 #endif // QT_NO_TOOLTIP
 
     setupUi( this );
