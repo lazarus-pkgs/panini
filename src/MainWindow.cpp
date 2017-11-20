@@ -28,7 +28,7 @@
   Note QErrorMessage::qtHandler installs a non-modal handler, so
   you don't get to see the message before the program bombs
 */
-static void errMsgHandler( QtMsgType type, const char * msg ){
+static void errMsgHandler( QtMsgType type, const QMessageLogContext &context, const QString &msg){
     QString s;
     bool die = false;
     switch( type ){
@@ -52,7 +52,7 @@ static void errMsgHandler( QtMsgType type, const char * msg ){
 MainWindow::MainWindow( QWidget * parent)
 {
 // install modal error message handler
-    qInstallMsgHandler( errMsgHandler );
+    qInstallMessageHandler( errMsgHandler );
 
 // create actions that aren't in menus
   // toggle panosurface type
