@@ -1,4 +1,5 @@
-/* TurnDialog.h		for Panini 0.62 27 Jan 2009
+/*
+ * TurnDialog.h for Panini 0.62 27 Jan 2009
  * Copyright (C) 2009 Thomas K Sharpless
  *
  * This file is free software; you can redistribute it and/or modify
@@ -32,7 +33,7 @@
 #include "ui_TurnDialog.h"
 
 class TurnDialog
-    : public QDialog, public Ui_TurnDialog
+        : public QDialog, public Ui_TurnDialog
 {
     Q_OBJECT
 public:

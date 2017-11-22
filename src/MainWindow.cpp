@@ -1,4 +1,5 @@
-/* MainWindow.cpp	for pvQt 08Sep2008
+/*
+ * MainWindow.cpp	for pvQt 08Sep2008
  * Copyright (C) 2008 Thomas K Sharpless
  *
  * This file is free software; you can redistribute it and/or modify
@@ -14,7 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this file; if not, write to Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
 */
 
 #include <QtGui>
@@ -24,62 +24,69 @@
 #include "GLwindow.h"
 #include "CubeLimit_dialog.h"
 
-/* modal error message display
+/*
+ * modal error message display
   Note QErrorMessage::qtHandler installs a non-modal handler, so
   you don't get to see the message before the program bombs
 */
 static void errMsgHandler( QtMsgType type, const QMessageLogContext &context, const QString &msg){
     QString s;
     bool die = false;
+
     switch( type ){
-        case QtDebugMsg:
-          s = "Debug: ";
-        case QtWarningMsg:
-          s += msg;
-          QMessageBox::warning( 0, "pvQt", s );
+    case QtDebugMsg:
+        s = "Debug: ";
+    case QtWarningMsg:
+        s += msg;
+        QMessageBox::warning( 0, "pvQt", s );
         break;
-        case QtFatalMsg:
-          die = true;
-          s = "Fatal: ";
-        case QtCriticalMsg:
-          s += msg;
-          QMessageBox::critical( 0, "pvQt", s );
+    case QtFatalMsg:
+        die = true;
+        s = "Fatal: ";
+    case QtCriticalMsg:
+        s += msg;
+        QMessageBox::critical( 0, "pvQt", s );
         break;
     }
-    if( die ) exit( 3 );
+
+    if( die ) {
+        exit( 3 );
+    }
 }
 
 MainWindow::MainWindow( QWidget * parent)
 {
-   // install modal error message handler
-   qInstallMessageHandler( errMsgHandler );
+    //install modal error message handler
+    qInstallMessageHandler( errMsgHandler );
 
-   //create actions that aren't in menus
-   // toggle panosurface type
-   QAction * ats = new QAction(this);
-   actionToggleSurface = ats;
-   ats->setObjectName(QString::fromUtf8("actionToggleSurface"));
-   ats->setCheckable( true );
-   ats->setChecked( true );
-   ats->setIconText(tr("panosphere"));
+    //create actions that aren't in menus
+    //toggle panosurface type
+    QAction * ats = new QAction(this);
+    actionToggleSurface = ats;
+    ats->setObjectName(QString::fromUtf8("actionToggleSurface"));
+    ats->setCheckable( true );
+    ats->setChecked( true );
+    ats->setIconText(tr("panosphere"));
+
 #ifndef QT_NO_TOOLTIP
-   ats->setToolTip(QApplication::translate("MainWindow",
-       "Switch panosurface: sphere gives stereographic views; cylinder gives Pannini views",
-       0));
+    ats->setToolTip(QApplication::translate("MainWindow",
+                                            "Switch panosurface: sphere gives stereographic views; cylinder gives Pannini views",
+                                            0));
 #endif // QT_NO_TOOLTIP
 
-   // step thru source formats
-   actionNext_iProj = new QAction(this);
-   actionNext_iProj->setObjectName(QString::fromUtf8("actionNext_iProj"));
+    // step thru source formats
+    actionNext_iProj = new QAction(this);
+    actionNext_iProj->setObjectName(QString::fromUtf8("actionNext_iProj"));
+
 #ifndef QT_NO_TOOLTIP
-   actionNext_iProj->setToolTip(QApplication::translate("MainWindow",
-      "Change assumed source image projection",
-      0));
+    actionNext_iProj->setToolTip(QApplication::translate("MainWindow",
+                                                         "Change assumed source image projection",
+                                                         0));
 #endif // QT_NO_TOOLTIP
 
-   setupUi( this );
+    setupUi( this );
 
-   // load & apply persistent window settings
+    // load & apply persistent window settings
     pqs = new QSettings("PaniniPerspective", "Panini-0.6");
     resize( pqs->value("window/size", QSize(400, 400) ).toSize() );
     move( pqs->value("window/posn", QPoint(40, 40) ).toPoint() );
@@ -87,45 +94,32 @@ MainWindow::MainWindow( QWidget * parent)
     pmm = new pvQtMouseModes( this );
 
     bool ok = true;
-    if(ok) ok =
-          connect(actionQuit, &QAction::triggered,
-                  qApp, &QApplication::quit);
-    if(ok) ok =
-          connect(actionPan_Left, &QAction::triggered,
-                  this, &MainWindow::panLft);
-    if(ok) ok =
-          connect(actionPan_Right, &QAction::triggered,
-                  this, &MainWindow::panRgt);
-    if(ok) ok =
-          connect(actionTilt_Up, &QAction::triggered,
-                  this, &MainWindow::tiltUp);
-    if(ok) ok =
-          connect(actionTilt_Down, &QAction::triggered,
-                  this, &MainWindow::tiltDwn);
-    if(ok) ok =
-          connect(actionZoom_In, &QAction::triggered,
-                  this, &MainWindow::zoomIn);
-    if(ok) ok =
-          connect(actionZoom_Out, &QAction::triggered,
-                  this, &MainWindow::zoomOut);
-    if(ok) ok =
-          connect(actionRoll_Right, &QAction::triggered,
-                  this, &MainWindow::rollRight);
-    if(ok) ok =
-          connect(actionRoll_Left, &QAction::triggered,
-                  this, &MainWindow::rollLeft);
-    if(ok) ok =
-          connect(actionEye_In, &QAction::triggered,
-                  this, &MainWindow::eyeIn);
-    if(ok) ok =
-          connect(actionEye_Out, &QAction::triggered,
-                  this, &MainWindow::eyeOut);
-    if(ok) ok =
-          connect(action_Home, &QAction::triggered,
-                  this, &MainWindow::homeView);
-    if(ok) ok =
-          connect(actionReset, &QAction::triggered,
-                  this, &MainWindow::resetView);
+    if(ok) ok = connect(actionQuit, &QAction::triggered,
+                    qApp, &QApplication::quit);
+    if(ok) ok = connect(actionPan_Left, &QAction::triggered,
+                    this, &MainWindow::panLft);
+    if(ok) ok = connect(actionPan_Right, &QAction::triggered,
+                    this, &MainWindow::panRgt);
+    if(ok) ok = connect(actionTilt_Up, &QAction::triggered,
+                    this, &MainWindow::tiltUp);
+    if(ok) ok = connect(actionTilt_Down, &QAction::triggered,
+                    this, &MainWindow::tiltDwn);
+    if(ok) ok = connect(actionZoom_In, &QAction::triggered,
+                    this, &MainWindow::zoomIn);
+    if(ok) ok = connect(actionZoom_Out, &QAction::triggered,
+                    this, &MainWindow::zoomOut);
+    if(ok) ok = connect(actionRoll_Right, &QAction::triggered,
+                    this, &MainWindow::rollRight);
+    if(ok) ok = connect(actionRoll_Left, &QAction::triggered,
+                    this, &MainWindow::rollLeft);
+    if(ok) ok = connect(actionEye_In, &QAction::triggered,
+                    this, &MainWindow::eyeIn);
+    if(ok) ok = connect(actionEye_Out, &QAction::triggered,
+                    this, &MainWindow::eyeOut);
+    if(ok) ok = connect(action_Home, &QAction::triggered,
+                    this, &MainWindow::homeView);
+    if(ok) ok = connect(actionReset, &QAction::triggered,
+                    this, &MainWindow::resetView);
 
     // add actions to status buttons
     surfaceButton->setDefaultAction( actionToggleSurface );
@@ -143,25 +137,29 @@ MainWindow::MainWindow( QWidget * parent)
         ok = glwindow->isOK();
     }
 
-  if( !ok ) qFatal("MainWindow setup failed");
+    if( !ok ) {
+        qFatal("MainWindow setup failed");
+    }
 
-  setCentralWidget( glwindow );
+    setCentralWidget( glwindow );
 
-  int cubelim = pqs->value("Mac/cube_limit", 1536 ).toInt();
-  pcld = new CubeLimit_dialog( cubelim, this );
-  glwindow->setCubeLimit( cubelim );
+    int cubelim = pqs->value("Mac/cube_limit", 1536 ).toInt();
+    pcld = new CubeLimit_dialog( cubelim, this );
+    glwindow->setCubeLimit( cubelim );
+
 #ifdef __APPLE__
-  actionCube_limit->setEnabled( true );
+    actionCube_limit->setEnabled( true );
 #else
-  actionCube_limit->setEnabled( false );
+    actionCube_limit->setEnabled( false );
 #endif
 
-  // enable panosurface switch
-  actionPanosphere->setEnabled(true);
-  actionPanocylinder->setEnabled(true);
+    // enable panosurface switch
+    actionPanosphere->setEnabled(true);
+    actionPanocylinder->setEnabled(true);
 }
 
-/* handle command line argumnents
+/*
+ * handle command line argumnents
   called before GUI is activated
   if it returns false the run is aborted.
 */
@@ -173,7 +171,7 @@ void MainWindow::resizeEvent( QResizeEvent * ev ){
 }
 
 void MainWindow::closeEvent( QCloseEvent * ev ){
-  // save window size and position
+    // save window size and position
     pqs->setValue("window/size", size());
     pqs->setValue("window/posn", pos());
     pqs->sync();
@@ -193,7 +191,8 @@ void MainWindow::showTitle( QString msg ){
     setWindowTitle( msg );
 }
 
-/* View menu handlers
+/*
+ * View menu handlers
 */
 
 void MainWindow::panLft(){
@@ -258,9 +257,9 @@ void MainWindow::on_action90_deg_CW_triggered(){
     emit turn90( 1 );
 }
 
-/** Source Menu Handlers
-  named so connectSlotsByName() will find them
-**/
+/*
+ * Source Menu Handlers named so connectSlotsByName() will find them
+*/
 
 void MainWindow::on_actionNone_wire_model_triggered(){
     emit newPicture("none");
@@ -306,7 +305,8 @@ void MainWindow::on_actionPT_script_triggered(){
     emit newPicture( "proj" );
 }
 
-/* Help menu handlers
+/*
+ * Help menu handlers
 */
 void MainWindow::on_actionAbout_pvQt_triggered(){
     emit about_pvQt();
@@ -316,7 +316,8 @@ void MainWindow::on_actionMouse_modes_triggered(){
     pmm->show();
 }
 
-/* Display projection and magnification
+/*
+ * Display projection and magnification
 */
 void MainWindow::showProj( QString name ){
     iprojButton->setText(QString("iproj %1").arg(name));
@@ -350,6 +351,7 @@ void MainWindow::on_actionVFovDn_triggered(){
 // Note true <=> panosphere
 void MainWindow::on_actionToggleSurface_triggered( bool ckd ){
     int surf = ckd? 0 : 1;
+
     showSurface( surf );
     emit set_surface( surf );
 }
@@ -408,7 +410,7 @@ void MainWindow::on_actionRecenter_mode_triggered( bool ckd ){
 }
 
 void MainWindow::showRecenter( bool ckd ){
-        actionRecenter_mode->setChecked( ckd );
+    actionRecenter_mode->setChecked( ckd );
 }
 
 void MainWindow::on_actionEye_right_triggered(){
@@ -426,5 +428,3 @@ void MainWindow::on_actionEye_up_triggered(){
 void MainWindow::on_actionEye_down_triggered(){
     emit step_eyey( -1 );
 }
-
-

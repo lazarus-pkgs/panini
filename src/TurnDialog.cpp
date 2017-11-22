@@ -1,4 +1,5 @@
-/* TurnDialog.cpp		for Panini 0.62 27 Jan 2009
+/*
+ * TurnDialog.cpp		for Panini 0.62 27 Jan 2009
  * Copyright (C) 2009 Thomas K Sharpless
  *
  * This file is free software; you can redistribute it and/or modify
@@ -20,7 +21,7 @@
 #include "TurnDialog.h"
 
 TurnDialog::TurnDialog( QWidget * parent )
-: QDialog( parent )
+    : QDialog( parent )
 {
     setupUi( this );
 
@@ -56,26 +57,34 @@ void TurnDialog::setTurn( int turn, double roll, double pitch, double yaw ){
 
 void TurnDialog::enableTurn( bool enb ){
     TurnList->setEnabled( enb );
-    if( !enb || !turnEnb ) TurnList->setCurrentIndex( 0 );
+    if( !enb || !turnEnb ) {
+        TurnList->setCurrentIndex( 0 );
+    }
     turnEnb = enb;
 }
 
 void TurnDialog::enablePitch( bool enb ){
     PitchBox->setEnabled( enb );
-    if( !enb || !pitchEnb ) PitchBox->setValue( 0 );
+    if( !enb || !pitchEnb ) {
+        PitchBox->setValue( 0 );
+    }
     pitchEnb = enb;
 }
 
 void TurnDialog::enableYaw( bool enb ){
     YawBox->setEnabled( enb );
-    if( !enb || !yawEnb ) YawBox->setValue( 0 );
+    if( !enb || !yawEnb ) {
+        YawBox->setValue( 0 );
+    }
     yawEnb = enb;
 }
 
 void TurnDialog::onTurnList_currentIndexChanged(int i){
-    if( turnEnb ) emit newTurn( TurnList->currentIndex(),
-                  RollBox->value(), PitchBox->value(),
-                  YawBox->value() );
+    if( turnEnb ) {
+        emit newTurn( TurnList->currentIndex(),
+            RollBox->value(), PitchBox->value(),
+            YawBox->value() );
+    }
 }
 
 void TurnDialog::onRollBox_valueChanged(double i){
@@ -86,13 +95,12 @@ void TurnDialog::onRollBox_valueChanged(double i){
 
 void TurnDialog::onPitchBox_valueChanged(double i){
     if( pitchEnb ) emit newTurn( TurnList->currentIndex(),
-                  RollBox->value(), PitchBox->value(),
-                  YawBox->value() );
+                                 RollBox->value(), PitchBox->value(),
+                                 YawBox->value() );
 }
 
 void TurnDialog::onYawBox_valueChanged(double i){
     if( pitchEnb ) emit newTurn( TurnList->currentIndex(),
-                  RollBox->value(), PitchBox->value(),
-                  YawBox->value() );
+                                 RollBox->value(), PitchBox->value(),
+                                 YawBox->value() );
 }
-

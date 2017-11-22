@@ -1,4 +1,5 @@
-/* panosurface.h  for Panini	29 Jan 2009 TKS
+/*
+ * panosurface.h  for Panini	29 Jan 2009 TKS
 
     A panosurface is an array of vertices and their 2D
     texture coordinates for various source projections,
@@ -44,6 +45,7 @@
  * 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
 */
+
 #ifndef	PANOSURFACE_H
 #define	PANOSURFACE_H
 #include "pvQtPic.h"
@@ -53,78 +55,65 @@ class panosurface {
 public:
     panosurface();
     ~panosurface();
-/* c'tor reports errors by posting an error message.
-    errMsg returns 0 if there was no error.
-*/
+    /* * c'tor reports errors by posting an error message.
+    errMsg returns 0 if there was no error. */
     const char * errMsg(){ return errmsg; }
-// 3D sphere points
+    // 3D sphere points
     const float * vertices(){ return verts; }
     unsigned int vertexOffset(){ return 0; }
     unsigned int vertexBytes(){ return 3 * vertpnts * sizeof(float); }
-// corresponding texture coordinates [0:1]
+    // corresponding texture coordinates [0:1]
     const float * texCoords( const char * proj );
     const float * texCoords( pvQtPic::PicType proj );
     unsigned int texCoordOffset( const char * proj );
     unsigned int texCoordOffset( pvQtPic::PicType proj );
     unsigned int texCoordSize(){ return 2 * vertpnts * sizeof(float); }
-// index sequence for line drawing
+    // index sequence for line drawing
     const unsigned int * lineIndices(){ return lineidx; }
     unsigned int lineIndexCount(){ return linewrds; }
     unsigned int lineIndexOffset(){ return (char *)lineidx - (char *)verts; }
     unsigned int lineIndexSize(){ return linewrds * sizeof(unsigned int); }
-// index sequence for quad drawing (CW inside)
+    // index sequence for quad drawing (CW inside)
     const unsigned int * quadIndices(){ return quadidx; }
     unsigned int quadIndexCount(){ return quadwrds; }
     unsigned int quadIndexOffset(){ return (char *)quadidx - (char *)verts; }
     unsigned int quadIndexSize(){ return quadwrds * sizeof(unsigned int); }
-// everything except the indices as a block of bytes
+    // everything except the indices as a block of bytes
     char * dataBlockAddr(){ return (char *)words; }
     unsigned int dataBlockSize(){ return 15 * vertpnts * sizeof(float); }
-/*
-  texture coordinate scale factors to correctly map
-  an image of a given projection and angular size.
+    /* texture coordinate scale factors to correctly map
+    an image of a given projection and angular size.
     xfov, yfov are full angular sizes in degrees
     xscale, yscale are factors by which the tabulated TC's should
-        be multiplied.
-*/
-    bool texScale(  int pictypeindex,
-                    double xfov, double yfov,
-                    double& xscale, double& yscale);
-  // convenience overloads
-    bool texScale( const char * proj,
-                    double xfov, double yfov,
-                    double& xscale, double& yscale);
-
-    bool texScale( pvQtPic::PicType proj,
-                    double xfov, double yfov,
-                    double& xscale, double& yscale  );
+    be multiplied. */
+    bool texScale(  int pictypeindex, double xfov, double yfov, double& xscale, double& yscale);
+    // convenience overloads
+    bool texScale( const char * proj, double xfov, double yfov, double& xscale, double& yscale);
+    bool texScale( pvQtPic::PicType proj, double xfov, double yfov, double& xscale, double& yscale  );
 
 protected:
     char * errmsg;
     pictureTypes pictypes;
-  // all memory is allocated in one block
+    // all memory is allocated in one block
     float * words;
     unsigned int nwords;
-  // array sizes
+    // array sizes
     unsigned int vertpnts;	// vetices and TCs, in points
     unsigned int linewrds;	// in words
     unsigned int quadwrds;	// in words
-  // array addrs
+    // array addrs
     float * verts;
     float * TCs;
-    unsigned int
-          *	lineidx,
-          * quadidx;
-  // get memory and set pointers
+    unsigned int * lineidx, * quadidx;
+    // get memory and set pointers
     bool getMemory();
-  // compute texture coordinates
-  // from the vertex coordinates
+    // compute texture coordinates
+    // from the vertex coordinates
     void map_projections();
 };
 
 #ifdef PANOSURFACE_IMPLEMENTATION
-/* Stuff useful in implementation
-*/
+/* Stuff useful in implementation */
 const float ninv = -0.01, pinv = 1.01;
 #define CLIP( x ) ( x < ninv ? ninv : x > pinv ? pinv : x )
 #define INVAL( t ) (t > 0 ? pinv : ninv )

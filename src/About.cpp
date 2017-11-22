@@ -1,4 +1,5 @@
-/* About.cpp for pvQt
+/*
+ * About.cpp for pvQt
 
  (C) copyright 2008, 209 Thomas K Sharpless
 
@@ -30,5 +31,3 @@ void pvQtAbout::setInfo( QString info )
 {
     InfoLabel->setText( info );
 }
-
-

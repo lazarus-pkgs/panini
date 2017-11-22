@@ -1,4 +1,5 @@
-/* panocylinder.h		for Panini 29 Jan 2009 TKS
+/*
+ * panocylinder.h		for Panini 29 Jan 2009 TKS
 
     Arrays of vertices on a unit cylinder and their
     2D texture coordinates for various projections,
@@ -23,6 +24,7 @@
  * 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
 */
+
 #ifndef	PANOCYLINDER_H
 #define	PANOCYLINDER_H
 #include "panosurface.h"

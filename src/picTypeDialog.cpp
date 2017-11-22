@@ -1,4 +1,5 @@
-/* picTypeDialog.cpp  for pvQt 0.5  24 Nov 2008 TKS
+/*
+ * picTypeDialog.cpp  for pvQt 0.5  24 Nov 2008 TKS
  (C) copyright 2008, 209 Thomas K Sharpless
 
  * This file is free software; you can redistribute it and/or modify
@@ -15,10 +16,11 @@
  * along with this file; if not, write to Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+
 #include "picTypeDialog.h"
 
 picTypeDialog::picTypeDialog( QWidget * parent)
-: QDialog( parent )
+    : QDialog( parent )
 {
     setupUi( this );
     setDims( QSize(0,0) );
@@ -26,15 +28,10 @@ picTypeDialog::picTypeDialog( QWidget * parent)
     setMinFOV( QSizeF( 5, 5 ));
     setMaxFOV( QSizeF( 360, 360 ));
 
-    connect(typesBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-            this, &picTypeDialog::picTypeSelected);
-    connect(nonSqOK, &QCheckBox::toggled,
-            this, &picTypeDialog::freeToggled);
-
-    connect(hfovBox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
-              this, &picTypeDialog::hFovChanged);
-    connect(vfovBox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
-              this, &picTypeDialog::vFovChanged);
+    connect(typesBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &picTypeDialog::picTypeSelected);
+    connect(nonSqOK, &QCheckBox::toggled, this, &picTypeDialog::freeToggled);
+    connect(hfovBox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &picTypeDialog::hFovChanged);
+    connect(vfovBox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &picTypeDialog::vFovChanged);
 }
 
 void picTypeDialog::setNameLabel( QString name ){
@@ -50,8 +47,8 @@ void picTypeDialog::setPicTypes( QStringList types ){
 
 void picTypeDialog::setDims( QSize wh ){
     dims = wh;
-    widPixels->setText( QString::number( wh.width()));
-    hgtPixels->setText( QString::number( wh.height()));
+    widPixels->setText(QString::number( wh.width()));
+    hgtPixels->setText(QString::number( wh.height()));
 }
 
 void picTypeDialog::setMinFOV( QSizeF fovs ){
@@ -107,6 +104,3 @@ int picTypeDialog::chosenType(){
 void picTypeDialog::freeToggled( bool ckd ){
     emit picTypeSelected( typesBox->currentIndex() );
 }
-
-
-

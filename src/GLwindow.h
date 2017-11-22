@@ -18,7 +18,6 @@
 
   A "glue widget", required to make pvQtView work inside QMainWindow.
   Also provides command line and input file handling.
-
 */
 
 #include <QWidget>
@@ -43,18 +42,18 @@ signals:
     void showSurface( int surf );
 
 public slots:
-  // from mainwindow
+    // from mainwindow
     void newPicture( const char * type );
     void about_pvQt();
     void save_as();
     void set_surface( int surf );
     void turn90( int t );
     void setCubeLimit( int );
- // from picType dialog...
+    // from picType dialog...
     void picTypeChanged( int t );
     void hFovChanged( double h );
     void vFovChanged( double v );
-  // from pvQtView...
+    // from pvQtView...
     void OGLerror( QString msg);
     void reportTurn( int turn, double roll, double pitch, double yaw );
     void reset_turn();
@@ -78,15 +77,21 @@ private:
     pvQtAbout * aboutbox;
     TurnDialog turndialog;
     picTypeDialog ptd;
-    pvQtView * glview;	// display widget
-    pvQtPic * pvpic;	// picture maker
-    bool ok;	// true if created w/o error
+    // display widget
+    pvQtView * glview;
+    // picture maker
+    pvQtPic * pvpic;
+    // true if created w/o error
+    bool ok;
     pictureTypes pictypes;
 
-    int ipt;	// current picture type index, or -1
+    // current picture type index, or -1
+    int ipt;
     pvQtPic::PicType picType;
-    QSizeF picFov;	// current FOV
-    QSize  picDim;	// current size
+    // current FOV
+    QSizeF picFov;
+    // current size
+    QSize  picDim;
     QSizeF lastFOV[NpictureTypes];
     int lastTurn[NpictureTypes];
     double lastRoll[NpictureTypes];
@@ -95,10 +100,12 @@ private:
     QString errmsg;
 
     QString loaddir, savedir;
-    int loadcount;  // no. of image files now loaded
-    QString loadname;  // filename displayed in title
+    //no. of image files now loaded
+    int loadcount;
+    //filename displayed in title
+    QString loadname;
 
-  // V0.7 support for overlay image
+    // V0.7 support for overlay image
     QSize screenSize;
     QImage * ovlyImg;
     bool ovlyVisible;
@@ -106,5 +113,4 @@ private:
     bool loadOverlayImage();
     void setImgAlpha( QImage * pim, double alpha );
     void diceImgAlpha( QImage * pim, double alpha, int dw );
-
 };

@@ -1,5 +1,5 @@
-/* panosphere.h		for Panini 29 Jan 2009 TKS
-
+/*
+ * panosphere.h		for Panini 29 Jan 2009 TKS
     Arrays of vertices on the unit sphere and their
     2D texture coordinates for various projections,
     plus arrays of linear indices that map the
@@ -33,8 +33,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this file; if not, write to Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
 */
+
 #ifndef	PANOSPHERE_H
 #define	PANOSPHERE_H
 #include "panosurface.h"

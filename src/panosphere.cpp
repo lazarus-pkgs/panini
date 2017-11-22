@@ -1,4 +1,5 @@
-/* panosphere.cpp	for Panini 29 Jan 2009
+/*
+ * panosphere.cpp	for Panini 29 Jan 2009
 
   A sphere tessellation with texture coordinates,
   line and quad incices, in arrays usable by OpenGl
@@ -26,6 +27,7 @@
  * 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
 */
+
 #define PANOSURFACE_IMPLEMENTATION
 #include	"panosphere.h"
 
@@ -37,20 +39,22 @@ static inline double dotp( double a[3], double b[3] ){
   intervals, storing results in a general array (divs + 1
   results in all,  including the end points).  Results and
   stride are in float 3-vectors.
-
 */
 static void slerp( int divs, double v0[3], double v1[3],
-                  float * pf, int stride )
+float * pf, int stride )
 {
-    if( divs < 1 ) return;
+    if( divs < 1 ) {
+        return;
+    }
     double om  = dotp( v0, v1 ); // cos(angle between ends)
     double som = sqrt( 1.0 - om * om );	// sin ditto
     om = asin( som );		// the angle
     double s = 1.0 / divs ;	// the t step
+
     for( int i = 0; i <= divs; i++ ){
         double t = i * s;
         double a = sin(om*(1.0 - t)) / som,
-               b = sin(om*t) / som;
+                b = sin(om*t) / som;
         pf[0] = float(v0[0] * a + v1[0] * b);
         pf[1] = float(v0[1] * a + v1[1] * b);
         pf[2] = float(v0[2] * a + v1[2] * b);
@@ -59,14 +63,14 @@ static void slerp( int divs, double v0[3], double v1[3],
 }
 
 inline void setEdgeTCs( float * base, unsigned int ic, unsigned int id ){
-        base[ic] = EVAL( base[ic - 2]);
-        base[id] = EVAL( base[ic + 2]);
-        base[id + 1] = base[ic + 1];
+    base[ic] = EVAL( base[ic - 2]);
+    base[id] = EVAL( base[ic + 2]);
+    base[id + 1] = base[ic + 1];
 }
 
 inline void copyTCs( float * base, unsigned int ic, unsigned int id ){
-        base[id] = base[ic];
-        base[id + 1] = base[ic + 1];
+    base[id] = base[ic];
+    base[id + 1] = base[ic + 1];
 }
 
 /*  Abandoning a long hard struggle to put together a
@@ -99,11 +103,14 @@ inline void copyTCs( float * base, unsigned int ic, unsigned int id ){
 
 panosphere::panosphere( int divs ){
 
-// make sure divs is even, or 1 (cube only)
+    // make sure divs is even, or 1 (cube only)
     divs = 2 * ((divs + 1) / 2);
-    if( divs < 1 ) divs = 1;
-/* calculate memory reauirements
-*/
+
+    if( divs < 1 ) {
+        divs = 1;
+    }
+
+    /* calculate memory reauirements*/
     int dp1 = divs + 1;	// total points per row
     int qpf = divs * divs;	// quads per face
     int ppf = dp1 * dp1;	// points per face
@@ -115,10 +122,13 @@ panosphere::panosphere( int divs ){
     vertpnts = 6 * ppf + dups;	// total vertices
     linewrds = 24 * qpf;
     quadwrds = linewrds;
-  // get memory or die
-    if( ! getMemory() ) return;
 
-// local TC pntrs
+    // get memory or die
+    if( ! getMemory() ) {
+        return;
+    }
+
+    // local TC pntrs
     float *	rects = (float *)texCoords("rect");
     float * fishs = (float *)texCoords("fish");
     float * cylis = (float *)texCoords("cyli");
@@ -127,23 +137,27 @@ panosphere::panosphere( int divs ){
     float * mercs = (float *)texCoords("merc");
     float * angls = (float *)texCoords("sphr");
 
-/* Build Vertex arrays
-    +Z face is computed from cube corners using slerp;
+/*
+ * Build Vertex arrays
+   +Z face is computed from cube corners using slerp;
     rest are rotations of that by multiples of 90 degrees.
 */
-  // cube corner coordinates for front face
+
+    // cube corner coordinates for front face
     const double ccc = sqrt( 1.0 / 3.0 );
     double	vul[3] = { ccc, ccc, ccc },	// upper left
             vur[3] = { -ccc, ccc, ccc },	// upper rigt
             vll[3] = { ccc, -ccc, ccc },	// lower left
             vlr[3] = { -ccc, -ccc, ccc };	// lower right
 
-  /* compute front face row-by row with a double slerp.
+/*
+ * compute front face row-by row with a double slerp.
     The outer one, done here, interpolates row endpoints
     at double precision, then slerp() computes the rows
     at float precision.
     Note posts the full face including all edge points.
   */
+
     float * pd = verts;	// running output addr
     int nr = divs + 1;	// row length for 1st 4 faces
     unsigned int vcnt = 0;	// debug check
@@ -155,7 +169,7 @@ panosphere::panosphere( int divs ){
         double v0[3], v1[3];
         double t = i * s;
         double a = sin(om*(1.0 - t)) / som,
-               b = sin(om*t) / som;
+                b = sin(om*t) / som;
         v0[0] = vul[0] * a + vll[0] * b;
         v0[1] = vul[1] * a + vll[1] * b;
         v0[2] = vul[2] * a + vll[2] * b;
@@ -167,12 +181,14 @@ panosphere::panosphere( int divs ){
         vcnt += divs + 1;
     }
 
-  /* remaining faces
+/*
+ * remaining faces
     Note this code depends on the symmetry of the
     faces around their center points.
-  */
+*/
     unsigned int jf = 3 * ppf;	// words per face
     float * ps = verts;	// -> front face
+
     for( int i = 0; i < ppf; i++ ){
         register float * p = ps;
 
@@ -200,18 +216,20 @@ panosphere::panosphere( int divs ){
         ps += 3;
     }
 
-
-  /* quad indices
+/*
+ * quad indices
     same pattern each face		0	3
                                 1	2
     generate one face then copy with offset
-  */
+*/
+
     unsigned int * pq = quadidx;
     int r;
+
     for( r = 0; r < divs; r++ ){
         unsigned int k = r * dp1;	// 1st index of row
         for( int c = 0; c < divs; c++ ){
-        // CCW quad
+            // CCW quad
             *pq++ = k + c;
             *pq++ = dp1 + k + c;
             *pq++ = dp1 + k + c + 1;
@@ -224,15 +242,18 @@ panosphere::panosphere( int divs ){
         *pq++ = *qq++ + ppf;
     }
 
-  /* line indices
+/*
+ * line indices
     copy quad indices, replacing one index of each quad
     with a copy of another.  Only 2 edges of each quad
     are drawn; the doubled index selects which ones.  The
     doubled corners are chosen so that all 12 cube edges
     get drawn: F, T, R : 0 => 2; K, L: 1 => 3; B: 3 => 1
-  */
+*/
+
     qq = quadidx;
     pq = lineidx;
+
     // front
     for( r = qpf; r > 0; --r ){
         pq[0] = qq[0];
@@ -242,6 +263,7 @@ panosphere::panosphere( int divs ){
         pq += 4;
         qq += 4;
     }
+
     // top
     for( r = qpf; r > 0; --r ){
         pq[0] = qq[0];
@@ -251,6 +273,7 @@ panosphere::panosphere( int divs ){
         pq += 4;
         qq += 4;
     }
+
     // left
     for( r = qpf; r > 0; --r ){
         pq[0] = qq[0];
@@ -260,6 +283,7 @@ panosphere::panosphere( int divs ){
         pq += 4;
         qq += 4;
     }
+
     // back
     for( r = qpf; r > 0; --r ){
         pq[0] = qq[0];
@@ -269,6 +293,7 @@ panosphere::panosphere( int divs ){
         pq += 4;
         qq += 4;
     }
+
     // bottom
     for( r = qpf; r > 0; --r ){
         pq[0] = qq[0];
@@ -278,6 +303,7 @@ panosphere::panosphere( int divs ){
         pq += 4;
         qq += 4;
     }
+
     // right
     for( r = qpf; r > 0; --r ){
         pq[0] = qq[0];
@@ -288,11 +314,10 @@ panosphere::panosphere( int divs ){
         qq += 4;
     }
 
-
-  /* generate texture coordinates for all projections  */
+    /* generate texture coordinates for all projections  */
     map_projections();
 
-  /* Fix up the wrap seam
+    /* Fix up the wrap seam
     The wrap seam runs from top center thru bottom center
     down the middle of back, including top and bottom center
     points.  There are 2 *divs + 3 points in all because the
@@ -306,24 +331,25 @@ panosphere::panosphere( int divs ){
     Finally the top and bottom centers are split vertically by
     assigning a new split center point to their lower quads.
   */
-  // point and quad indices
+
+    // point and quad indices
     int qtb = ntb - 1;	// whole quads top/bottom
     unsigned int ipt = ppf + d2,		// top rear
-                 iqt = qpf + d2,
-                 ipk = 3 * ppf + d2,	// back upper
-                 iqk = 3 * qpf + d2,
-                 ipb = 4 * ppf + (dp1 - ntb) * dp1 + d2,
-                 iqb = 4 * qpf + (divs - 1 - qtb) * divs + d2,
-                 idt = 6 * ppf,		// dupe top
-                 idk = idt + ntb,	// dupe back
-                 idb = idk + dp1,	// dupe bottom
-                 idc = idb + ntb;	// dupe centers
-  // copy the vertices in ascending address order
-  // and post corresponding correct TCs (old and new)
-    unsigned int ic = 2 * ipt,
-                id = 2 * idt;
+            iqt = qpf + d2,
+            ipk = 3 * ppf + d2,	// back upper
+            iqk = 3 * qpf + d2,
+            ipb = 4 * ppf + (dp1 - ntb) * dp1 + d2,
+            iqb = 4 * qpf + (divs - 1 - qtb) * divs + d2,
+            idt = 6 * ppf,		// dupe top
+            idk = idt + ntb,	// dupe back
+            idb = idk + dp1,	// dupe bottom
+            idc = idb + ntb;	// dupe centers
+    // copy the vertices in ascending address order
+    // and post corresponding correct TCs (old and new)
+    unsigned int ic = 2 * ipt, id = 2 * idt;
     ps = verts + 3 * ipt;
     pd = verts + 3 * idt;
+
     for( r = 0; r < ntb; r++ ){
         pd[0] = ps[0];
         pd[1] = ps[1];
@@ -345,6 +371,7 @@ panosphere::panosphere( int divs ){
     ic = 2 * ipk;
     id = 2 * idk;
     ps = verts + 3 * ipk;
+
     for( r = 0; r < dp1; r++ ){
         pd[0] = ps[0];
         pd[1] = ps[1];
@@ -365,6 +392,7 @@ panosphere::panosphere( int divs ){
     ic = 2 * ipb;
     id = 2 * idb;
     ps = verts + 3 * ipb;
+
     for( r = 0; r < ntb; r++ ){
         pd[0] = ps[0];
         pd[1] = ps[1];
@@ -382,27 +410,30 @@ panosphere::panosphere( int divs ){
         id += 2;
     }
 
-  /* change right quad indices of non-center pnts.
+/*
+ * change right quad indices of non-center pnts.
    The first and last points of each seam get 1
    new index, the others get 2.
-  */
+*/
+
     pq = quadidx + 4 * iqt;
     for( r = 0; r < qtb; r++ ){
         pq[0] = idt++;
         pq[1] = idt;
         pq += 4 * divs;
     }
+
     pq[0] = idt;
 
     pq = quadidx + 4 * iqk;
     pq[0] = idk++;
+
     for( r = 0; r < divs - 1; r++ ){
         pq[1] = idk;
         pq += 4 * divs;
         pq[0] = idk++;
     }
     pq[1] = idk;
-
 
     pq = quadidx + 4 * iqb;
     pq[1] = idb;
@@ -412,7 +443,8 @@ panosphere::panosphere( int divs ){
         pq[1] = idb;
     }
 
-  /* fix up the center points
+/*
+ * fix up the center points
     Centers get split vertically as well as horizontally,
     so need 2 new vertices and 2 new TC sets.  The upper
     indices of the lower 2 quads point to the new data.
@@ -420,12 +452,13 @@ panosphere::panosphere( int divs ){
     the new TCs have x = x of next row, y = center y.
     NOTE "next" is addr-- for top, addr++ for bottom,
   */
-  // point indices
+
+    // point indices
     jf = (dp1 + 1) * d2;	// edge to center
     ic = ppf + jf;		// top center
     id = 4 * ppf + jf;	// bot center
 
-  // copy vertices
+    // copy vertices
     ps = verts + 3 * ic;
     pd = verts + 3 * idc;
     *pd++ = ps[0]; *pd++ = ps[1]; *pd++ = ps[2];
@@ -434,13 +467,14 @@ panosphere::panosphere( int divs ){
     *pd++ = ps[0]; *pd++ = ps[1]; *pd++ = ps[2];
     *pd++ = ps[0]; *pd++ = ps[1]; *pd++ = ps[2];
 
-  // build new TC points via old quad indices
-  // then change the indices
+    // build new TC points via old quad indices
+    // then change the indices
+
 #define makeCTCtop(ps, pd, pq ) \
-        *pd++ = ps[2 * pq[-1]];   \
-        *pd++ = ps[2 * pq[-2] + 1]; \
-        *pd++ = ps[2 * pq[0]]; \
-        *pd++ = ps[2 * pq[1] + 1]
+    *pd++ = ps[2 * pq[-1]];   \
+    *pd++ = ps[2 * pq[-2] + 1]; \
+    *pd++ = ps[2 * pq[0]]; \
+    *pd++ = ps[2 * pq[1] + 1]
 #if 1
     unsigned int jq = divs * (d2 - 1) + d2;	// upr rgt quad
     pq = quadidx + 4 * ( qpf + jq );
@@ -459,15 +493,15 @@ panosphere::panosphere( int divs ){
     makeCTCtop(ps, pd, pq );
     ps = mercs; pd = ps + jf;
     makeCTCtop(ps, pd, pq );
-  // change indices
+    // change indices
     pq[-2] = idc; pq[1] = idc + 1;
 #endif
 
 #define makeCTCbot(ps, pd, pq ) \
-        *pd++ = ps[2 * pq[-2]];   \
-        *pd++ = ps[2 * pq[-1] + 1]; \
-        *pd++ = ps[2 * pq[1]]; \
-        *pd++ = ps[2 * pq[0] + 1]
+    *pd++ = ps[2 * pq[-2]];   \
+    *pd++ = ps[2 * pq[-1] + 1]; \
+    *pd++ = ps[2 * pq[1]]; \
+    *pd++ = ps[2 * pq[0] + 1]
 #if 1
     jq = (divs + 1) * d2;		// lwr rgt quad
     pq = quadidx + 4 * ( 4 * qpf + jq ); // bot...
@@ -486,8 +520,7 @@ panosphere::panosphere( int divs ){
     makeCTCbot(ps, pd, pq );
     ps = mercs; pd = ps + jf;
     makeCTCbot(ps, pd, pq );
-  // change indices
+    // change indices
     pq[-1] = idc + 2; pq[0] = idc + 3;
 #endif
 }
-

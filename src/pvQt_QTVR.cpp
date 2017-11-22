@@ -1,4 +1,5 @@
-/* pvQt_QTVR.cpp  for pvQt 02Oct2008 TKS
+/*
+ * pvQt_QTVR.cpp  for pvQt 02Oct2008 TKS
  *
  *	copyright (c) 2008 T K Sharpless <tksharpless@gmail.com>
  *
@@ -27,7 +28,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this file; if not, write to Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
  */
 
 #include <math.h>
@@ -40,39 +40,44 @@
 #include <QImageReader>
 #include "pvQt_QTVR.h"
 
-
 enum colorChannels{
-   NOCOLOR = 0,
-   GRAY =  QImage::Format_Indexed8,
-   RGB	=  QImage::Format_RGB888,
-   RGBA	=  QImage::Format_ARGB32
+    NOCOLOR = 0,
+    GRAY    =  QImage::Format_Indexed8,
+    RGB	    =  QImage::Format_RGB888,
+    RGBA    =  QImage::Format_ARGB32
 };
 
 typedef unsigned long u_long;
 typedef bool Boolean;
-
 typedef int32 DWORD;
 typedef short WORD;
 
-/** JPEG image decoders for pvQt_QTVR using Qt components.
+/*
+ * JPEG image decoders for pvQt_QTVR using Qt components.
  *  If rot90 is true, the returned image is rotated 90 degrees clockwise
-    The QImage in the passed Image may get a new size and/or pixel type
- **/
+ * The QImage in the passed Image may get a new size and/or pixel type
+ */
 bool decodeJPEG( QIODevice * dev, QImage * img, bool rot90 )
 {
     QImageReader ir( dev, "JPEG" );
     bool ok = ir.read( img );	// may re-create
-    if( !rot90 || !ok ) return ok;
-  // copy off the image data to a temp array
+
+    if( !rot90 || !ok ) {
+        return ok;
+    }
+
+    // copy off the image data to a temp array
     QSize sz = img->size();
     int w = sz.width(), h = sz.height();
     int jr = img->bytesPerLine();
     int bpp = jr / w;	// bytes/pixel
     char * tmp = new char[ h * jr ];
     char * pi = (char *)(img->bits());
+
     memcpy( tmp, pi, h * jr );
-  // copy back rotated
+    // copy back rotated
     char * pll = tmp + (h - 1) * jr;
+
     for( int i = 0; i < h; i++ ){
         char * ps = pll + i * bpp;
         char * pd = pi + i * jr;
@@ -82,6 +87,7 @@ bool decodeJPEG( QIODevice * dev, QImage * img, bool rot90 )
             ps -= jr;
         }
     }
+
     delete [] tmp;
     return ok;
 }
@@ -100,8 +106,6 @@ bool decodeJPEG( FILE *f, QImage & image, bool rot90=false){
     qf.open( f, QIODevice::ReadOnly );
     return decodeJPEG( &qf, &image, rot90 );
 }
-
-
 
 struct ChunkOffsetAtom
 {
@@ -124,7 +128,6 @@ struct SampleSizeAtom
     int32 sampleSizeTable[200];
 };
 
-
 struct PublicHandlerInfo
 {
     int32 componentType;
@@ -140,8 +143,8 @@ struct HandlerAtom
     PublicHandlerInfo hInfo;
 };
 
-
-struct QTVRCubicViewAtom{
+struct QTVRCubicViewAtom
+{
     float minPan;
     float maxPan;
     float minTilt;
@@ -154,7 +157,8 @@ struct QTVRCubicViewAtom{
 };
 
 // 'pdat' atom
-struct VRPanoSampleAtom{
+struct VRPanoSampleAtom
+{
     WORD majorVersion;
     WORD minorVersion;
     DWORD imageRefTrackIndex;
@@ -193,14 +197,16 @@ struct VRPanoSampleAtom{
 #define kQTVRVerticalCylinder 'vcyl'
 //0x6C796376
 
-struct QTVRCubicFaceData{
+struct QTVRCubicFaceData
+{
     float orientation[4];
     float center[2];
     float aspect;
     float skew;
 };
 
-struct QTVRTrackRefEntry{
+struct QTVRTrackRefEntry
+{
     uint32  trackRefType;
     uint16  trackResolution;
     uint32  trackRefIndex;
@@ -208,12 +214,14 @@ struct QTVRTrackRefEntry{
 
 #define DECOMP_CHUNK 4096
 
-/* Decompress from file source to file dest until stream ends or EOF.
+/*
+ * Decompress from file source to file dest until stream ends or EOF.
    inf() returns Z_OK on success, Z_MEM_ERROR if memory could not be
    allocated for processing, Z_DATA_ERROR if the deflate data is
    invalid or incomplete, Z_VERSION_ERROR if the version of zlib.height() and
    the version of the library linked do not match, or Z_ERRNO if there
-   is an error reading or writing the files. */
+   is an error reading or writing the files.
+*/
 int decompressZLIBFile(FILE *source, FILE *dest)
 {
     int ret;
@@ -229,8 +237,9 @@ int decompressZLIBFile(FILE *source, FILE *dest)
     strm.avail_in = 0;
     strm.next_in = Z_NULL;
     ret = inflateInit(&strm);
-    if (ret != Z_OK)
+    if (ret != Z_OK) {
         return ret;
+    }
 
     /* decompress until deflate stream ends or end of file */
     do {
@@ -248,19 +257,23 @@ int decompressZLIBFile(FILE *source, FILE *dest)
             strm.avail_out = DECOMP_CHUNK;
             strm.next_out = out;
             ret = inflate(&strm, Z_NO_FLUSH);
+
             ///assert(ret != Z_STREAM_ERROR);  /* state not clobbered */
             if(ret == Z_STREAM_ERROR){
                 qFatal("pvQt_QTVR::Z_STREAM_ERROR");
             }
+
             switch (ret) {
-                case Z_NEED_DICT:
-                    ret = Z_DATA_ERROR;     /* and fall through */
-                case Z_DATA_ERROR:
-                case Z_MEM_ERROR:
-                    (void)inflateEnd(&strm);
-                    return ret;
+            case Z_NEED_DICT:
+                ret = Z_DATA_ERROR; /* and fall through */
+            case Z_DATA_ERROR:
+            case Z_MEM_ERROR:
+                (void)inflateEnd(&strm);
+                return ret;
             }
+
             have = DECOMP_CHUNK - strm.avail_out;
+
             if (fwrite(out, 1, have, dest) != have || ferror(dest)) {
                 (void)inflateEnd(&strm);
                 return Z_ERRNO;
@@ -275,16 +288,13 @@ int decompressZLIBFile(FILE *source, FILE *dest)
     return ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR;
 }
 
-
 /**************** PARSE QUICKTIME MOVIE ***********************/
-//
 // Parses through the QT movie's atoms looking for our 6 cube textures.
-//
 
 QTVRDecoder::QTVRDecoder()
 {
     gCurrentTrackMedia = 0;
-//	gAlreadyGotVideoMedia = false;
+    //gAlreadyGotVideoMedia = false;
     gFoundJPEGs = false;
     m_imageRefTrackIndex = 0;
     m_panoType = 0;
@@ -296,51 +306,46 @@ QTVRDecoder::QTVRDecoder()
     // determine byteorder
     int testint = 0x01;
     unsigned char * testchar = reinterpret_cast< unsigned char * >(&testint);
-    if ( testchar[0] == 0x01 )
-        m_HostBigEndian = false;
-    else
-        m_HostBigEndian = true;
-}
 
+    if ( testchar[0] == 0x01 ) {
+        m_HostBigEndian = false;
+    } else {
+        m_HostBigEndian = true;
+    }
+}
 
 QTVRDecoder::~QTVRDecoder()
 {
-    /**************/
-    /* CLOSE FILE */
-    /**************/
-
-    if(gFile) fclose(gFile);
-
+    if(gFile) {
+        fclose(gFile);
+    }
 }
 
 bool QTVRDecoder::parseHeaders(const char * theDataFilePath)
 {
-
     bool ok = true;
-    int32			atomSize;
+    int32 atomSize;
     gFile = fopen (theDataFilePath, "rb");
+
     if  (!gFile)
     {
         m_error = "fopen() failed";
         return false;
     }
+
     m_mainFile = gFile;
 
-  // get file size for EOF test
+    // get file size for EOF test
     size_t filepos = ftell( gFile );
     fseek( gFile, 0, SEEK_END );
     size_t filesize = ftell( gFile );
     fseek( gFile, filepos, SEEK_SET );
 
-        /*************************/
-        /* RECURSE THROUGH ATOMS */
-        /*************************/
-
+    // Recurse through atoms
     m_error = 0;
     do	{
         atomSize = ReadMovieAtom();
-    } while(atomSize > 0
-        && ftell( gFile ) < filesize );
+    } while(atomSize > 0 && ftell( gFile ) < filesize );
 
     if (m_error != 0) {
         return false;
@@ -351,28 +356,17 @@ bool QTVRDecoder::parseHeaders(const char * theDataFilePath)
     return(ok);
 }
 
-
-
-/************************************************/
-/* Read a QT atom                               */
-
-
 long QTVRDecoder::ReadQTMovieAtom(void)
 {
     int32   atomSize, atomType,  remainingSize;
     int16   childCount;
     size_t  filePos;
     //char    *c = (char *)&atomType;
-//OSErr iErr;
-
-
-
-    /* GET CURRENT FILE POS */
+    //OSErr iErr;
 
     filePos = ftell(gFile);
 
-                /* READ THE ATOM SIZE */
-
+    // read atom size
     size_t sz = fread(&atomSize, 1, 4, gFile);
     if (ferror(gFile) || sz != 4)
     {
@@ -380,8 +374,7 @@ long QTVRDecoder::ReadQTMovieAtom(void)
         return(-1);
     }
 
-    /* READ THE ATOM TYPE */
-
+    // read the atom type
     sz = fread(&atomType, 1, 4, gFile);
     if (ferror(gFile) || sz != 4)
     {
@@ -402,97 +395,87 @@ long QTVRDecoder::ReadQTMovieAtom(void)
     // skip reserved
     fseek(gFile, 4, SEEK_CUR);
 
-    Swizzle(&atomSize);                             // convert BigEndian data to LittleEndian
+    // convert BigEndian data to LittleEndian
+    Swizzle(&atomSize);
     Swizzle(&atomType);
     Swizzle(&childCount);
 
-   /* READ EXTENDED DATA IF NEEDED */
+    // read extended data if needed
 
-    if (atomSize == 1)                                  // if atom size == 1 then there's extended data in the header
+    // if atom size == 1 then there's extended data in the header
+    if (atomSize == 1)
     {
         m_error = "ReadQTMovieAtom: Extended size isn't supported";
         return(-1);
     }
 
-
-
     /********************/
     /* HANDLE THIS ATOM */
     /********************/
-    //
-        // Any atom types not in the table below just get skipped.
-    //
+    // Any atom types not in the table below just get skipped.
 
     switch(atomType)
     {
-        case 'sean':
-            // recurse into sub atoms
-            remainingSize = atomSize - 20 ;                   // there are n bytes left in this atom to parse
-/*            do
-            {
-                remainingSize -= ReadMovieAtom();           // read atom and dec by its size
-            }
-            while(remainingSize > 0);
-*/
-            for (int i=0; i < childCount; i++) {
-                remainingSize -= ReadQTMovieAtom();
-            }
-            break;
-        case 'tref':
-            ReadAtom_QTVR_TREF(atomSize-20);
-            break;
-        case 'pdat':
-            ReadAtom_QTVR_PDAT(atomSize-20);
-            break;
-    }
+    case 'sean':
+        // recurse into sub atoms
 
+        // there are n bytes left in this atom to parse
+        remainingSize = atomSize - 20 ;
+
+/*
+        do
+        {
+            remainingSize -= ReadMovieAtom();           // read atom and dec by its size
+        } while(remainingSize > 0);
+*/
+        for (int i=0; i < childCount; i++) {
+            remainingSize -= ReadQTMovieAtom();
+        }
+
+        break;
+    case 'tref':
+        ReadAtom_QTVR_TREF(atomSize-20);
+        break;
+    case 'pdat':
+        ReadAtom_QTVR_PDAT(atomSize-20);
+        break;
+    }
 
     //if (iErr != noErr)
     //  return(-1);
-
 
     /*************************/
     /* SET FPOS TO NEXT ATOM */
     /*************************/
 
-    if (atomSize == 0)                              // if last atom size was 0 then that was the end
+    // if last atom size was 0 then that was the end
+    if (atomSize == 0)
     {
         return(-1);
-    }
-    else
-    {
+    } else {
         int r = fseek(gFile, (long)filePos + atomSize, SEEK_SET);
- ////       if (ferror(gFile) || r != 0)
- ////           printf("ReadQTMovieAtom: fseek() failed, probably EOF?\n");
+        //if (ferror(gFile) || r != 0)
+        //printf("ReadQTMovieAtom: fseek() failed, probably EOF?\n");
     }
 
-    return(atomSize);                               // return the size of the atom
+    return(atomSize);
 }
 
-
 /********************* READ MOVIE ATOM ************************/
-//
 // INPUT:  parentAtomSize = size of the enclosing atom (or -1 if root).
-//						This is used to determine when we've read all the child atoms from
-//						the enclosing parent that we sub-recursed.
-//
+// This is used to determine when we've read all the child atoms from
+// the enclosing parent that we sub-recursed.
 // OUTPUT:	size of the atom
-//
-
-
 long QTVRDecoder::ReadMovieAtom(void)
 {
-int32	atomSize, atomType,  remainingSize;
-size_t	filePos;
-//char	*c = (char *)&atomType;
-//OSErr	iErr;
-
-            /* GET CURRENT FILE POS */
+    int32	atomSize, atomType,  remainingSize;
+    size_t	filePos;
+    //char	*c = (char *)&atomType;
+    //OSErr	iErr;
 
     filePos = ftell(gFile);
 
-                /* READ THE ATOM SIZE */
-
+    // read atom size
     size_t sz = fread(&atomSize, 1, 4, gFile);
     if (ferror(gFile) || sz != 4)
     {
@@ -500,217 +483,181 @@ size_t	filePos;
         return(-1);
     }
 
-                /* READ THE ATOM TYPE */
-
+    // read atom type
     sz = fread(&atomType, 1, 4, gFile);
-    if (ferror(gFile) || sz != 4)
-    {
+    if (ferror(gFile) || sz != 4) {
         m_error = "ReadMovieAtom:  fread() failed!";
         return(-1);
     }
 
-
-    Swizzle(&atomSize);								// convert BigEndian data to LittleEndian
+    // convert BigEndian data to LittleEndian
+    Swizzle(&atomSize);
     Swizzle(&atomType);
 
-    /* READ EXTENDED DATA IF NEEDED */
-
-    if (atomSize == 1)									// if atom size == 1 then there's extended data in the header
+    // read extended data
+    // if atom size == 1 then there's extended data in the header
+    if (atomSize == 1)
     {
         m_error = "ReadMovieAtom: Extended size isn't supported";
         return(-1);
     }
 
-
-
-        /********************/
-        /* HANDLE THIS ATOM */
-        /********************/
-        //
-        // Any atom types not in the table below just get skipped.
-        //
-
+    /********************/
+    /* HANDLE THIS ATOM */
+    /********************/
+    // Any atom types not in the table below just get skipped.
     switch(atomType)
     {
-            /* MOOV */
-            //
-            // This contains more sub-atoms, so just recurse
-            //
+    // MOOV
+    // This contains more sub-atoms, so just recurse
+    case 'moov':
+        // there are n bytes left in this atom to parse
+        remainingSize = atomSize - 8;
+        do
+        {
+            // read atom and dec by its size
+            remainingSize -= ReadMovieAtom();
+        }
+        while(remainingSize > 0);
+        break;
+    // CMOV
+    // This contains more sub-atoms, so just recurse
+    case    'cmov':
+        //printf("  [Subrecursing 'cmov' atom]\n");
 
-        case	'moov': // MovieAID:										//'moov'
-                remainingSize = atomSize - 8;					// there are n bytes left in this atom to parse
-                do
-                {
-                    remainingSize -= ReadMovieAtom();			// read atom and dec by its size
-                }
-                while(remainingSize > 0);
-                break;
+        // there are n bytes left in this atom to parse
+        remainingSize = atomSize - 8;
+        do
+        {
+            // read atom and dec by its size
+            remainingSize -= ReadMovieAtom();
+        }
 
+        while(remainingSize > 0);
 
-            /* CMOV */
-            //
-            // This contains more sub-atoms, so just recurse
-            //
+        //printf("  [End subrecurse 'cmov' atom]\n");
 
-        case    'cmov': // MovieAID:                                        //'moov'
-                //printf("  [Subrecursing 'cmov' atom]\n");
-                remainingSize = atomSize - 8;                   // there are n bytes left in this atom to parse
-                do
-                {
-                    remainingSize -= ReadMovieAtom();           // read atom and dec by its size
-                }
-                while(remainingSize > 0);
-                //printf("  [End subrecurse 'cmov' atom]\n");
-                break;
+        break;
+    case 'dcom':
+        ReadAtom_DCOM(atomSize-8);
+        break;
+    case 'cmvd':
+        ReadAtom_CMVD(atomSize-8);
+        break;
+    // trak
+    case 'trak':
+        //printf("  [Subrecursing 'trak' atom]\n");
 
+        // reset per track information
+        m_currTrackIsImageTrack = false;
+        gCurrentTrackMedia = 0;
 
-        case 'dcom':
-            ReadAtom_DCOM(atomSize-8);
-            break;
+        // there are n bytes left in this atom to parse
+        remainingSize = atomSize - 8;
+        do
+        {
+            // read atom and dec by its size
+            remainingSize -= ReadMovieAtom();
+        }
+        while(remainingSize > 0);
 
-        case 'cmvd':
-            ReadAtom_CMVD(atomSize-8);
-            break;
+        //printf("  [End subrecurse 'trak' atom]\n");
+        break;
+    case 'tkhd':
+        ReadAtom_TKHD(atomSize-8);
+        break;
+    case 'tref':
+        ReadAtom_TREF(atomSize-8);
+        break;
 
+    case 'mdia':
+        //printf("  [Subrecursing 'mdia' atom]\n");
 
-            /* TRAK */
+        remainingSize = atomSize - 8;
+        do
+        {
+            remainingSize -= ReadMovieAtom();
+        }
+        while(remainingSize > 0);
+        //printf("  [End subrecurse 'mdia' atom]\n");
+        break;
+    case 'minf':
 
-        case	'trak'://TrackAID:										//'trak'
-                //printf("  [Subrecursing 'trak' atom]\n");
-                // reset per track information
-                m_currTrackIsImageTrack = false;
-                gCurrentTrackMedia = 0;
-                remainingSize = atomSize - 8;					// there are n bytes left in this atom to parse
-                do
-                {
-                    remainingSize -= ReadMovieAtom();			// read atom and dec by its size
-                }
-                while(remainingSize > 0);
-                //printf("  [End subrecurse 'trak' atom]\n");
-                break;
+        //printf("  [Subrecursing 'minf' atom]\n");
 
-        case 'tkhd':
-                ReadAtom_TKHD(atomSize-8);
-                break;
+        remainingSize = atomSize - 8;
+        do
+        {
+            remainingSize -= ReadMovieAtom();
+        }
+        while(remainingSize > 0);
 
-                /* TREF */
-        case 'tref':
-                ReadAtom_TREF(atomSize-8);
-                break;
+        //printf("  [End subrecurse 'minf' atom]\n");
 
+        break;
+    //DataInfoAID
+    case 'dinf':
+        //printf("  [Subrecursing 'dinf' atom]\n");
+        ReadMovieAtom();
+        //printf("  [End subrecurse 'dinf' atom]\n");
+        break;
+    //SampleTableAID
+    case 'stbl':
+        //printf("  [Subrecursing 'stbl' atom]\n");
+        remainingSize = atomSize - 8;					// there are n bytes left in this atom to parse
 
-            /* MDIA */
+        do
+        {
+            remainingSize -= ReadMovieAtom();			// read atom and dec by its size
+        }
+        while(remainingSize > 0);
 
-        case	'mdia': //MediaAID:										//'mdia'
-                //printf("  [Subrecursing 'mdia' atom]\n");
-                remainingSize = atomSize - 8;					// there are n bytes left in this atom to parse
-                do
-                {
-                    remainingSize -= ReadMovieAtom();			// read atom and dec by its size
-                }
-                while(remainingSize > 0);
-                //printf("  [End subrecurse 'mdia' atom]\n");
-                break;
-
-
-            /* MINF */
-
-        case	'minf': //MediaInfoAID:									//'minf'
-                //printf("  [Subrecursing 'minf' atom]\n");
-                remainingSize = atomSize - 8;					// there are n bytes left in this atom to parse
-                do
-                {
-                    remainingSize -= ReadMovieAtom();			// read atom and dec by its size
-                }
-                while(remainingSize > 0);
-                //printf("  [End subrecurse 'minf' atom]\n");
-                break;
-
-            /* DINF */
-
-        case	'dinf': //DataInfoAID:									//'dinf'
-                //printf("  [Subrecursing 'dinf' atom]\n");
-                ReadMovieAtom();
-                //printf("  [End subrecurse 'dinf' atom]\n");
-                break;
-
-
-
-
-            /* STBL */
-
-        case	'stbl': //SampleTableAID:									//'stbl'
-
-                //printf("  [Subrecursing 'stbl' atom]\n");
-                remainingSize = atomSize - 8;					// there are n bytes left in this atom to parse
-                do
-                {
-                    remainingSize -= ReadMovieAtom();			// read atom and dec by its size
-                }
-                while(remainingSize > 0);
-                //printf("  [End subrecurse 'stbl' atom]\n");
-                break;
-
-
-            /* STCO */
-
-        case	'stco': // STChunkOffsetAID:								//'stco'
-                ReadAtom_STCO(atomSize);
-                break;
-
-
-            /* STSZ */
-
-        case	'stsz': //STSampleSizeAID:								//'stsz'
-                ReadAtom_STSZ(atomSize);
-                break;
-
-        case    'stsc':
-            ReadAtom_STSC(atomSize);
-            break;
-
-
-            /* HDLR */
-
-        case	'hdlr':  //HandlerAID:								//'hdlr'
-                ReadAtom_HDLR(atomSize);
-                break;
+        //printf("  [End subrecurse 'stbl' atom]\n");
+        break;
+    // STChunkOffsetAID
+    case 'stco':
+        ReadAtom_STCO(atomSize);
+        break;
+    //STSampleSizeAID
+    case 'stsz':
+        ReadAtom_STSZ(atomSize);
+        break;
+    case 'stsc':
+        ReadAtom_STSC(atomSize);
+        break;
+    // HandlerAID
+    case 'hdlr':
+        ReadAtom_HDLR(atomSize);
+        break;
     }
-
 
     //if (iErr != noErr)
     //	return(-1);
 
-
-        /*************************/
-        /* SET FPOS TO NEXT ATOM */
-        /*************************/
-
-    if (atomSize == 0)								// if last atom size was 0 then that was the end
+    // if last atom size was 0 then that was the end
+    if (atomSize == 0)
     {
         return(-1);
     }
     else
     {
+        // set fpos to next atom
         fseek(gFile, (long)filePos + atomSize, SEEK_SET);
-////		if (ferror(gFile))
-////			printf("ReadMovieAtom: fseek() failed, probably EOF?\n");
+        //if (ferror(gFile))
+        //printf("ReadMovieAtom: fseek() failed, probably EOF?\n");
     }
 
-    return(atomSize);								// return the size of the atom
+    return(atomSize);
 }
-
-
-/********************** READ ATOM:  DCOM ****************************/
 
 void QTVRDecoder::ReadAtom_DCOM(long size)
 {
     char comp[5];
     comp[4] = 0;
-//int32         count;
-//    HandlerAtom     *atom;
-//    PublicHandlerInfo   *info;
-//    int32           componentSubType;
+    //int32 count;
+    //HandlerAtom *atom;
+    //PublicHandlerInfo *info;
+    //int32 componentSubType;
 
     size_t sz = fread(&comp,1 , 4, gFile);
     if (ferror(gFile) || sz != 4)
@@ -756,15 +703,15 @@ void QTVRDecoder::ReadAtom_CMVD(long size)
             fclose(decomp);
             return;
         }
+
         // restart parser on now decompressed header.
         fseek(decomp,0,SEEK_SET);
         m_mainFile = gFile;
         m_cmovFile = decomp;
 
         gFile = m_cmovFile;
-        /*************************/
-        /* RECURSE THROUGH ATOMS */
-        /*************************/
+
+        // recurse through atoms
         int atomSize;
         do
         {
@@ -779,285 +726,249 @@ void QTVRDecoder::ReadAtom_CMVD(long size)
     }
 }
 
-
-/********************** READ ATOM:  STCO ****************************/
-
 void QTVRDecoder::ReadAtom_STCO(long size)
 {
-//int32			count;
-int				i;
-ChunkOffsetAtom	*atom;
-int				numEntries;
-
-            /*****************/
-            /* READ THE ATOM */
-            /*****************/
+    //int32 count;
+    int i;
+    ChunkOffsetAtom	*atom;
+    int numEntries;
 
     fseek(gFile, -8, SEEK_CUR);
 
-
-                /* ALLOC MEMORY FOR IT */
-                //
-                // This is a variable size structure, so we need to allocated based on the size of the atom that's passed in
-                //
-
+    // allocate memore for it
+    // This is a variable size structure, so we need to allocated based on the size of the atom that's passed in
     atom = (ChunkOffsetAtom *) malloc(size);
-	if (atom == NULL)
-	{
-		m_error = "ReadAtom_STCO:  malloc() failed!";
-		return;
-	}
+    if (atom == NULL)
+    {
+        m_error = "ReadAtom_STCO:  malloc() failed!";
+        return;
+    }
 
-   /* READ IT */
-
+    // read the atom
     fread(atom, size, 1, gFile);
     if (ferror(gFile))
     {
         m_error = "ReadAtom_STCO:  fread() failed!";
-		free(atom);
+        free(atom);
         return;
     }
 
 
-            /* SEE WHAT KIND OF TRACK WE'VE PARSED INTO AND GET CHUNKS BASED ON THAT */
-
+    // see what kind of track we've parsed into and get chunks based on taht
     numEntries = atom->numEntries;
-    Swizzle(&numEntries);								// convert BigEndian data to LittleEndian (if not Mac)
 
+    // convert BigEndian data to LittleEndian (if not Mac)
+    Swizzle(&numEntries);
 
     switch(gCurrentTrackMedia)
     {
-        case	'pano':
-        {
-                gPanoChunkOffset = atom->chunkOffsetTable[0];
-                Swizzle(&gPanoChunkOffset);									// convert BigEndian data to LittleEndian (if not Mac)
-                //printf("        Chunk offset to 'pano' is : %d\n", gPanoChunkOffset);
-                // TODO: parse the pano info atom here!
-                long fpos_saved = ftell(gFile);
+    case 'pano':
+    {
+        gPanoChunkOffset = atom->chunkOffsetTable[0];
+        Swizzle(&gPanoChunkOffset);
+        //printf("        Chunk offset to 'pano' is : %d\n", gPanoChunkOffset);
+        // TODO: parse the pano info atom here!
+        long fpos_saved = ftell(gFile);
 
-                bool switchChunk = (m_cmovFile == gFile);
-                // the pano chunk is always stored in the main file..
-                if (switchChunk) {
-                    gFile = m_mainFile;
-                }
-
-                // seek to panorama description. skip first 12 bytes
-                // of new QT atom.
-                fseek(gFile, gPanoChunkOffset + 12, SEEK_SET);
-
-                //printf("  [Subrecursing pano 'stco' atom]\n");
-                size_t remainingSize = gPanoSampleSize-12;                   // there are n bytes left in this atom to parse
-                do
-                {
-                    remainingSize -= ReadQTMovieAtom();           // read atom and dec by its size
-                }
-                while(remainingSize > 0);
-                //printf("  [End subrecurse pano 'stco' atom]\n");
-
-                // switch back to compressed file, if needed
-                if (switchChunk) {
-                    gFile = m_cmovFile;
-                }
-
-                fseek(gFile, fpos_saved, SEEK_SET);
-                gCurrentTrackMedia = 0;											// reset this now!
+        bool switchChunk = (m_cmovFile == gFile);
+        // the pano chunk is always stored in the main file..
+        if (switchChunk) {
+            gFile = m_mainFile;
         }
-                break;
 
+        // seek to panorama description. skip first 12 bytes
+        // of new QT atom.
+        fseek(gFile, gPanoChunkOffset + 12, SEEK_SET);
 
-        case	'vide':
+        //printf("  [Subrecursing pano 'stco' atom]\n");
 
-            // if this is the main track, extract the images
-            if (m_currTrackIsImageTrack)
-            {
-                /* EXTRACT THE OFFSETS TO THE IMAGES */
+        // there are n bytes left in this atom to parse
+        size_t remainingSize = gPanoSampleSize-12;
+        do
+        {
+            // read atom and dec by its size
+            remainingSize -= ReadQTMovieAtom();
+        }
+        while(remainingSize > 0);
+        //printf("  [End subrecurse pano 'stco' atom]\n");
+
+        // switch back to compressed file, if needed
+        if (switchChunk) {
+            gFile = m_cmovFile;
+        }
+
+        fseek(gFile, fpos_saved, SEEK_SET);
+        // reset this now
+        gCurrentTrackMedia = 0;
+    }
+        break;
+    case 'vide':
+        // if this is the main track, extract the images
+        if (m_currTrackIsImageTrack)
+        {
+        // extract the offsets to the images
 #if 0
+            for (i = 0; i < numEntries; i++)
+            {
+                ////		printf("       # Chunk Offset entries: %d\n", numEntries);
+
                 for (i = 0; i < numEntries; i++)
                 {
-            ////		printf("       # Chunk Offset entries: %d\n", numEntries);
-
-                    for (i = 0; i < numEntries; i++)
-                    {
-                        gVideoChunkOffset[i] = atom->chunkOffsetTable[i];
-                        Swizzle(&gVideoChunkOffset[i]);							// convert BigEndian data to LittleEndian (if not Mac)
-            ////			printf("       Chunk offset #%d = %d\n", i, gVideoChunkOffset[i] );
-                    }
-                    gCurrentTrackMedia = 0;											// reset this now!
-                    break;
+                    gVideoChunkOffset[i] = atom->chunkOffsetTable[i];
+                    Swizzle(&gVideoChunkOffset[i]);							// convert BigEndian data to LittleEndian (if not Mac)
+                    ////			printf("       Chunk offset #%d = %d\n", i, gVideoChunkOffset[i] );
                 }
-#endif
-                // consider the sample to chunk atom when writing the offsets
-                m_sample2ChunkTable[0];
-                int sampleTableId = 0;
-                int chunkId = 0;
-                int32 sampleOffset = atom->chunkOffsetTable[0];
-                Swizzle(&sampleOffset);
-                // count sample in current chunk
-                int samplesInChunk=0;
-                for (i=0; i < gNumTilesPerImage*6; i++) {
-                    // check if we have reached the end of the current Chunk
-                    if (m_sample2ChunkTable[sampleTableId].samplesPerChunk == samplesInChunk) {
-                        // we have reached a new chunk
-                        chunkId++;
-                        samplesInChunk = 0;
-                        if (sampleTableId < ((int)m_sample2ChunkTable.size())-1) {
-                            // check if we have reached a sample to chunk table entry
-                            if (chunkId+1 == m_sample2ChunkTable[sampleTableId+1].startChunk) {
-                                // advance to next entry in sample table
-                                sampleTableId++;
-                            }
-                        } else {
-                            // we are in the last entry of the sample to chunktable, no need to check for a new entry
-                        }
-                        // update chunk offset
-                        sampleOffset = atom->chunkOffsetTable[chunkId];
-                        Swizzle(&sampleOffset);
-                    }
-                    gVideoChunkOffset[i] = sampleOffset;
-                    // advance to next sample
-                    sampleOffset += gVideoSampleSize[i];
-                    samplesInChunk++;
-                }
-                gCurrentTrackMedia = 0;
+                gCurrentTrackMedia = 0;											// reset this now!
+                break;
             }
+#endif
+            // consider the sample to chunk atom when writing the offsets
+            m_sample2ChunkTable[0];
+            int sampleTableId = 0;
+            int chunkId = 0;
+            int32 sampleOffset = atom->chunkOffsetTable[0];
+            Swizzle(&sampleOffset);
+            // count sample in current chunk
+            int samplesInChunk=0;
+            for (i=0; i < gNumTilesPerImage*6; i++) {
+                // check if we have reached the end of the current Chunk
+                if (m_sample2ChunkTable[sampleTableId].samplesPerChunk == samplesInChunk) {
+                    // we have reached a new chunk
+                    chunkId++;
+                    samplesInChunk = 0;
+                    if (sampleTableId < ((int)m_sample2ChunkTable.size())-1) {
+                        // check if we have reached a sample to chunk table entry
+                        if (chunkId+1 == m_sample2ChunkTable[sampleTableId+1].startChunk) {
+                            // advance to next entry in sample table
+                            sampleTableId++;
+                        }
+                    } else {
+                        // we are in the last entry of the sample to chunktable, no need to check for a new entry
+                    }
+                    // update chunk offset
+                    sampleOffset = atom->chunkOffsetTable[chunkId];
+                    Swizzle(&sampleOffset);
+                }
+                gVideoChunkOffset[i] = sampleOffset;
+                // advance to next sample
+                sampleOffset += gVideoSampleSize[i];
+                samplesInChunk++;
+            }
+            gCurrentTrackMedia = 0;
+        }
     }
 
-//bail:
+    //bail:
     free(atom);
 }
 
-
-
-/********************** READ ATOM:  STSZ ****************************/
-
 void QTVRDecoder::ReadAtom_STSZ(long size)
 {
-//int32			count;
-SampleSizeAtom	*atom;
-int32			numEntries, i;
-
-    /*****************/
-    /* READ THE ATOM */
-    /*****************/
+    //int32	count;
+    SampleSizeAtom *atom;
+    int32 numEntries, i;
 
     fseek(gFile, -8, SEEK_CUR);
 
-
-
-    /* ALLOC MEMORY FOR IT */
-    //
     // This is a variable size structure, so we need to allocated based on the size of the atom that's passed in
-    //
-
     atom = (SampleSizeAtom *) malloc(size);
-	if (atom == NULL)
-	{
-		m_error = "ReadAtom_STSZ:  malloc() failed!";
-		return;
-	}
-
-    /* READ IT */
+    if (atom == NULL)
+    {
+        m_error = "ReadAtom_STSZ:  malloc() failed!";
+        return;
+    }
 
     fread(atom, size, 1, gFile);
     if (ferror(gFile))
     {
         m_error = "ReadAtom_STSZ:  fread() failed!";
-		free(atom);
+        free(atom);
         return;
     }
 
-
-            /* SEE WHAT KIND OF TRACK WE'VE PARSED INTO AND GET CHUNKS BASED ON THAT */
-
+    // see what kind of track we've parsed into and get chunks based on that
     numEntries = atom->numEntries;
-    Swizzle(&numEntries);											// convert BigEndian data to LittleEndian (if not Mac)
-
+    Swizzle(&numEntries);
 
     switch(gCurrentTrackMedia)
     {
-        case	'pano':
-                gPanoSampleSize = atom->sampleSize;
-                Swizzle(&gPanoSampleSize);							// convert BigEndian data to LittleEndian (if not Mac)
-                //printf("        'pano' sample size = : %d\n", gPanoSampleSize);
-                break;
+    case 'pano':
+        gPanoSampleSize = atom->sampleSize;
+        Swizzle(&gPanoSampleSize);
+        //printf("        'pano' sample size = : %d\n", gPanoSampleSize);
+        break;
+    case'vide':
+        //printf("       # Sample Size entries: %d\n", numEntries);
 
-        case	'vide':
-                //printf("       # Sample Size entries: %d\n", numEntries);
+        if (m_currTrackIsImageTrack)
+        {
+            if (m_type == PANO_CUBIC) {
+                // there MUST be at least 6 jpegs or this isn't a cube
+                if (numEntries < 6)
+                {
+                    m_error="cubic panorama with less than 6 images";
+                    free(atom);
+                    return;
+                }
 
-            if (m_currTrackIsImageTrack)
-            {
+                gFoundJPEGs = true;
 
-                if (m_type == PANO_CUBIC) {
-                    if (numEntries < 6)   // there MUST be at least 6 jpegs or this isn't a cube
+
+                /* ARE THE IMAGES TILED? */
+                gNumTilesPerImage = numEntries / 6;
+
+                if (gNumTilesPerImage > 1)
+                {
+                    //printf("_____ There are more than 6 entires in the 'vide' track, so this QTVR has tiled images!\n");
+                    gImagesAreTiled = true;
+                    // are there too many tiles?
+                    if (numEntries > MAX_IMAGE_OFFSETS)
                     {
-                        m_error="cubic panorama with less than 6 images";
+                        m_error = "Too many tiles!";
                         free(atom);
                         return;
                     }
-
-                    gFoundJPEGs = true;
-
-
-                    /* ARE THE IMAGES TILED? */
-
-                    gNumTilesPerImage = numEntries / 6;
-
-                    if (gNumTilesPerImage > 1)
-                    {
-                        //printf("_____ There are more than 6 entires in the 'vide' track, so this QTVR has tiled images!\n");
-                        gImagesAreTiled = true;
-                        if (numEntries > MAX_IMAGE_OFFSETS)             // are there too many tiles
-                        {
-                            m_error = "Too many tiles!";
-                            free(atom);
-                            return;
-                        }
-                    }
-                    else
-                    {
-                        gImagesAreTiled = false;
-                    }
-                } else {
-                    // cylindrical pano
-                    gFoundJPEGs = true;
-                    gNumTilesPerImage = numEntries;
-                    if (gNumTilesPerImage > 1)
-                    {
-                        //printf("_____ There are more than 1 entires in the 'vide' track, so this QTVR has a tiled image!\n");
-                        gImagesAreTiled = true;
-                        if (numEntries > MAX_IMAGE_OFFSETS)             // are there too many tiles
-                        {
-                            m_error = "Too many tiles!";
-                            free(atom);
-                            return;
-                        }
-                    }
-                    else
-                    {
-                        gImagesAreTiled = false;
-                    }
                 }
-                for (i = 0; i < numEntries; i++)
+                else
                 {
-                    gVideoSampleSize[i] = atom->sampleSizeTable[i];
-                    Swizzle(&gVideoSampleSize[i]);
-                    //printf("       sample size %d = %d\n", i, gVideoSampleSize[i] );
+                    gImagesAreTiled = false;
                 }
-                break;
+            } else {
+                // cylindrical pano
+                gFoundJPEGs = true;
+                gNumTilesPerImage = numEntries;
+                if (gNumTilesPerImage > 1)
+                {
+                    //printf("_____ There are more than 1 entires in the 'vide' track, so this QTVR has a tiled image!\n");
+                    gImagesAreTiled = true;
+                    // are there too many tiles?
+                    if (numEntries > MAX_IMAGE_OFFSETS)
+                    {
+                        m_error = "Too many tiles!";
+                        free(atom);
+                        return;
+                    }
+                }
+                else
+                {
+                    gImagesAreTiled = false;
+                }
             }
+            for (i = 0; i < numEntries; i++)
+            {
+                gVideoSampleSize[i] = atom->sampleSizeTable[i];
+                Swizzle(&gVideoSampleSize[i]);
+                //printf("       sample size %d = %d\n", i, gVideoSampleSize[i] );
+            }
+            break;
+        }
     }
-
-
     free(atom);
 }
 
-
-
-/********************** READ ATOM:  STSC ****************************/
-
 void QTVRDecoder::ReadAtom_STSC(long size)
 {
-    int32           numEntries;
+    int32 numEntries;
 
     // skip version and flags
     size_t sz = fread(&numEntries,1 , 4, gFile);
@@ -1094,52 +1005,37 @@ void QTVRDecoder::ReadAtom_STSC(long size)
     }
 }
 
-
-
-
-/********************** READ ATOM:  HDLR ****************************/
-
 void QTVRDecoder::ReadAtom_HDLR(int size)
 {
-//int32			count;
-HandlerAtom		*atom;
-PublicHandlerInfo	*info;
-int32			componentSubType;
-
-	/*****************/
-	/* READ THE ATOM */
-	/*****************/
+    //int32	count;
+    HandlerAtom	*atom;
+    PublicHandlerInfo *info;
+    int32 componentSubType;
 
     fseek(gFile, -8, SEEK_CUR);
 
-	/* ALLOC MEMORY FOR IT */
-	//
-	// This is a variable size structure, so we need to allocated based on the size of the atom that's passed in
-	//
-
+    // This is a variable size structure, so we need to allocated based on the size of the atom that's passed in
     atom = (HandlerAtom *) malloc(size);
-	if (atom == NULL)
-	{
-		m_error = "ReadAtom_HDLR:  malloc() failed!";
-		return;
-	}
-
-	/* READ IT */
+    if (atom == NULL)
+    {
+        m_error = "ReadAtom_HDLR:  malloc() failed!";
+        return;
+    }
 
     fread(atom, size, 1, gFile);
     if (ferror(gFile))
     {
         m_error = "ReadAtom_HDLR:  fread() failed!";
-		free(atom);
+        free(atom);
         return;
     }
 
-	/* POINT TO HANDLER INFO */
-
+    // point to handler info
     info = &atom->hInfo;
 
-    componentSubType = info->componentSubType;									// get comp sub type
-    Swizzle(&componentSubType);												// convert BigEndian data to LittleEndian (if not Mac)
+    // get comp sub type
+    componentSubType = info->componentSubType;
+    Swizzle(&componentSubType);
     char * t = (char*) & componentSubType;
 
     if (componentSubType == 'pano')
@@ -1148,24 +1044,23 @@ int32			componentSubType;
         gCurrentTrackMedia = 'pano';
     }
     else
-    if (componentSubType == 'vide')
-    {
-        gCurrentTrackMedia = 'vide';
-        //printf("ReadAtom_HDLR:  We found a 'vide' media!\n");
-#if 0
-//		if (!gAlreadyGotVideoMedia)					// if we already got the 'vide' then this one is just the fast-start track, so ignore it!
+        if (componentSubType == 'vide')
         {
             gCurrentTrackMedia = 'vide';
-//			gAlreadyGotVideoMedia = true;
-        }
-        else
+            //printf("ReadAtom_HDLR:  We found a 'vide' media!\n");
+#if 0
+            //		if (!gAlreadyGotVideoMedia)					// if we already got the 'vide' then this one is just the fast-start track, so ignore it!
+            {
+                gCurrentTrackMedia = 'vide';
+                //			gAlreadyGotVideoMedia = true;
+            }
+            else
             //printf("Found an additional 'vide' media track, but we're going to ignore it since it's probably the fast-start track...\n");
 #endif
-    }
+        }
 
     free(atom);
 }
-
 
 void QTVRDecoder::ReadAtom_TKHD(long size)
 {
@@ -1192,18 +1087,15 @@ void QTVRDecoder::ReadAtom_TKHD(long size)
     }
 }
 
-
-
 void QTVRDecoder::ReadAtom_TREF(long size)
 {
     int32 subsize;
     int32 type;
     int32 track;
-//int32         count;
-//    HandlerAtom     *atom;
-//    PublicHandlerInfo   *info;
-//    int32           componentSubType;
-
+    //int32 count;
+    //HandlerAtom *atom;
+    //PublicHandlerInfo *info;
+    //int32 componentSubType;
 
     // loop until everything has been read
     while(size) {
@@ -1225,7 +1117,9 @@ void QTVRDecoder::ReadAtom_TREF(long size)
         Swizzle(&type);
         subsize -=sz;
         size -= sz;
+
         //int nRefs = (size)/4;
+
         // only store tracks of type imgt, since these provide the image tracks.
         int i=0;
         if (type == 'imgt') {
@@ -1259,48 +1153,35 @@ void QTVRDecoder::ReadAtom_TREF(long size)
     }
 }
 
-
-/********************** READ ATOM:  PDAT ****************************/
-
 void QTVRDecoder::ReadAtom_QTVR_PDAT(long size)
 {
-//int32			count;
-VRPanoSampleAtom *atom;
-//int32			numEntries, i;
+    //int32 count;
+    VRPanoSampleAtom *atom;
+    //int32 numEntries, i;
 
-/*****************/
-/* READ THE ATOM */
-/*****************/
-
-
-
-	/* ALLOC MEMORY FOR IT */
-	//
-	// This is a variable size structure, so we need to allocated based on the size of the atom that's passed in
-	//
-
+    // This is a variable size structure, so we need to allocated based on the size of the atom that's passed in
     atom = (VRPanoSampleAtom *) malloc(size);
-	if (atom == NULL)
-	{
-		m_error = "ReadAtom_QTVR_PDAT:  malloc() failed!";
-		return;
-	}
+    if (atom == NULL)
+    {
+        m_error = "ReadAtom_QTVR_PDAT:  malloc() failed!";
+        return;
+    }
 
-	/* READ IT */
+    /* READ IT */
 
     size_t sz = fread(atom, size, 1, gFile);
     if (ferror(gFile) || sz != 1)
     {
         m_error = "ReadAtom_PDAT:  fread() failed!";
-		free(atom);
+        free(atom);
         return;
     }
 
-            /* SEE WHAT KIND OF TRACK WE'VE PARSED INTO AND GET CHUNKS BASED ON THAT */
+    // see what kind of track we've parsed into and get chunks based on that
 
     // check if this is a cubic panorama
     m_panoType = atom->panoType;
-    Swizzle(&m_panoType);											// convert BigEndian data to LittleEndian (if not Mac)
+    Swizzle(&m_panoType);
     char *t = (char*)&m_panoType;
 
     if (m_panoType == kQTVRCube) {
@@ -1321,14 +1202,11 @@ VRPanoSampleAtom *atom;
 
     // get the track number of the real pano
     m_imageRefTrackIndex = atom->imageRefTrackIndex;
-    Swizzle(&m_imageRefTrackIndex);                                         // convert BigEndian data to LittleEndian (if not Mac)
+    Swizzle(&m_imageRefTrackIndex);
     m_mainTrack = m_panoTracks[m_imageRefTrackIndex -1];
 
     free(atom);
 }
-
-
-/********************** READ ATOM:  PDAT ****************************/
 
 void QTVRDecoder::ReadAtom_QTVR_TREF(long size)
 {
@@ -1349,8 +1227,7 @@ void QTVRDecoder::ReadAtom_QTVR_TREF(long size)
 }
 
 
-/********************* SEEK AND EXTRACT IMAGES ***************************/
-//
+// seek and extract images
 // get the image for cube face iim
 bool QTVRDecoder::extractCubeImage(int iim, QImage * &cubeface)
 {
@@ -1358,8 +1235,8 @@ bool QTVRDecoder::extractCubeImage(int iim, QImage * &cubeface)
         m_error = "not a cubic panorama";
         return false;
     }
-    /* SEE IF WE NEED TO SPECIAL-CASE TILED IMAGES */
 
+    // see if we need to special-case tiled images
     if (gImagesAreTiled)
     {
         return SeekAndExtractImage_Tiled(iim, cubeface);
@@ -1371,26 +1248,22 @@ bool QTVRDecoder::extractCubeImage(int iim, QImage * &cubeface)
         return false;
     }
 
-
     int i = iim;
-    /* SEEK TO THE JPEG'S DATA */
+    // seek to the JPEG's data
     fseek(gFile, gVideoChunkOffset[i], SEEK_SET);
 
     cubeface = new QImage;
     if (!decodeJPEG(gFile, *cubeface)) {
-       m_error = "JPEG decoding failed";
-       delete cubeface;
-       cubeface = 0;
-       return false;
+        m_error = "JPEG decoding failed";
+        delete cubeface;
+        cubeface = 0;
+        return false;
     }
 
     return true;
 }
 
-
 // Seek and extract the image from a cylindrical pano
-//
-
 bool QTVRDecoder::extractCylImage(QImage * &img)
 {
     if (m_type != PANO_CYLINDRICAL) {
@@ -1403,15 +1276,13 @@ bool QTVRDecoder::extractCylImage(QImage * &img)
         return SeekAndExtractImageCyl_Tiled(img);
     }
 
-
     if (!gFoundJPEGs)
     {
         m_error = "No usable JPEG image found";
         return false;
     }
 
-    /* SEEK TO THE JPEG'S DATA */
-
+    // seek to the JPEG's data
     fseek(gFile, gVideoChunkOffset[0], SEEK_SET);
 
     img = new QImage;
@@ -1426,18 +1297,16 @@ bool QTVRDecoder::extractCylImage(QImage * &img)
     return true;
 }
 
-/********************* SEEK AND EXTRACT IMAGES:  TILED ***************************/
-
+// seek and extract images: tiled
 bool QTVRDecoder::SeekAndExtractImage_Tiled(int i, QImage * &cubeface)
 {
-    int		tileDimensions; //, compSize;
-    int     faceSize;
+    int tileDimensions; //, compSize;
+    int faceSize;
 
-//// TKS: this is really cheesy
+    //// TKS: this is really cheesy
     tileDimensions = (int) sqrt((float)gNumTilesPerImage);
 
-
-    int		chunkNum = i * gNumTilesPerImage;
+    int chunkNum = i * gNumTilesPerImage;
 
     // init tile assembly
     cubeface = 0;
@@ -1457,8 +1326,8 @@ bool QTVRDecoder::SeekAndExtractImage_Tiled(int i, QImage * &cubeface)
         // decode jpg
         if (!decodeJPEG(gFile, img))
         {
-           m_error = "JPEG decoding failed";
-           return false;
+            m_error = "JPEG decoding failed";
+            return false;
         }
 
         if (tileSize == 0) {
@@ -1477,24 +1346,25 @@ bool QTVRDecoder::SeekAndExtractImage_Tiled(int i, QImage * &cubeface)
             m_error = "tiles of different sizes";
             return false;
         }
-        ////////////////////////////////////////
-        //   copy to cube face
-  // for QImage must use row strides...
+
+        // copy to cube face
+        // for QImage must use row strides...
         int tilerowsize = img.bytesPerLine();
         int facerowsize = cubeface->bytesPerLine();
-  // (and let's use the actual pixel size too)
+        // (and let's use the actual pixel size too)
         int bpp = facerowsize / faceSize;
-    // tile indices
+        // tile indices
         int h = t % tileDimensions;
         int v = t / tileDimensions;
-    // byte addrs (incl alignment)
+        // byte addrs (incl alignment)
         unsigned char * srcPtr = img.bits();
         unsigned char * destPtr = cubeface->bits()			// raster
-                                + facerowsize * tileSize * v	// row
-                                + bpp * tileSize * h;			// col
+                + facerowsize * tileSize * v	// row
+                + bpp * tileSize * h;			// col
 
+        // loop over rows
         for (int y=0; y< tileSize; y++)
-        {  // loop over rows
+        {
             memcpy(destPtr, srcPtr, bpp*tileSize);
             destPtr += facerowsize;
             srcPtr += tilerowsize;
@@ -1519,7 +1389,7 @@ bool QTVRDecoder::SeekAndExtractImageCyl_Tiled(QImage * &image)
     {
         fseek(gFile, gVideoChunkOffset[t], SEEK_SET);
         if (ferror(gFile))
-            {
+        {
             m_error = "LoadTilesForFace:  fseek failed!";
             return false;
         }
@@ -1531,7 +1401,7 @@ bool QTVRDecoder::SeekAndExtractImageCyl_Tiled(QImage * &image)
             return false;
         }
 
-        /* Create target image at first tile */
+        // creat target image at first tile
         int imgw, imgh, tw, th;
         unsigned int bpp, imgbpl, tilebpl, tilebtc;
         if (tileSize.isEmpty()) {
@@ -1552,11 +1422,9 @@ bool QTVRDecoder::SeekAndExtractImageCyl_Tiled(QImage * &image)
             return false;
         }
 
-        ////////////////////////////////////////
-        //   add tile to image
-        //   left-to right for horizontal fmt,
-        //   right-to-left for vertical fmt.
-
+        //add tile to image
+        //left-to right for horizontal fmt,
+        //right-to-left for vertical fmt.
         int left=0;
         int right=0;
         if (m_horizontalCyl) {
@@ -1577,15 +1445,10 @@ bool QTVRDecoder::SeekAndExtractImageCyl_Tiled(QImage * &image)
     return true;
 }
 
-
-/**************************** SWIZZLE INT ***********************************/
-//
 // Converts a 4-byte int to reverse the Big-Little Endian order of the bytes.
 //
 // Quicktime movies are in BigEndian format, so when reading on a PC or other
 // Little-Endian machine, we've got to swap the bytes around.
-//
-
 void QTVRDecoder::Swizzle(uint32 *value)
 {
     Swizzle((int32*) value);
@@ -1597,12 +1460,14 @@ void QTVRDecoder::Swizzle(int32 *value)
         char	*n, b1,b2,b3,b4;
         n = (char *)value;
 
-        b1 = n[0];								// get the 4 bytes
+        // get the 4 bytes
+        b1 = n[0];
         b2 = n[1];
         b3 = n[2];
         b4 = n[3];
 
-        n[0] = b4;								// save in reverse order
+        // save in reverse order
+        n[0] = b4;
         n[1] = b3;
         n[2] = b2;
         n[3] = b1;
@@ -1621,16 +1486,19 @@ void QTVRDecoder::Swizzle(int16 *value)
         char    *n, b1,b2;
         n = (char *)value;
 
-        b1 = n[0];                              // get the 4 bytes
+        // get the 4 bytes
+        b1 = n[0];
         b2 = n[1];
 
-        n[0] = b2;                              // save in reverse order
+        // save in reverse order
+        n[0] = b2;
         n[1] = b1;
     }
 }
 
-/* Get a new QImage or a null pointer
-*/
+/*
+ * Get a new QImage or a null pointer
+ */
 QImage * QTVRDecoder::getImage( int face )
 {
     QImage * pim = 0;
@@ -1638,16 +1506,24 @@ QImage * QTVRDecoder::getImage( int face )
     switch( m_type ){
     case PANO_CUBIC:
         if( !extractCubeImage( face, pim ) ){
-            if(!m_error) m_error = "extractCubeImage() failed";
-            if(pim) delete pim;
+            if(!m_error) {
+                m_error = "extractCubeImage() failed";
+            }
+            if(pim) {
+                delete pim;
+            }
             pim = 0;
         }
         break;
     case PANO_CYLINDRICAL:
         if( face != 0 ||
-           !extractCylImage( pim ) ){
-            if(!m_error) m_error = "extractCylImage() failed";
-            if(pim) delete pim;
+                !extractCylImage( pim ) ){
+            if(!m_error) {
+                m_error = "extractCylImage() failed";
+            }
+            if(pim) {
+                delete pim;
+            }
             pim = 0;
         }
         break;

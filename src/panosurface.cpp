@@ -1,4 +1,5 @@
-/* panosurface.cpp	for Panini  29 Jan 2009 TKS
+/*
+ * panosurface.cpp	for Panini  29 Jan 2009 TKS
  *
     Common code for the projection screen classes
 
@@ -19,20 +20,20 @@
  * 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
 */
+
 #define PANOSURFACE_IMPLEMENTATION
-#include	"panosurface.h"
-#include	<cstdio>
+#include "panosurface.h"
+#include <cstdio>
 
-
-/* c'tor sets null object
-*/
+/* c'tor sets null object */
 panosurface::panosurface(){
     errmsg = 0;
     nwords = vertpnts = linewrds = quadwrds = 0;
     words = 0;
 }
 
-/* get memory and set up pointers
+/*
+ * get memory and set up pointers
   call from subclass c'tor after setting
     vertpnts = total no. of vertices
     linewrds = 2 * no. of line index pairs
@@ -44,11 +45,13 @@ panosurface::panosurface(){
 bool panosurface::getMemory(){
     nwords =  (3 + 2 * Nprojections) * vertpnts + linewrds + quadwrds;
     words = new float[ nwords ];
+
     if( words == 0 ){
         errmsg = "insufficient memory for panosurface";
         return false;
     }
-// set pointers to arrays
+
+    // set pointers to arrays
     verts = words;
     TCs = verts + 3 * vertpnts;
     lineidx = (unsigned int *)(TCs + Nprojections * 2 * vertpnts);
@@ -57,36 +60,53 @@ bool panosurface::getMemory(){
     return true;
 }
 
-/* free memory at destruction */
 panosurface::~panosurface(){
-    if( words ) delete[] words;
+    if( words ) {
+        delete[] words;
+    }
 }
 
 /*
-    API calls to get data pointers and sizes
+ * API calls to get data pointers and sizes
 */
 
 const float * panosurface::texCoords( const char * proj ){
     int i = pictypes.picTypeIndex( proj );
-    if( i < 0 || i >= Nprojections ) return 0;
+
+    if( i < 0 || i >= Nprojections ) {
+        return 0;
+    }
+
     return TCs + i * 2 * vertpnts;
 }
 
 unsigned int panosurface::texCoordOffset( const char * proj ){
     const float * p = texCoords( proj );
-    if( p == 0 ) return 0;
+
+    if( p == 0 ) {
+        return 0;
+    }
+
     return (char *)p - (char *)verts;
 }
 
 const float * panosurface::texCoords( pvQtPic::PicType proj ){
     int i = pictypes.picTypeIndex( proj );
-    if( i < 0 || i >= Nprojections ) return 0;
+
+    if( i < 0 || i >= Nprojections ) {
+        return 0;
+    }
+
     return TCs + i * 2 * vertpnts;
 }
 
 unsigned int panosurface::texCoordOffset( pvQtPic::PicType proj ){
     const float * p = texCoords( proj );
-    if( p == 0 ) return 0;
+
+    if( p == 0 ) {
+        return 0;
+    }
+
     return (char *)p - (char *)verts;
 }
 
@@ -112,7 +132,7 @@ unsigned int panosurface::texCoordOffset( pvQtPic::PicType proj ){
 
 void panosurface::map_projections(){
 
-// set angular limts from fovs in pictureTypes
+    // set angular limts from fovs in pictureTypes
     QSizeF fovs;
     fovs = pictypes.maxFov( pictypes.picTypeIndex( "rect" ) );
     double amaxrect = DEG2RAD(0.5 * fovs.width());
@@ -138,7 +158,7 @@ void panosurface::map_projections(){
     double amaxster = DEG2RAD( 0.5 * fovs.width() );
     double tmaxster = tan( 0.5 * amaxster );
 
-// working TC array pntrs
+    // working TC array pntrs
     float *	pr = (float *)texCoords("rect");
     float * pf = (float *)texCoords("fish");
     float * pc = (float *)texCoords("cyli");
@@ -146,53 +166,55 @@ void panosurface::map_projections(){
     float * pt = (float *)texCoords("ster");
     float * pm = (float *)texCoords("merc");
     float * pa = (float *)texCoords("sphr");
-// working vertex array pointer
+    // working vertex array pointer
     float * ps = verts;
 
-  // loop over all vertices
+    // loop over all vertices
     for(int r = vertpnts; r > 0; --r ){
-  /*
-    x,y,z is point on panosphere in direction of vertex
-    xa is angle from +Z in XZ plane [-Pi:Pi],
-    ya is angle out of XZ plane [-Pi/2 : Pi/2],
-    za is angle away from +Z [0:Pi]
-    Viewing 0->+Z, X left, Y up
-  */
-    // unit direction vector
+
+        /*
+        x,y,z is point on panosphere in direction of vertex
+        xa is angle from +Z in XZ plane [-Pi:Pi],
+        ya is angle out of XZ plane [-Pi/2 : Pi/2],
+        za is angle away from +Z [0:Pi]
+        Viewing 0->+Z, X left, Y up
+        */
+
+        // unit direction vector
         double s = 1.0 / sqrt(ps[0]*ps[0] + ps[1]*ps[1] + ps[2]*ps[2]);
         double x = s * ps[0],
-               y = s * ps[1],
-               z = s * ps[2];
-    // important angles, their sines and cosines
+                y = s * ps[1],
+                z = s * ps[2];
+        // important angles, their sines and cosines
         double xa = -atan2(x, z), // horiz from +Z
-               ya = acos(y), // vert from -Y
-               za = acos(z);  // radial from +Z
+                ya = acos(y), // vert from -Y
+                za = acos(z);  // radial from +Z
         double  sxa = -x,	// sin(xa)
                 cxa = z,	// cos(xa)
                 sya = y,	// sin(ya)
                 cya = sqrt( x * x + z * z ),
                 sza = sqrt( x * x + y * y ),
                 cza = z;
-      // direction vector for radial fns (0: invalid)
+        // direction vector for radial fns (0: invalid)
         double sx = 0, sy = 0;
         if( sza >= 1.0e-4 ){
             sx = sxa / sza;
             sy = -sya / sza;
         }
 
-      // rectilinear
+        // rectilinear
         if( za > 0.45 * Pi ){
             pr[0] = INVAL( sx );
             pr[1] = INVAL( sy );
         } else {
-          s = 0.5 * (sza/cza) / tmaxrect;
-          double x = CLIP( 0.5 + s * sx ),
-                 y = CLIP( 0.5 + s * sy );
-          pr[0] = float( x );
-          pr[1] = float( y );
+            s = 0.5 * (sza/cza) / tmaxrect;
+            double x = CLIP( 0.5 + s * sx ),
+                    y = CLIP( 0.5 + s * sy );
+            pr[0] = float( x );
+            pr[1] = float( y );
         }
 
-      // fisheye
+        // fisheye
         if( za > amaxfish ){
             pf[0] = INVAL( xa );
             pf[1] = INVAL( ya - 0.5 * Pi );
@@ -202,11 +224,11 @@ void panosurface::map_projections(){
             pf[1] = float(CLIP(0.5 + s * sy) );
         }
 
-      // equirectangular
+        // equirectangular
         pe[0] = float( CLIP(0.5 + 0.5 * xa / Pi));
         pe[1] = float( CLIP(ya / Pi));
 
-      // cylindrical
+        // cylindrical
         s = ya - 0.5 * Pi;
         if( fabs(s) > amaxcyli ){
             pc[0] = INVAL( xa );
@@ -216,7 +238,7 @@ void panosurface::map_projections(){
             pc[1] = float(CLIP(0.5 - 0.5 * (sya/cya) / tmaxcyli));
         }
 
-      // equiangular sphere
+        // equiangular sphere
         if( za > amaxsphr ){
             pa[0] = INVAL( xa );
             pa[1] = INVAL( ya - 0.5 * Pi );
@@ -226,16 +248,18 @@ void panosurface::map_projections(){
             pa[1] = float( CLIP(0.5 + s * sy) );
         }
 
-      // mercator
+        // mercator
         pm[0] = pe[0];
         s = ya - 0.5 * Pi;
-        if( fabs(sya) > smaxmerc ) pm[1] = INVAL( s );
+        if( fabs(sya) > smaxmerc ) {
+            pm[1] = INVAL( s );
+        }
         else {
             s = atanh(sya);
             pm[1] = float(CLIP( 0.5 -  0.5 * s / tmaxmerc ));
         }
 
-      // stereographic
+        // stereographic
         if( za > amaxster ){
             pt[0] = INVAL( sx );
             pt[1] = INVAL( sy );
@@ -246,7 +270,7 @@ void panosurface::map_projections(){
         }
 
 
-      // next point
+        // next point
         ps += 3;
         pr += 2; pf += 2; pc += 2; pe += 2;
         pa += 2; pm += 2; pt += 2;
@@ -256,15 +280,16 @@ void panosurface::map_projections(){
 /*
   texture coordinate scale factors to correctly map
   an image of a given projection and angular size.
-    xfov, yfov are full angular sizes in degrees
-    xscale, yscale are factors by which the tabulated TC's should
-        be multiplied.
+  xfov, yfov are full angular sizes in degrees
+  xscale, yscale are factors by which the tabulated TC's should
+  be multiplied.
 */
-bool panosurface::texScale(  int ipt,
-                double xfov, double yfov,
-                double& xscale, double& yscale){
+bool panosurface::texScale(  int ipt, double xfov, double yfov, double& xscale, double& yscale) {
     xscale = yscale = 1;
-    if( ipt < 0 || ipt >= Nprojections ) return false;
+    if( ipt < 0 || ipt >= Nprojections ) {
+        return false;
+    }
+
     QSizeF fovs = pictypes.maxFov( ipt );
     pvQtPic::PicType ppt = pictypes.PicType( ipt );
     int ptx, pty;
@@ -274,19 +299,14 @@ bool panosurface::texScale(  int ipt,
     xscale = d / pvQtPic::fov2rad( ptx, xfov );
     d = pvQtPic::fov2rad( pty, fovs.height() );
     yscale = d / pvQtPic::fov2rad( ptx, yfov );
+
     return true;
 }
 
-bool panosurface::texScale( const char * proj,
-                double xfov, double yfov,
-                double& xscale, double& yscale){
-    return texScale( pictypes.picTypeIndex( proj ),
-                     xfov, yfov, xscale, yscale );
+bool panosurface::texScale( const char * proj, double xfov, double yfov, double& xscale, double& yscale) {
+    return texScale( pictypes.picTypeIndex( proj ), xfov, yfov, xscale, yscale );
 }
 
-bool panosurface::texScale( pvQtPic::PicType proj,
-                double xfov, double yfov,
-                double& xscale, double& yscale  ){
-    return texScale( pictypes.picTypeIndex( proj ),
-                     xfov, yfov, xscale, yscale );
+bool panosurface::texScale( pvQtPic::PicType proj, double xfov, double yfov, double& xscale, double& yscale  ) {
+    return texScale( pictypes.picTypeIndex( proj ), xfov, yfov, xscale, yscale );
 }

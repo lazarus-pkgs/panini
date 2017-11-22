@@ -1,4 +1,5 @@
-/* MainWindow.h  for freepvQt 09Sep2008
+/*
+ * MainWindow.h  for freepvQt 09Sep2008
  * Copyright (C) 2008 Thomas K Sharpless
  *
  * This file is free software; you can redistribute it and/or modify
@@ -24,6 +25,7 @@
   whose main function is to relay signals.  This is
   required by the Qt architecture.
 */
+
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
@@ -114,7 +116,6 @@ private slots:
     void on_actionOrtho_proj_triggered();
     void on_actionSuper_wide_triggered();
     void on_action90_deg_CW_triggered();
-
     void on_actionQTVR_triggered();
     void on_actionRectilinear_triggered();
     void on_actionFisheye_triggered();
@@ -125,10 +126,8 @@ private slots:
     void on_actionEquirectangular_triggered();
     void on_actionCube_faces_triggered();
     void on_actionPT_script_triggered();
-
     void on_actionAbout_pvQt_triggered();
     void on_actionMouse_modes_triggered();
-
     void on_actionSave_as_triggered();
     void on_actionHFovUp_triggered();
     void on_actionHFovDn_triggered();

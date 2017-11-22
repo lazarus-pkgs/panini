@@ -1,4 +1,5 @@
-/* picTypeDialog.h  for pvQt 06 Oct 2008
+/*
+ * picTypeDialog.h  for pvQt 06 Oct 2008
  * Copyright (C) 2008 Thomas K Sharpless
  *
  * This file is free software; you can redistribute it and/or modify
@@ -27,15 +28,15 @@ lower and upper limits for both axes.  However only the fov
 of the longer (or 1st) axis is changed (the other is returned
 as zero).  You must set valid image dimensions before running
 the dialog, and calculate the "short" fov afterward.
-
 */
+
 #ifndef PICTYPEDIALOG_H
 #define PICTYPEDIALOG_H
 
 #include "ui_picTypeDialog.h"
 
 class picTypeDialog
-    : public QDialog, public Ui_picTypeDialog
+        : public QDialog, public Ui_picTypeDialog
 {
     Q_OBJECT
 public:
@@ -51,7 +52,8 @@ public:
 
     int chosenType();
     QSizeF getFOV();
-    bool freeFovs();	// state of "unlock" checkbox
+    //state of "unlock" checkbox
+    bool freeFovs();
 
 signals:
     void picTypeSelected( int t ); // also free toggled
@@ -61,8 +63,8 @@ signals:
 private slots:
     void freeToggled( bool ckd );
 private:
-    QSize	dims;
-    QSizeF  minfov, maxfov, thefov;
+    QSize  dims;
+    QSizeF minfov, maxfov, thefov;
 
 };
 

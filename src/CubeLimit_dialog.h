@@ -14,8 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this file; if not, write to Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
 */
+
 #ifndef CUBELIMIT_DIALOG_H
 #define CUBELIMIT_DIALOG_H
 
@@ -27,13 +27,12 @@ class CubeLimit_dialog
     Q_OBJECT
 public:
     CubeLimit_dialog( int lim, QWidget * parent = 0 )
-    : QDialog( parent ) {
+        : QDialog( parent ) {
         setupUi( this );
         setLimit( lim );
     }
     int limit(){ return spinBox->value(); }
     void setLimit( int lim ){  spinBox->setValue( lim ); }
-
 };
 
 #endif // CUBELIMIT_DIALOG_H

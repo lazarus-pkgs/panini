@@ -1,5 +1,5 @@
-
-/*	Qt_QTVR.h  for pvQt  03 Oct 2008 TKS
+/*
+ * Qt_QTVR.h  for pvQt  03 Oct 2008 TKS
  *
  *  To make QTVRDecoder work with Qt imaging components
  *
@@ -24,9 +24,7 @@
  *
  */
 
-/*  declares a slightly stripped down version of QTVRDecoder.
-
- */
+/*  declares a slightly stripped down version of QTVRDecoder.  */
 
 #ifndef QT_QTVR_H
 #define QT_QTVR_H
@@ -69,58 +67,54 @@ public:
     QTVRDecoder();
     ~QTVRDecoder();
 
-// scan a file
+    // scan a file
     bool parseHeaders(const char * theDataFilePath);
-// get the type of pano it contains
+    // get the type of pano it contains
     PanoType getType() { return m_type; }
-// get one image (new QImage)
+    // get one image (new QImage)
     QImage * getImage( int face = 0 );
-// get error message
+    // get error message
     const char * getError(){ return m_error; }
 
 private:
+    long ReadMovieAtom(void);
+    long ReadQTMovieAtom(void);
+    void ReadAtom_DCOM(long size);
+    void ReadAtom_CMVD(long size);
+    void ReadAtom_STCO(long size);
+    void ReadAtom_HDLR(int size);
+    void ReadAtom_STSZ(long size);
+    void ReadAtom_STSC(long size);
+    void ReadAtom_TKHD(long size);
+    void ReadAtom_TREF(long size);
+    void ReadAtom_QTVR_PDAT(long size);
+    void ReadAtom_QTVR_TREF(long size);
+    void ReadAtom_QTVR_CUFA(long size);
+    bool extractCubeImage(int i, QImage * &img);
+    bool extractCylImage(QImage * &img);
+    bool SeekAndExtractImage_Tiled( int i, QImage * &img );
+    bool SeekAndExtractImageCyl_Tiled( QImage * &img );
+    void LoadTilesForFace(int chunkNum);
+    void Swizzle(int32 *value);
+    void Swizzle(uint32 *value);
+    void Swizzle(int16 *value);
+    void Swizzle(uint16 *value);
+    /*********************/
+    /*    VARIABLES      */
+    /*********************/
+    uint32  gCurrentTrackMedia;                 // 'pano' or ...
+    //Boolean   gAlreadyGotVideoMedia;          // we assume that the first video media track is what we want,
+    //                                          // anything after that is the fast-start track, so we ignore it.
+    bool gFoundJPEGs;
+    bool gImagesAreTiled;
+    int  gNumTilesPerImage;
 
-long ReadMovieAtom(void);
-long ReadQTMovieAtom(void);
-void ReadAtom_DCOM(long size);
-void ReadAtom_CMVD(long size);
-void ReadAtom_STCO(long size);
-void ReadAtom_HDLR(int size);
-void ReadAtom_STSZ(long size);
-void ReadAtom_STSC(long size);
-void ReadAtom_TKHD(long size);
-void ReadAtom_TREF(long size);
-void ReadAtom_QTVR_PDAT(long size);
-void ReadAtom_QTVR_TREF(long size);
-void ReadAtom_QTVR_CUFA(long size);
-bool extractCubeImage(int i, QImage * &img);
-bool extractCylImage(QImage * &img);
-bool SeekAndExtractImage_Tiled( int i, QImage * &img );
-bool SeekAndExtractImageCyl_Tiled( QImage * &img );
-void LoadTilesForFace(int chunkNum);
-void Swizzle(int32 *value);
-void Swizzle(uint32 *value);
-void Swizzle(int16 *value);
-void Swizzle(uint16 *value);
+    int32       gPanoChunkOffset;
+    int32       gPanoSampleSize;
+    int32       gVideoChunkOffset[MAX_IMAGE_OFFSETS];
+    int         gVideoSampleSize[MAX_IMAGE_OFFSETS];
 
-
-/*********************/
-/*    VARIABLES      */
-/*********************/
-
-uint32  gCurrentTrackMedia;                 // 'pano' or ...
-//Boolean   gAlreadyGotVideoMedia;          // we assume that the first video media track is what we want,
-//                                          // anything after that is the fast-start track, so we ignore it.
-bool gFoundJPEGs;
-bool gImagesAreTiled;
-int  gNumTilesPerImage;
-
-int32       gPanoChunkOffset;
-int32       gPanoSampleSize;
-int32       gVideoChunkOffset[MAX_IMAGE_OFFSETS];
-int         gVideoSampleSize[MAX_IMAGE_OFFSETS];
-
-int32       gTileSize[MAX_TILES_PER_FACE];
+    int32       gTileSize[MAX_TILES_PER_FACE];
 
     FILE *gFile;
     FILE * m_mainFile;
@@ -142,7 +136,6 @@ int32       gTileSize[MAX_TILES_PER_FACE];
     bool m_cmovZLib;
 
     PanoType m_type;
-
 };
 
 #endif //ndef QT_QTVR_H
