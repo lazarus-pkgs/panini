@@ -6,7 +6,10 @@ CONFIG += debug_and_release
 QT = gui core opengl
 LIBS += -lz -lGLU
 
-# # Directories ##
+# We want Qt5 now
+lessThan(QT_MAJOR_VERSION, 5): error("requires Qt 5")
+
+## Directories ##
 OBJECTS_DIR = build
 MOC_DIR = build
 UI_DIR = build
