@@ -4,9 +4,8 @@ Panini is a visual tool for creating perspective views from panoramic and wide a
 
 ## Dependencies
 
-* Qt4 >= 4.5
+* Qt5
 * zlib
-
 
 ## Get source code
 
@@ -18,7 +17,7 @@ cd panini
 ## Compile
 
 ```
-qmake #qmake-qt4 on some systems)
+qmake #qmake-qt5 on some systems
 make
 ./Panini
 ```
