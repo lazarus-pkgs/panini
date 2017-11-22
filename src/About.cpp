@@ -25,9 +25,10 @@ pvQtAbout::pvQtAbout( QWidget * parent )
 {
     setupUi( this );
     VersionLabel->setText( QString(VERSION) );
+    setFixedSize(425, 320);
 }
 
 void pvQtAbout::setInfo( QString info )
 {
-    InfoLabel->setText( info );
+    lblSystemInfo->setText( info );
 }

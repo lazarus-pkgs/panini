@@ -242,11 +242,12 @@ void GLwindow::reportTurn( int turn, double roll, double pitch, double yaw ){
  * Pop the About box
  */
 void GLwindow::about_pvQt(){
-    QString msg = tr("About your OpenGL implementation:\n");
+    QString msg =  tr("Built with Qt ") + QString(QT_VERSION_STR) + QString("\n\n");
+    msg += tr("System OpenGL:\n\n");
     msg += tr("Version: ") + glview->OpenGLVersion() + QString("\n");
     msg += tr("Vendor: ") + glview->OpenGLVendor() + QString("\n");
     msg += tr("Video: ") + glview->OpenGLHardware() + QString("\n");
-    msg += tr("Limits: ") + glview->OpenGLLimits();
+    msg += tr("Limits: ") + glview->OpenGLLimits() + QString("\n");
     aboutbox->setInfo( msg );
     aboutbox->show();
 }

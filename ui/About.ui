@@ -1,102 +1,114 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>AboutDialog</class>
- <widget class="QDialog" name="AboutDialog" >
-  <property name="geometry" >
+ <widget class="QDialog" name="AboutDialog">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>426</width>
-    <height>246</height>
+    <width>425</width>
+    <height>320</height>
    </rect>
   </property>
-  <property name="font" >
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="font">
    <font>
     <pointsize>10</pointsize>
    </font>
   </property>
-  <property name="windowTitle" >
-   <string>about Panini</string>
+  <property name="windowTitle">
+   <string>About Panini</string>
   </property>
-  <property name="autoFillBackground" >
+  <property name="autoFillBackground">
    <bool>true</bool>
   </property>
-  <widget class="QLabel" name="InfoLabel" >
-   <property name="geometry" >
+  <property name="modal">
+   <bool>true</bool>
+  </property>
+  <widget class="QLabel" name="lblSystemInfo">
+   <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>130</y>
-     <width>381</width>
-     <height>101</height>
+     <x>30</x>
+     <y>150</y>
+     <width>371</width>
+     <height>151</height>
     </rect>
    </property>
-   <property name="font" >
+   <property name="font">
     <font>
      <family>Sans Serif</family>
      <pointsize>10</pointsize>
-     <weight>75</weight>
-     <bold>true</bold>
+     <weight>50</weight>
+     <bold>false</bold>
     </font>
    </property>
-   <property name="frameShape" >
-    <enum>QFrame::Box</enum>
+   <property name="frameShape">
+    <enum>QFrame::NoFrame</enum>
    </property>
-   <property name="frameShadow" >
+   <property name="frameShadow">
     <enum>QFrame::Sunken</enum>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>Your
 System's
 OpenGL
 Implementation
-Info...</string>
+Info...
+Qt vers</string>
    </property>
-   <property name="alignment" >
+   <property name="alignment">
     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
    </property>
-   <property name="wordWrap" >
+   <property name="wordWrap">
     <bool>true</bool>
    </property>
-   <property name="margin" >
+   <property name="margin">
     <number>5</number>
    </property>
-   <property name="indent" >
+   <property name="indent">
     <number>0</number>
    </property>
   </widget>
-  <widget class="QLabel" name="label_3" >
-   <property name="geometry" >
+  <widget class="QLabel" name="lblDescription">
+   <property name="geometry">
     <rect>
-     <x>170</x>
+     <x>160</x>
      <y>50</y>
-     <width>221</width>
-     <height>21</height>
+     <width>191</width>
+     <height>41</height>
     </rect>
    </property>
-   <property name="font" >
+   <property name="font">
     <font>
      <family>Sans Serif</family>
      <pointsize>10</pointsize>
-     <weight>75</weight>
-     <bold>true</bold>
+     <weight>50</weight>
+     <bold>false</bold>
+     <kerning>false</kerning>
     </font>
    </property>
-   <property name="text" >
-    <string>multiplatform panorama viewer </string>
+   <property name="text">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;multiplatform panorama viewer&lt;br/&gt;and perspective adjustment tool&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
-   <property name="alignment" >
+   <property name="alignment">
     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
    </property>
   </widget>
-  <widget class="QLabel" name="label" >
-   <property name="geometry" >
+  <widget class="QLabel" name="lblPanini">
+   <property name="geometry">
     <rect>
-     <x>180</x>
+     <x>160</x>
      <y>20</y>
-     <width>81</width>
+     <width>51</width>
      <height>31</height>
     </rect>
    </property>
-   <property name="font" >
+   <property name="font">
     <font>
      <family>Arial</family>
      <pointsize>12</pointsize>
@@ -104,23 +116,26 @@ Info...</string>
      <bold>true</bold>
     </font>
    </property>
-   <property name="text" >
-    <string>version</string>
+   <property name="layoutDirection">
+    <enum>Qt::LeftToRight</enum>
    </property>
-   <property name="alignment" >
-    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+   <property name="text">
+    <string>Panini</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
    </property>
   </widget>
-  <widget class="QLabel" name="label_2" >
-   <property name="geometry" >
+  <widget class="QLabel" name="lblCopyright">
+   <property name="geometry">
     <rect>
-     <x>170</x>
+     <x>160</x>
      <y>90</y>
-     <width>231</width>
-     <height>26</height>
+     <width>211</width>
+     <height>41</height>
     </rect>
    </property>
-   <property name="font" >
+   <property name="font">
     <font>
      <family>Sans Serif</family>
      <pointsize>10</pointsize>
@@ -128,20 +143,23 @@ Info...</string>
      <bold>true</bold>
     </font>
    </property>
-   <property name="text" >
-    <string>(c) copyright 2008-09 TKSharpless</string>
+   <property name="text">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;© 2008 - 2009 Thomas Sharpless&lt;br/&gt;© 2017 Michael Vetter &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="textFormat">
+    <enum>Qt::RichText</enum>
    </property>
   </widget>
-  <widget class="QLabel" name="VersionLabel" >
-   <property name="geometry" >
+  <widget class="QLabel" name="VersionLabel">
+   <property name="geometry">
     <rect>
-     <x>270</x>
+     <x>220</x>
      <y>20</y>
      <width>101</width>
      <height>31</height>
     </rect>
    </property>
-   <property name="font" >
+   <property name="font">
     <font>
      <family>Arial</family>
      <pointsize>12</pointsize>
@@ -149,55 +167,31 @@ Info...</string>
      <bold>true</bold>
     </font>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>0.7.88-89M</string>
    </property>
   </widget>
-  <widget class="QLabel" name="label_6" >
-   <property name="geometry" >
-    <rect>
-     <x>170</x>
-     <y>70</y>
-     <width>221</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <property name="font" >
-    <font>
-     <family>Sans Serif</family>
-     <pointsize>10</pointsize>
-     <weight>75</weight>
-     <bold>true</bold>
-    </font>
-   </property>
-   <property name="text" >
-    <string>and perspective adjustment tool</string>
-   </property>
-   <property name="alignment" >
-    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-   </property>
-  </widget>
-  <widget class="QToolButton" name="toolButton" >
-   <property name="enabled" >
+  <widget class="QToolButton" name="toolButton">
+   <property name="enabled">
     <bool>false</bool>
    </property>
-   <property name="geometry" >
+   <property name="geometry">
     <rect>
      <x>30</x>
-     <y>10</y>
+     <y>30</y>
      <width>111</width>
      <height>111</height>
     </rect>
    </property>
-   <property name="text" >
+   <property name="text">
     <string/>
    </property>
-   <property name="icon" >
-    <iconset resource="PaniniIcon.qrc" >
+   <property name="icon">
+    <iconset resource="PaniniIcon.qrc">
      <normaloff>:/Icons/panini-icon-blue.jpg</normaloff>
      <disabledoff>:/Icons/panini-icon-blue.jpg</disabledoff>:/Icons/panini-icon-blue.jpg</iconset>
    </property>
-   <property name="iconSize" >
+   <property name="iconSize">
     <size>
      <width>128</width>
      <height>128</height>
@@ -206,7 +200,7 @@ Info...</string>
   </widget>
  </widget>
  <resources>
-  <include location="PaniniIcon.qrc" />
+  <include location="PaniniIcon.qrc"/>
  </resources>
  <connections/>
 </ui>
