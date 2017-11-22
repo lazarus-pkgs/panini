@@ -33,7 +33,6 @@ the dialog, and calculate the "short" fov afterward.
 #define PICTYPEDIALOG_H
 
 #include "ui_picTypeDialog.h"
-//#include <QtCore>
 
 class picTypeDialog
     : public QDialog, public Ui_picTypeDialog
