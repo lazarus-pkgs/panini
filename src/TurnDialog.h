@@ -46,10 +46,10 @@ signals:
 public slots:
     void setTurn( int turn, double roll, double pitch, double yaw );
 private slots:
-    void on_TurnList_currentIndexChanged();
-    void on_RollBox_valueChanged();
-    void on_PitchBox_valueChanged();
-    void on_YawBox_valueChanged();
+    void onTurnList_currentIndexChanged(int i);
+    void onRollBox_valueChanged(double i);
+    void onPitchBox_valueChanged(double i);
+    void onYawBox_valueChanged(double i);
 private:
     bool turnEnb;
     bool pitchEnb, yawEnb;

@@ -23,6 +23,12 @@ TurnDialog::TurnDialog( QWidget * parent )
 : QDialog( parent )
 {
     setupUi( this );
+
+    connect(TurnList, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &TurnDialog::onTurnList_currentIndexChanged);
+    connect(RollBox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &TurnDialog::onRollBox_valueChanged);
+    connect(PitchBox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &TurnDialog::onPitchBox_valueChanged);
+    connect(YawBox, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &TurnDialog::onYawBox_valueChanged);
+
     TurnList->addItem(tr(" Normal"));
     TurnList->addItem(tr(" 90 deg CW"));
     TurnList->addItem(tr(" Invert"));
@@ -66,25 +72,25 @@ void TurnDialog::enableYaw( bool enb ){
     yawEnb = enb;
 }
 
-void TurnDialog::on_TurnList_currentIndexChanged(){
+void TurnDialog::onTurnList_currentIndexChanged(int i){
     if( turnEnb ) emit newTurn( TurnList->currentIndex(),
                   RollBox->value(), PitchBox->value(),
                   YawBox->value() );
 }
 
-void TurnDialog::on_RollBox_valueChanged(){
+void TurnDialog::onRollBox_valueChanged(double i){
     emit newTurn( TurnList->currentIndex(),
                   RollBox->value(), PitchBox->value(),
                   YawBox->value() );
 }
 
-void TurnDialog::on_PitchBox_valueChanged(){
+void TurnDialog::onPitchBox_valueChanged(double i){
     if( pitchEnb ) emit newTurn( TurnList->currentIndex(),
                   RollBox->value(), PitchBox->value(),
                   YawBox->value() );
 }
 
-void TurnDialog::on_YawBox_valueChanged(){
+void TurnDialog::onYawBox_valueChanged(double i){
     if( pitchEnb ) emit newTurn( TurnList->currentIndex(),
                   RollBox->value(), PitchBox->value(),
                   YawBox->value() );
