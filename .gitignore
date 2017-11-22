@@ -2,3 +2,5 @@ Makefile*
 Panini
 build/
 release/
+*.pro.user
+*.stash
