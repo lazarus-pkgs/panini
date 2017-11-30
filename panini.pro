@@ -64,9 +64,11 @@ SOURCES += src/About.cpp
 ## Version Number ##
 DEFINES += VERSION=\\\"$$VERSION\\\"
 
-## Install Location ##
+## Install Files ##
+
+# Location
 isEmpty( PREFIX ) {
-	PREFIX = /usr
+    PREFIX = /usr
 }
 
 # binary to /usr/bin
@@ -75,7 +77,12 @@ INSTALLS += target
 
 ## Desktop File ##
 linux-g++* {
-	desktopfile.path  = $$PREFIX$$/share/applications/
-	desktopfile.files = linux/*.desktop
-	INSTALLS += desktopfile
+    desktopfile.path  = $$PREFIX$$/share/applications/
+    desktopfile.files = linux/*.desktop
+    INSTALLS += desktopfile
+
+    # Icon File
+    iconfile.path  = $$PREFIX$$/share/pixmaps/
+    iconfile.files = linux/panini.png
+    INSTALLS += iconfile
 }
