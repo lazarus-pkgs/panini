@@ -63,3 +63,11 @@ SOURCES += src/About.cpp
 
 ## Version Number ##
 DEFINES += VERSION=\\\"$$VERSION\\\"
+
+## Install Location ##
+isEmpty( BINDIR ) {
+BINDIR = /usr/bin
+}
+
+target.path = $$BINDIR$$
+INSTALLS += target
