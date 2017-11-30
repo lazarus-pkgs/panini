@@ -1,49 +1,48 @@
-How to use Panini version 0.63.xx   28 May 2009
+# Usage
 
 Panini is a tool for creating perspective views from panoramic and wide angle images. 
  
 Panini can load most common photo and panoramic formats from image files or QuickTime VR (.mov) files.  Like all pano viewers, it then shows a linear perspective view that can be panned and zoomed.  But Panini can also display a range of wide angle perspectives via the stereographic and "Pannini" families of projections, and shift, rotate, and stretch the image like a software view camera.  
 
-Panini can do those things because it paints the picture on a three dimensional surface, either a sphere or a cylinder, which you then view in perspective.  Shifting the point of view changes the apparent perspective of the image, and other controls let you frame the view to your liking.  Then you can save the screen image to a file at higher-than-screen resolution. 
+Panini can do those things because it paints the picture on a three dimensional surface, either a sphere or a cylinder, which you then view in perspective.  Shifting the point of view changes the apparent perspective of the image, and other controls let you frame the view to your liking.  Then you can save the screen image to a file at higher-than-screen resolution.
 
 All of this works interactively at "mouse speed" thanks to the OpenGL video graphics system.  And thanks to the Qt application framework, it runs on Windows, Mac OSX, and most flavors of Linux and Unix.
 
-WHY "Panini"?
+## Why "Panini"?
 
 The name honors 18th century artist and professor of perspective Gian Paolo Pannini (also spelled "Panini"), who painted grand views of Rome and taught a generation of artists that included Canaletto and Piranesi.  Their impressive wide angle views of building interiors and urban landscapes were famous throughout Europe.  These pictures seem to be in true perspective, but can't be: the standard linear perspective projection creates serious distortions at much smaller view angles.  Instead, they used clever combinations of cylindrical and linear projections.  These techniques were probably invented in Holland a century or more earlier, which is one reason why Panini's icon is a picture of the Erasmus Bridge in Rotterdam.
 
 Bruno Postle recently deduced one very simple but effective way of combining the cylindrical and linear projections by studying a Pannini painting of St. Peter's; so we are calling that the "Pannini projection".  It is a linear perspective view of a cylindrical image -- the cylindrical analog of the stereographic projection of a sphere.  The Baroque artists may or may not have used this construction explictly, but it produces images that look a lot like some of the ones they drew.
 
-SYSTEM REQUIREMENTS and LIMITATIONS
+# System requirements and limitations
 
-To run Panini you need several Qt runtime libraries, version 4.4.2 or above, and on Windows, the minGW runtime, mingwm10.dll.  The Windows and OSX packages contain those libraries, Linux and Unix users will need to install the open source Qt package (which is not a bad idea on Mac and Windows, either, if you do any C++ development).  You can get it at http://trolltech.com/downloads/opensource/appdev.
+To run Panini you need several Qt runtime libraries.
 
 To display pictures Panini uses OpenGL, a low level graphics API that is tightly integrated with the system's video drivers.  OpenGL cannot be installed as a separate piece of software.  If the version of your OpenGL implementation is less than 1.2 or does not support cubic texture mapping, Panini will not run.  If the OpenGL version is less than 1.5 it may not be able to display all pictures correctly.
 
 You will get best results with OpenGL version 2.0 and above.  That means you should have either a "gaming" video card, or a recent "multimedia" one.  But ultimate gaming performance is not needed; a basic version 2 system should be adequate.  Cards to upgrade most desktop PCs to that level now cost under $50.  
 
-On Ubuntu Linux you will probably need to install the manufacturer's video drivers (both nVidia and ATI now supply them).  Ubuntu does not install these drivers by default because they are not open source.
-
-The "About" dialog shows information about your system's OpenGL facilities as well as the version of Panini you are running.  It reports these limits:
+The "About" dialog shows information about your system's OpenGL facilities as well as the version of Panini you are running.
+It reports these limits:
+```
   texPwr2:	must texture dimensions be powers of 2? 0 (false) preferred.
   texMax:	maximum dimension of 2D textures, the bigger the better.
   cubeMax:	maximum dimension of cubic textures, the bigger the better.
+```
   			
 The maximum resolution Panini can display or render depends on the amount of texture memory available.  Cubic images generally support somewhat larger texture maps than the flat formats.  Saved image resolution is normally several times screen resolution, however that too may be limited by OpenGL resources.  If your OpenGL does not support offscreen frame buffers of arbitrary size, all saved views will be at screen resolution.  
 
 Panini places no special demands on CPU speed or memory; if you can stitch panoramas, you will have no trouble viewing them.
 
-Version 0.6 still cannot process PanoTools scripts or project files.
+# Basic viewing controls
 
-BASIC VIEWING CONTROLS
+Most viewing controls have keyboard shortcuts, shown in the *View* menu.  You can operate all viewing controls with the mouse.  Help menu item *mouse modes...* shows how.
 
-Most viewing controls have keyboard shortcuts, shown in the View menu.  You can operate all viewing controls with the mouse.  Help menu item "mouse modes..." shows how.
+When you start Panini without a command line argument, for example by double clicking an icon, it displays a wire frame model of the panosphere (you can switch to the panocylinder by clicking the button that shows the panosurface name).  Try out the basic viewing controls on these wire models.
 
-When you start Panini without a command line, for example by double clicking an icon, it displays a wire frame model of the panosphere (you can switch to the panocylinder by clicking the button that shows the panosurface name).  Try out the basic viewing controls on these wire models.
+The *Yaw*, *Pitch* and *Roll* controls rotate your view with respect to the panosurface, as in a flight simulator. Yaw and Pitch let you look in different directions; Roll adjusts which way is up, and changes the directions of the Yaw and Pitch axes accordingly. The status line shows these angles as "Y", "P", and "R", in degrees.
 
-The Yaw, Pitch and Roll controls rotate your view with respect to the panosurface, as in a flight simulator.  Yaw and Pitch let you look in different directions; Roll adjusts which way is up, and changes the directions of the Yaw and Pitch axes accordingly.  The status line shows these angles as "Y", "P", and "R", in degrees.
-
-To control Yaw and Pitch with the mouse, hold the left button and move the pointer in the direction you wish to look.  Or you can hold both mouse buttons and "fly" using Roll and Pitch. 
+To control Yaw and Pitch with the mouse, hold the left button and move the pointer in the direction you wish to look.  Or you can hold both mouse buttons and "fly" using Roll and Pitch.
 
 Zoom controls magnification by changing the vertical field of view of the screen window.  When you resize the window, the displayed image grows or shrinks to maintain the selected vertical field.  The mouse wheel (if present) adjusts zoom in coarse steps.  For finer control, move the mouse vertically while holding the right button.  Zoom is reported on the status line as "V", in degrees.  This is the vertical field of view on the panosphere when eye distance is <= 1, but has a more complicated relationship to visible vfov at larger eye distances and on the panocylinder.
 
@@ -61,7 +60,7 @@ To move the eye point perpendicular to the projection axis, hold down the Shift 
 
 To move the whole view horizontally or vertically without changing its size or shape, hold down the Shift key and the left mouse button.  These "framing shifts" are reported on the status line as Fx and Fy.  "Shift-Home" or "End" resets them to zero.
   
-PRESETS
+# Presets
 
 Several preset views are available via single keystrokes.  "Home" resets the yaw, pitch and roll angles to zero.  "Shift + Home" resets the eyepoint and framing shifts. "End" resets everything, restoring the standard view you got when the image was first loaded.  "F" gives the widest possible full frame view (a stereographic or Panini projection) and "S" gives a "super wide" view, obtained by moving the eye point slightly outside the panosurface.
 
@@ -75,8 +74,7 @@ Version 0.63 does save a few items at exit, and restore them at startup.  One is
 
 Version 0.63 also saves and restores the window size.  The initial default size is smaller than before so that the window will not overflow small laptop screens, which can be awkward to correct on some systems. 
 
-
-LOADING A SOURCE IMAGE 
+# Loading a source image
 
 You can load an image into Panini by naming it on the command line, by selecting it with a file browser (after choosing a format from the "Source" menu) or by dragging it into the Panini window.  Details below.
 
@@ -94,11 +92,13 @@ When an image is loaded, the Panini window's title bar shows the file name and a
 
 You can load images by naming them on the command line, by selecting them via the Source menu, or by dragging them into the Panini window.
 
-	via Command Line
+## via Command Line
 
 When you start Panini from the command line, you can optionally specify an image to be displayed.  If you give only a partial specification, Panini will ask you for the rest of the information.
 
 The first command line argument can be a 4 letter format name, one of:
+
+```
 	proj	PanoTools script or project
 	qtvr	QuickTime VR panorama (cubic or cylindrical)
 	cube	1 to 6 linear cube face images 
@@ -109,6 +109,7 @@ The first command line argument can be a 4 letter format name, one of:
 	cyli	Cylindrical panorama
 	equi	Equirectangular panorama
 	merc	Mercator panorama
+```
 	
 The first 3 names are rarely needed, because project and qtvr files are normally recognized by their name extensions, and we usually give multiple file names for a cubic format.
 
@@ -120,10 +121,9 @@ If you give only an image file name or names on the command line, Panini will as
 
 If the command line is only a format name (other than proj or qtvr) Panini displays  labelled empty frames (just a "front" frame for most formats; or six cube faces).
 
+## via Source Menu
 
-	via Source Menu
-
-The Source menu lets you select a format, then Panini asks for files and fov.  If you cancel the file selector dialog, empty frames will be displayed.  If you cancel the fov dialog, the selected file will not be loaded and the previous picture will remain.
+The Source menu lets you select a format, then Panini asks for files and fov. If you cancel the file selector dialog, empty frames will be displayed.  If you cancel the fov dialog, the selected file will not be loaded and the previous picture will remain.
 
 You can choose "none" to get back the wire frame views of the panosurfaces.
 
@@ -137,11 +137,11 @@ You can load 1 to 6 image files for the "cube" format.  They must be square imag
 
 But the easy way to load cube faces is...
 
-	via Drag-and-Drop
+## via Drag-and-Drop
 
 You can load any kind of image by dragging it into the Panini window.  If a cubic image (or empty cube faces) is currently displayed, and the dropped image is square, it will be put in the cube face on which it was dropped, replacing any image already there.  Otherwise, dropped files are handled as described for files named on the command line.  
 
-PROJECTIONS
+# Projections
 
 A photographic image is a projection of part of the world, as seen from a single point, onto a flat plane, according to some mathematical rule.  That is also true of most images created by photo processing software, which however provides a much bigger choice of projection rules than camera lenses can.  For mathematical purposes, the original view of the world is equivalent to its linear projection onto a spherical surface, so the various photographic projections are considered as projections of the sphere onto the image plane.  Most were known to map makers and astronomers long before the invention of photography.  
 
@@ -153,7 +153,7 @@ In fact, all source projections except the cubic are interchangeable -- Panini w
 
 The current source projection is shown on the status bar.  Please remember that this is not the projection you are viewing, but the assumed projection of the input image.
 
-FIELD OF VIEW
+# Field of view
 
 The angular size, or field of view of an image determines how much of the panosurface it covers.  Each projection has a maximum displayable FOV, however you can specify a different FOV for any non-cubic image.  
 An image is assigned a horizontal and a vertical field of view when loaded.  But for non-cubic formats, you can adjust the apparent fields of view afterward, using the hFov and vFov controls in the View menu (also Shift-right-mouse).  These controls change the apparent horizontal and vertical FOVs independently, within a range of 10% to 100% of the displayable FOV for the current projection.  The "End" key restores the assigned FOVs and projection.
@@ -162,14 +162,6 @@ Changing an FOV changes not only the apparent width or height of the picture but
 
 The apparent horizontal and vertical FOVs, shown in the status bar, also change when you select a different input projection, since each projection has different relationships of image dimension to angular size.  Hint: don't worry about the "true" fovs; adjust them so the view looks right.
 
-SAVING VIEWS
+# Saving views
 
 You can save the current view to a jpeg image file at any time ("Save as..." in View menu, or Ctrl-S).  This is an exact copy of the displayed view, with the resolution increased 2.5 times (5.25 saved pixels for each screen pixel) if possible, typically giving a 3 to 8 megapixel image suitable for proof printing.  If your OpenGL does not support offscreen rendering buffers of arbitrary size, the filed view will be at screen resolution instead.  You can control the size and shape of the saved image by resizing the screen window, and center it in the frame with Shift-left mouse.
-
-RELEASE INFORMATION
-
-The version number shown in the "about" dialog has the form: major.minor.rev.  Major.minor is the "release number", set somewhat arbitrarily by me; rev is the SVN revision of the source from which it was built.  The SVN rev increases at every source archive update, and does not reset when I change the release number.
-  
-Rev will have two revision numbers separated by a colon (:) if the program was built from a mixture of SVN revisions, and an "M" at the end if it was built from a locally modified copy of the archived code.  It may also be "???" if the program was built from an unknown source code revision.
-
-Please consult the Release Notes for further information.  And please check the project site (https://sourceforge.net/projects/pvqt/) to see if you have the latest version.  
