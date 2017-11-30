@@ -1,5 +1,23 @@
+#    Panini 0.72.0    Release Notes	30 November 2017
 
-    Panini 0.71.xx  Release Notes	25 June 2009
+Panini will not use the svn revision in the version
+number anymore.
+
+Project moved from Sourceforge to GitHub:
+https://github.com/lazarus-pkgs/panini
+
+This is a Linux only release.
+
+Changes:
+* Fix project file by adding zlib and glu parameters.
+* Fix several memory leaks (#7)
+* Port to Qt5
+* Clean up coding style
+* Adjust About dialog
+
+For details look at the git history.
+
+#    Panini 0.71.104  Release Notes	25 June 2009
 
 Version 0.71 improves the eye position controls and
 eliminates a difference between cubic and 2D panos in
@@ -7,12 +25,12 @@ Recenter mode.
 
 Version 0.7 adds two new features requested by users:
 
-1) Overlay (for Luca Vascon) -- overlays a fixed image,
+1) Overlay (for Luca Vascon) * overlays a fixed image,
 with adjustable transparency, on the view.  This is
 useful for matching the view to a reference such as
 a drawing, a painting or another photograph.
 
-2) Recenter (for Peter Gawthrop) -- an alternative
+2) Recenter (for Peter Gawthrop) * an alternative
 viewing mode, in the Presets menu. The eye point can
 be placed anywhere inside the panosphere, and the view
 direction rotates around the eye point instead of the
@@ -21,10 +39,10 @@ panosphere center.   This gives views like Peter's
 
 The keyboard and mouse view controls are more rational
 and convenient.  Specifically:
--- There are view menu items and keyboard shortcuts for
-   Eye X and Y shifts and the "framing" shifts.
--- Shift right mouse now controls Eye X and Y, and the
-   less useful hFov/vFov are now Shift left+right mouse.
+* There are view menu items and keyboard shortcuts for
+  Eye X and Y shifts and the "framing" shifts.
+* Shift right mouse now controls Eye X and Y, and the
+  less useful hFov/vFov are now Shift left+right mouse.
 
 A couple of minor Mac bugs (may have been) fixed.
 
@@ -53,89 +71,89 @@ You may find a newer release at:
 http://sourceforge.net/projects/pvqt/
 
 The main new features in version 0.6 are:
--- cylindrical panosurface enables "Panini projection" for
-   convincing perspective effects in wide angle views (not
-   available for cubic source images).
--- The range of eye distance has been enlarged and the
-   controls for it linearized.  It is now possible to sweep
-   the viewing projection from linear through stereographic
-   or Panini, all the way to sinusoidal.
--- There are presets for the 3 principal viewing projections.
--- framing controls shift view center with respect to screen
-   window.
--- can shift eye point sideways as well as radially, for
-   "software view camera" effects.
+* cylindrical panosurface enables "Panini projection" for
+  convincing perspective effects in wide angle views (not
+  available for cubic source images).
+* The range of eye distance has been enlarged and the
+  controls for it linearized.  It is now possible to sweep
+  the viewing projection from linear through stereographic
+  or Panini, all the way to sinusoidal.
+* There are presets for the 3 principal viewing projections.
+* framing controls shift view center with respect to screen
+  window.
+* can shift eye point sideways as well as radially, for
+  "software view camera" effects.
 
 Some other improvements
--- fewer errors in input deprojection functions (some
-   still need work)
--- a bug in cubic picture loading has ben fixed.
+* fewer errors in input deprojection functions (some
+  still need work)
+* a bug in cubic picture loading has ben fixed.
 
 Update 0.61 adds these bug fixes and UI improvements:
--- The menu for choosing source image format is now titled "Source" (was "Picture")
--- You can choose to see the wire frame panosphere models instead of an image
--- Panocylinder is automatically selected for non-cubic source formats; so just hit
-   "P" to see the Pannini projection.
--- The current panosurface type is always displayed correctly
--- All window titles now say "Panini"
--- The program has a nice icon with a pano of the Erasmus Bridge in Rotterdam,
-   that was perspective-corrected with Panini.
+* The menu for choosing source image format is now titled "Source" (was "Picture")
+* You can choose to see the wire frame panosphere models instead of an image
+* Panocylinder is automatically selected for non-cubic source formats; so just hit
+  "P" to see the Pannini projection.
+* The current panosurface type is always displayed correctly
+* All window titles now say "Panini"
+* The program has a nice icon with a pano of the Erasmus Bridge in Rotterdam,
+  that was perspective-corrected with Panini.
 
 Update 0.62 adds these enhancements:
--- Pannini projections of cubic panoramas can now be displayed.
--- Angular alignment of the image on the panosurface can be adjusted via a
-   new "Turn" dialog.  For cubic panos only, Yaw and pitch can be set to put
-   the axis of the panosurface anywhere in the spherical image.
--- Panosurface is now selected by clicking a button at bottom of window.
-   Another such button cycles through the non-cubic input projections.  Menu
-   items for these have been removed.
--- Mouse control can be made vertical-only by holding Alt. or horizontal-only
-   by holding Control.  This may not work on Linux, depending on X11 options.
--- Framing shifts are displayed on status line, and reset along with eye shifts.
--- More errors in the input mappings have been fixed.
+* Pannini projections of cubic panoramas can now be displayed.
+* Angular alignment of the image on the panosurface can be adjusted via a
+  new "Turn" dialog.  For cubic panos only, Yaw and pitch can be set to put
+  the axis of the panosurface anywhere in the spherical image.
+* Panosurface is now selected by clicking a button at bottom of window.
+  Another such button cycles through the non-cubic input projections.  Menu
+  items for these have been removed.
+* Mouse control can be made vertical-only by holding Alt. or horizontal-only
+  by holding Control.  This may not work on Linux, depending on X11 options.
+* Framing shifts are displayed on status line, and reset along with eye shifts.
+* More errors in the input mappings have been fixed.
 
 Update 0.63 addds two persistent settings:
--- window size and position are saved at shutdown and restored at launch.
-   The initial default size is now smaller to accommodate the small wide-
-   format screens on some newer laptops.
--- On Macs, cubic image resolution is limited to solve an OSX bug that causes
-   garbled display or even system crashes with large cubic texture maps.
-   The default limit of 1536 x 1536 (13.5 megapixels) should work on many recent
-   Macs, but if yours needs a smaller limit, or you want to push the limit higher,
-   you can change it via "Mac cube size" in the Presets menu.
+* window size and position are saved at shutdown and restored at launch.
+  The initial default size is now smaller to accommodate the small wide-
+  format screens on some newer laptops.
+* On Macs, cubic image resolution is limited to solve an OSX bug that causes
+  garbled display or even system crashes with large cubic texture maps.
+  The default limit of 1536 x 1536 (13.5 megapixels) should work on many recent
+  Macs, but if yours needs a smaller limit, or you want to push the limit higher,
+  you can change it via "Mac cube size" in the Presets menu.
 
 Version 0.70 fixes these bugs:
--- initial window position was under menu bar on Mac
--- save file name extension now defaults to ".jpg" on Mac as it does
-   on Linux and Windows.
+* initial window position was under menu bar on Mac
+* save file name extension now defaults to ".jpg" on Mac as it does
+  on Linux and Windows.
 
 Version 0.71 revises the controls as follows
--- in Recenter mode, eye Distance now sets the radial distance from
-   panocenter, like normal mode, but maximum eye radius is 0.93.
--- in Recenter mode, eye X and Y now control Yaw and Pitch angles
-   that specify the direction of the eye point shift.  They are set to 
-   the current view direction when you switch to Recenter mode.
--- Status display shows eye Distance in radii as "eD".  In normal mode
-   it shows eye Shifts in radii as "eS(x, y)".  In Recenter mode it
-   shows eye Angles in degrees as "eA(yaw, pitch)"; this is the
-   view direction along which the eye position is shifted.  It now
-   shows the Framing shifts, in radii, as "fS(x, y)".
--- Eye position now moves in mouse direction (was reversed).
--- The view no longer shifts much when eye position changes.
--- Homing the view direction no longer exits Recenter mode.
--- A secret mouse mode that could cause unexpected results has been
-   removed.
+* in Recenter mode, eye Distance now sets the radial distance from
+  panocenter, like normal mode, but maximum eye radius is 0.93.
+* in Recenter mode, eye X and Y now control Yaw and Pitch angles
+  that specify the direction of the eye point shift.  They are set to 
+  the current view direction when you switch to Recenter mode.
+* Status display shows eye Distance in radii as "eD".  In normal mode
+  it shows eye Shifts in radii as "eS(x, y)".  In Recenter mode it
+  shows eye Angles in degrees as "eA(yaw, pitch)"; this is the
+  view direction along which the eye position is shifted.  It now
+  shows the Framing shifts, in radii, as "fS(x, y)".
+* Eye position now moves in mouse direction (was reversed).
+* The view no longer shifts much when eye position changes.
+* Homing the view direction no longer exits Recenter mode.
+* A secret mouse mode that could cause unexpected results has been
+  removed.
 
 Known issues and limitations:
--- Due to a bug in OSX, it is not possible to display cubic images
-   at full hardware resolution on a Mac.
--- There are still some small memory leaks that could cause crashes
-   after very long periods of use.
--- Displayed vFov angle is correct only for the panosphere and for
-   eye distances between 0 and 1.
--- still does not read PT scripts/projects
--- To save higher resolution views, your OpenGL must support off-
-   screen framebuffers of arbitrary size.
+* Due to a bug in OSX, it is not possible to display cubic images
+  at full hardware resolution on a Mac.
+* There are still some small memory leaks that could cause crashes
+  after very long periods of use.
+* Displayed vFov angle is correct only for the panosphere and for
+  eye distances between 0 and 1.
+* still does not read PT scripts/projects
+* To save higher resolution views, your OpenGL must support off-
+  screen framebuffers of arbitrary size.
 
 A set of test images, all made from one spherical panorama, is available
 for download as a separate package.
