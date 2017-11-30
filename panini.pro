@@ -65,9 +65,17 @@ SOURCES += src/About.cpp
 DEFINES += VERSION=\\\"$$VERSION\\\"
 
 ## Install Location ##
-isEmpty( BINDIR ) {
-BINDIR = /usr/bin
+isEmpty( PREFIX ) {
+	PREFIX = /usr
 }
 
-target.path = $$BINDIR$$
+# binary to /usr/bin
+target.path = $$PREFIX$$/bin
 INSTALLS += target
+
+## Desktop File ##
+linux-g++* {
+	desktopfile.path  = $$PREFIX$$/share/applications/
+	desktopfile.files = linux/*.desktop
+	INSTALLS += desktopfile
+}
