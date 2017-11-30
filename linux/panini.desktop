@@ -6,5 +6,5 @@ Exec=panini %f
 Terminal=false
 Type=Application
 Icon=panini
-Categories=Graphics;
+Categories=Graphics;Viewer;
 MimeType=video/quicktime;image/jpeg;image/tiff;image/png;
