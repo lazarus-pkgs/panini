@@ -19,3 +19,10 @@ zypper addrepo -f obs://home:jubalh:panini panini
 zypper refresh
 zypper in panini
 ```
+
+## AppImage
+An easy way to run Panini on any Linux distribution without installation is to use the AppImage.
+
+* Download it from the [release](https://github.com/lazarus-pkgs/panini/releases) page.
+* Make it executable (`chmod u+x panini-0.72-x86_64.AppImage` or right click -> properties -> permissions)
+* Click on it
