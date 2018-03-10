@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2014 Richard Hughes <richard@hughsie.com> -->
+<!--
+-->
+<application>
+  <id type="desktop">panini.desktop</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <name>Panini</name>
+  <summary>Create perspective views from panoramic and wide angle images</summary>
+  <description>
+    <p>
+      Panini is a tool for creating perspective views from panoramic and wide angle images.
+    </p>
+    <p>
+      Panini can load most common photo and panoramic formats from image files such
+      as those created with hugin or QuickTimeVR (QTVR .mov) files.  Like all pano
+      viewers, it then shows a linear perspective view that can be panned and zoomed.
+      But Panini can also display a range of wide angle perspectives via the
+      stereographic and "Pannini" vedutismo families of projections, and shift,
+      rotate, and stretch the image like a software view camera.
+    </p>
+    <p>
+      Panini can do those things because it paints the picture on a three dimensional
+      surface, either a sphere or a cylinder, which you then view in perspective.
+      Shifting the point of view changes the apparent perspective of the image, and
+      other controls let you frame the view to your liking.  Then you can save the
+      screen image to a file at higher-than-screen resolution.
+    </p>
+  </description>
+  <!-- no screenshots -->
+  <url type="homepage">https://lazarus-pkgs.github.io/lazarus-pkgs/panini.html</url>
+  <updatecontact>jubalh AT iodoru DOT org</updatecontact>
+</application>
