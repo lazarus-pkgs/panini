@@ -75,8 +75,8 @@ isEmpty( PREFIX ) {
 target.path = $$PREFIX$$/bin
 INSTALLS += target
 
-## Desktop File ##
 linux-g++* {
+    ## Desktop File ##
     desktopfile.path  = $$PREFIX$$/share/applications/
     desktopfile.files = linux/*.desktop
     INSTALLS += desktopfile
@@ -85,4 +85,9 @@ linux-g++* {
     iconfile.path  = $$PREFIX$$/share/pixmaps/
     iconfile.files = linux/panini.png
     INSTALLS += iconfile
+
+    # Appdata file
+    appdatafile.path = $$PREFIX$$/$$DATADIR$$/metainfo/
+    appdatafile.files = linux/panini.appdata.xml
+    INSTALLS += appdatafile
 }
