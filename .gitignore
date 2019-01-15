@@ -1,5 +1,6 @@
 Makefile*
 Panini
+panini
 build/
 release/
 *.pro.user
