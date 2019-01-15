@@ -1,3 +1,14 @@
+#    Panini 0.73.0    Release Notes	15 January 2019
+
+This is a Linux only release.
+
+Changes:
+
+* Add AppData file (@sanjayankur31 gh#pr#8)
+* Enable mipmapping and anisotropic filtering.
+  Greatly enhances rendering quality, especially
+  for high resolution images. (@danpla gh#pr#9)
+
 #    Panini 0.72.0    Release Notes	30 November 2017
 
 Panini will not use the svn revision in the version
@@ -9,6 +20,7 @@ https://github.com/lazarus-pkgs/panini
 This is a Linux only release.
 
 Changes:
+
 * Fix project file by adding zlib and glu parameters.
 * Fix several memory leaks (#7)
 * Port to Qt5
