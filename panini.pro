@@ -1,6 +1,6 @@
 ## qmake project for panini ##
 TEMPLATE = app
-VERSION = 0.72.0
+VERSION = 0.73.0
 TARGET = panini
 CONFIG += debug_and_release
 QT = gui core opengl
