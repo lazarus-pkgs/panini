@@ -87,7 +87,7 @@ linux-g++* {
     INSTALLS += iconfile
 
     # Appdata file
-    appdatafile.path = $$PREFIX$$/$$DATADIR$$/metainfo/
+    appdatafile.path = $$PREFIX$$/share/metainfo/
     appdatafile.files = linux/panini.appdata.xml
     INSTALLS += appdatafile
 }
