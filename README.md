@@ -21,7 +21,7 @@ cd panini
 ```
 qmake #qmake-qt5 on some systems
 make
-./Panini
+./panini
 ```
 
 Also see: [BUILD](BUILD.md).
