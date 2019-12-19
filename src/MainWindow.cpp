@@ -18,6 +18,7 @@
 */
 
 #include <QtGui>
+#include <QErrorMessage>
 #include <QSettings>
 #include <QMessageBox>
 #include "MainWindow.h"
@@ -32,20 +33,22 @@
 static void errMsgHandler( QtMsgType type, const QMessageLogContext &context, const QString &msg){
     QString s;
     bool die = false;
+    QErrorMessage *errorMessage = new QErrorMessage(nullptr);
+    errorMessage->setModal(true);
 
     switch( type ){
     case QtDebugMsg:
         s = "Debug: ";
     case QtWarningMsg:
         s += msg;
-        QMessageBox::warning( 0, "pvQt", s );
+        errorMessage->showMessage(s, "pvQt");
         break;
     case QtFatalMsg:
         die = true;
         s = "Fatal: ";
     case QtCriticalMsg:
         s += msg;
-        QMessageBox::critical( 0, "pvQt", s );
+        errorMessage->showMessage(s, "pvQt");
         break;
     }
 
