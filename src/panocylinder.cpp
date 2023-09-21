@@ -113,10 +113,10 @@ panocylinder::panocylinder( int divs ){
     double vs = 0.5 * DEG2RAD( 150 ) / double(r2);
 
     for( int r = 0; r < r2; r++){
-        register double t = tan( r * vs );
-        register float * pv = pv0;
-        register float * pu = pv0 + 3 *( cols + r * cols );
-        register float * pl = pv0 - 3 *( cols + r * cols );
+        double t = tan( r * vs );
+        float * pv = pv0;
+        float * pu = pv0 + 3 *( cols + r * cols );
+        float * pl = pv0 - 3 *( cols + r * cols );
         for( col = 0; col < cols; col++){
             *pu++ = *pv;
             *pl++ = *pv++;
