@@ -465,7 +465,7 @@ void pvQtView::clipEyePosition(){
                 x = c * sin(azi),
                 y = sin(alt),
                 z = c * cos(azi);
-        register double s = eyeDistance;
+        double s = eyeDistance;
         // the cube texture is only 1 radius wide
         if( picType == pvQtPic::cub ) s *= 0.5;
         eyex = x * s;

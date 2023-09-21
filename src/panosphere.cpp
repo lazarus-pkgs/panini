@@ -190,7 +190,7 @@ panosphere::panosphere( int divs ){
     float * ps = verts;	// -> front face
 
     for( int i = 0; i < ppf; i++ ){
-        register float * p = ps;
+        float * p = ps;
 
         p +=  jf;	// ->top
         p[0] = ps[0];	//  x = x

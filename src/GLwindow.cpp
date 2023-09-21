@@ -901,7 +901,7 @@ void GLwindow::setImgAlpha( QImage * pim, double alpha ){
     qint32 m = (int( 255 * alpha ) & 255 ) << 24;
 
     for( int i = pim->width() * pim->height(); i > 0; i-- ){
-        register qint32 t = *pw & 0x00ffffff;
+        qint32 t = *pw & 0x00ffffff;
         *pw++ = t + m;
     }
 }
@@ -916,8 +916,8 @@ void GLwindow::diceImgAlpha( QImage * pim, double alpha, int dw ){
     int r = 0, c = 0, w = pim->width();
 
     for( int i = w * pim->height(); i > 0; i-- ){
-        register qint32 t = *pw & 0x00ffffff;
-        register int d = 1;
+        qint32 t = *pw & 0x00ffffff;
+        int d = 1;
         if( dw ){  // dice...
             d = ((r + c) / dw) ^ ((r + w - c) / dw);
         }
