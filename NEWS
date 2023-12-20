@@ -1,3 +1,14 @@
+#    Panini 0.74.0    Release Notes	20 December 2023
+
+This is a Linux only release.
+
+Changes:
+
+* Use QErrorMessage instead of static QMessageBox in
+  error handler (@luis-pereira #10)
+* Fix C++17 does not allow register storage class
+  specifier (@listout #16)
+
 #    Panini 0.73.0    Release Notes	15 January 2019
 
 This is a Linux only release.
