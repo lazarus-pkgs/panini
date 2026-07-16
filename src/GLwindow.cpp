@@ -249,7 +249,7 @@ void GLwindow::about_pvQt(){
     msg += tr("Video: ") + glview->OpenGLHardware() + QString("\n");
     msg += tr("Limits: ") + glview->OpenGLLimits() + QString("\n");
     aboutbox->setInfo( msg );
-    aboutbox->show();
+    aboutbox->exec();
 }
 
 // relay window resize to the GL widget

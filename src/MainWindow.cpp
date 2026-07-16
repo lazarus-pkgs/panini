@@ -315,7 +315,7 @@ void MainWindow::on_actionAbout_pvQt_triggered(){
 }
 
 void MainWindow::on_actionMouse_modes_triggered(){
-    pmm->show();
+    pmm->exec();
 }
 
 /*
