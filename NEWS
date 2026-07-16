@@ -1,3 +1,11 @@
+#    Panini 0.75.0    Release Notes	16 July 2026
+
+This is a Linux only release.
+
+Changes:
+* Port to Qt6
+* Easily navigate to the next image in the directory via page up and page down keys
+
 #    Panini 0.74.0    Release Notes	20 December 2023
 
 This is a Linux only release.
