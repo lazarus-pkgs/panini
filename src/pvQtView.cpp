@@ -822,9 +822,7 @@ void pvQtView::initializeGL()
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     // 2d maps...
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
     float anisotropy = 0.0f;
     glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &anisotropy);
@@ -1191,6 +1189,7 @@ bool pvQtView::setupPic( pvQtPic * pic )
         thePic->fitFaceToImage( maxdims, texPwr2 );
 
         makeCurrent();
+        glBindTexture( textgt, texname );
         glPixelStorei(GL_UNPACK_ALIGNMENT, 4);  // QImage row alignment
 
         if( picType == pvQtPic::cub ){
@@ -1294,6 +1293,7 @@ void pvQtView::newFace( pvQtPic::PicFace face )
     if( curr_pt != pvQtPic::cub ) return;
 
     makeCurrent();
+    glBindTexture( textgt, texname );
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4);  // QImage row alignment
     QImage * p = thePic->FaceImage( face );
     if( p ){
