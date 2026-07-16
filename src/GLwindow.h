@@ -49,6 +49,8 @@ public slots:
     void set_surface( int surf );
     void turn90( int t );
     void setCubeLimit( int );
+    void loadNextPicture();
+    void loadPreviousPicture();
     // from picType dialog...
     void picTypeChanged( int t );
     void hFovChanged( double h );
@@ -66,6 +68,7 @@ private:
     bool QTVR_file( QString name );
     bool choosePictureFiles( const char * picTypeName = 0 );
     bool loadPictureFiles( QStringList names );
+    void navigateDirectory(int direction);
     const QStringList picTypeDescrs();
     const char * askPicType( QStringList files,
                              const char * ptyp = 0 );

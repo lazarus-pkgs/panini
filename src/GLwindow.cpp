@@ -30,6 +30,7 @@
 
 #include <QtCore>
 #include <QFileDialog>
+#include <QDir>
 #include "GLwindow.h"
 #include "pvQtView.h"
 #include "pvQt_QTVR.h"
@@ -928,4 +929,48 @@ void GLwindow::diceImgAlpha( QImage * pim, double alpha, int dw ){
             c = 0;
         }
     }
+}
+
+void GLwindow::loadNextPicture() {
+    navigateDirectory(1);
+}
+
+void GLwindow::loadPreviousPicture() {
+    navigateDirectory(-1);
+}
+
+void GLwindow::navigateDirectory(int direction) {
+    if (loaddir.isEmpty() || loadname.isEmpty()) {
+        return;
+    }
+
+    QDir dir(loaddir);
+    QStringList filters;
+    filters << "*.jpg" << "*.jpeg" << "*.png" << "*.tif" << "*.tiff";
+    dir.setNameFilters(filters);
+    dir.setFilter(QDir::Files | QDir::NoSymLinks);
+    dir.setSorting(QDir::Name | QDir::IgnoreCase);
+
+    QStringList files = dir.entryList();
+    if (files.isEmpty()) {
+        return;
+    }
+
+    int index = files.indexOf(loadname);
+    if (index == -1) {
+        // Current file not found in filters (e.g., if it's a .mov)
+        dir.setNameFilters(QStringList());
+        files = dir.entryList();
+        index = files.indexOf(loadname);
+    }
+
+    if (index == -1) {
+        return;
+    }
+
+    int nextIndex = (index + direction + files.count()) % files.count();
+    QString nextFile = files.at(nextIndex);
+    QString absolutePath = dir.absoluteFilePath(nextFile);
+
+    loadPictureFiles(QStringList(absolutePath));
 }

@@ -83,6 +83,7 @@ signals:
 protected:
     virtual void resizeEvent( QResizeEvent * ev );
     virtual void closeEvent( QCloseEvent * ev );
+    virtual void keyPressEvent( QKeyEvent * ev ) override;
     QErrorMessage * errorMsgHandler;
 private:
     GLwindow * glwindow;

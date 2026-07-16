@@ -181,6 +181,19 @@ void MainWindow::closeEvent( QCloseEvent * ev ){
     ev->accept();
 }
 
+void MainWindow::keyPressEvent( QKeyEvent * ev ){
+    if( ev->key() == Qt::Key_PageDown ){
+        glwindow->loadNextPicture();
+        ev->accept();
+        return;
+    } else if( ev->key() == Qt::Key_PageUp ){
+        glwindow->loadPreviousPicture();
+        ev->accept();
+        return;
+    }
+    QMainWindow::keyPressEvent( ev );
+}
+
 void MainWindow::showStatus( QString msg ){
     statusBar()->showMessage(msg);
 }
