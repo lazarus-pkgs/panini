@@ -30,12 +30,12 @@
 #ifndef PVQTVIEW_H
 #define PVQTVIEW_H
 
-#include <QtOpenGL/QGLWidget>
+#include <QOpenGLWidget>
 #include "pvQtPic.h"
 #include "panosphere.h"
 #include "panocylinder.h"
 
-class pvQtView : public QGLWidget
+class pvQtView : public QOpenGLWidget
 {
     Q_OBJECT
 public:

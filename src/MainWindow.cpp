@@ -17,7 +17,7 @@
  * 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#include <QtGui>
+#include <QtWidgets>
 #include <QErrorMessage>
 #include <QSettings>
 #include <QMessageBox>
@@ -186,8 +186,7 @@ void MainWindow::showStatus( QString msg ){
 }
 
 void MainWindow::verify( int i ){
-    QString s;
-    showStatus( s.sprintf("verify: %d", i) );
+    showStatus( QString::asprintf("verify: %d", i) );
 }
 
 void MainWindow::showTitle( QString msg ){

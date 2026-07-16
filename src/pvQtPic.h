@@ -74,7 +74,7 @@
 #ifndef __PVQTPIC_H__
 #define __PVQTPIC_H__
 
-#include <QtGui>
+#include <QtWidgets>
 
 #define PVQT_PIC_FACE_FORMAT  QImage::Format_ARGB32
 

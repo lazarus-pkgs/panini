@@ -20,7 +20,9 @@
 
 #include "pvQtView.h"
 
-#include <QtOpenGL/QtOpenGL>
+#include <QOpenGLContext>
+#include <QSurfaceFormat>
+#include <QOpenGLFramebufferObject>
 #ifdef __APPLE__
 #include "glext.h"
 #include "glu.h"
@@ -28,7 +30,6 @@
 #include <GL/glext.h>
 #include <GL/glu.h>
 #endif
-#include <QGLFramebufferObject>
 
 #include <cmath>
 
@@ -117,9 +118,11 @@ void glWindowPos4dv(const double v[4])                  {glWindowPos4f(v[0],v[1]
  * proper cube map display when the default format is used.
 */
 pvQtView::pvQtView(QWidget *parent)
-    : QGLWidget( QGLFormat( QGL::AlphaChannel ),
-                 parent)
+    : QOpenGLWidget(parent)
 {
+    QSurfaceFormat format;
+    format.setAlphaBufferSize(8);
+    setFormat(format);
     // set up mouse control timer
     mTimer.setInterval( 50 );
     mTimer.setSingleShot( true );
@@ -185,13 +188,15 @@ bool pvQtView::OpenGLOK()
 
   The minimum feasible OpenGL version is 1.2
 */
-    unsigned int vf = QGLFormat::openGLVersionFlags();
-    if( vf & QGLFormat::OpenGL_Version_1_2 ){
-        if( vf & QGLFormat::OpenGL_Version_1_3 ){
+    QSurfaceFormat contextFormat = QOpenGLContext::currentContext()->format();
+    int major = contextFormat.majorVersion();
+    int minor = contextFormat.minorVersion();
+    if( major > 1 || (major == 1 && minor >= 2) ){
+        if( major > 1 || minor >= 3 ){
             cubeMap = true;
-            if( vf & QGLFormat::OpenGL_Version_1_5 ){
+            if( major > 1 || minor >= 5 ){
                 vertBuf = true;
-                if( vf & QGLFormat::OpenGL_Version_2_0 ) {
+                if( major >= 2 ) {
                     texPwr2 = false;
                 }
             }
@@ -332,7 +337,7 @@ void pvQtView::mTimeout(){
                 setFOV( normalizeAngle( izoom, 1, minFOV, maxFOV ) );
             }
         }
-    } else if( mb == Qt::LeftButton + Qt::RightButton ){
+    } else if( mb == (Qt::LeftButton | Qt::RightButton) ){
         if( mk & Qt::ShiftModifier ){
             // hFov, vFov
             if( !( mk & Qt::AltModifier ) ) xtexmag -= 0.00225 * dx;
@@ -351,14 +356,14 @@ void pvQtView::mTimeout(){
         }
     }
 
-    updateGL();
+    update();
     showview();
     mTimer.start();
 }
 
 // zoom on scroll wheel
 void pvQtView::wheelEvent(QWheelEvent *event){
-    int d = event->delta();
+    int d = event->angleDelta().y();
     if( d == 0 ){
         event->ignore();
         return;
@@ -436,7 +441,7 @@ void pvQtView::step_eyex( int dp ){
         eyex -= 0.01 * dp;
     }
     clipEyePosition();
-    updateGL();
+    update();
     showview();
 }
 
@@ -448,7 +453,7 @@ void pvQtView::step_eyey( int dp ){
         eyey -= 0.01 * dp;
     }
     clipEyePosition();
-    updateGL();
+    update();
     showview();
 }
 
@@ -496,7 +501,7 @@ void pvQtView::stepDangl( int dp, int stp ){
         double a = normalizeAngle( idangl, stp, 0, MAXDANGLE );
         setDist( tan( RAD( a )) );
     }
-    updateGL();
+    update();
     showview();
 }
 
@@ -505,13 +510,13 @@ void pvQtView::stepDangl( int dp, int stp ){
 **/
 void pvQtView::step_hfov( int dp ){
     framex = KLIP( framex + 10 * fwf * dp, -1, 1 );
-    updateGL();
+    update();
     showview();
 }
 
 void pvQtView::step_vfov( int dp ){
     framey = KLIP( framey + 10 * fhf * dp, -1, 1 );
-    updateGL();
+    update();
     showview();
 }
 
@@ -530,7 +535,7 @@ void pvQtView::step_iproj( int dp ){
         curr_ipt = i;
         makeSphere( theScreen );		// set & display proj
         setTexMag( xtexmag, ytexmag );	// display fovs
-        updateGL();
+        update();
     }
 }
 
@@ -540,14 +545,14 @@ void pvQtView::reset_view(){
     setPicType( picType );
     initView();
     makeSphere( theScreen );
-    updateGL();
+    update();
     showview();
 }
 
 void pvQtView::home_view(){
     panAngle = tiltAngle = spinAngle = 0;
     ipan = itilt = ispin = 0;
-    updateGL();
+    update();
     showview();
 }
 
@@ -555,7 +560,7 @@ void pvQtView::home_eyeXY(){
     eyex = eyey = 0;
     fcompx = fcompy = 0;
     framex = framey = 0;		// also reset framing shifts
-    updateGL();
+    update();
     showview();
 }
 
@@ -563,7 +568,7 @@ void pvQtView::home_eyeXY(){
 void pvQtView::super_fish(){	// max angular view
     setDist( 1.07 );
     setZoom( int(16 * maxFOV) );
-    updateGL();
+    update();
     showview();
 }
 
@@ -572,7 +577,7 @@ void pvQtView::set_view( int v ){
     if( v == 1 ) d = 1;
     else if( v == 2 ) d = MAXDIST;
     setDist( d );
-    updateGL();
+    update();
     showview();
 }
 
@@ -584,7 +589,7 @@ void pvQtView::setTurn( int turn, double roll, double pitch, double yaw ){
     turnRoll = ( roll < -45 ? -45 : roll > 45 ? 45 : roll );
     turnPitch = ( pitch < -90 ? -90 : pitch > 90 ? 90 : pitch );
     turnYaw = ( yaw < -180 ? -180 : yaw > 180 ? 180 : yaw );
-    updateGL();
+    update();
     showview();
     emit reportTurn( turn90, turnRoll, turnPitch, turnYaw );
 }
@@ -595,10 +600,10 @@ void pvQtView::setTurn( int turn, double roll, double pitch, double yaw ){
 void pvQtView::showview(){
     QString s;
     if( recenter ){
-        s.sprintf("Y%.1f P%.1f R%.1f V%.1f eD%.2f eA(%.1f, %.1f) fS(%.2f, %.2f)",
+        s = QString::asprintf("Y%.1f P%.1f R%.1f V%.1f eD%.2f eA(%.1f, %.1f) fS(%.2f, %.2f)",
                   panAngle, tiltAngle, spinAngle, vFOV, eyeDistance, -hangle, -vangle, framex, framey);
     } else {
-        s.sprintf("Y%.1f P%.1f R%.1f V%.1f eD%.2f eS(%.2f, %.2f) fS(%.2f, %.2f)",
+        s = QString::asprintf("Y%.1f P%.1f R%.1f V%.1f eD%.2f eS(%.2f, %.2f) fS(%.2f, %.2f)",
                   panAngle, tiltAngle, spinAngle, vFOV, eyeDistance, eyex, eyey, framex, framey);
     }
     emit reportView( s );
@@ -721,7 +726,7 @@ void pvQtView::setPan(int angle)
     panAngle = normalizeAngle(angle, panstep, minpan, maxpan);
     if (angle != ipan) {
         ipan = angle;
-        updateGL();
+        update();
         showview();
     }
 }
@@ -731,7 +736,7 @@ void pvQtView::setTilt(int angle)
     tiltAngle = normalizeAngle(angle, tiltstep, mintilt, maxtilt);
     if (angle != itilt) {
         itilt = angle;
-        updateGL();
+        update();
         showview();
     }
 }
@@ -741,7 +746,7 @@ void pvQtView::setSpin(int angle)
     spinAngle = normalizeAngle(angle, spinstep, -180, 180);
     if (angle != ispin) {
         ispin = angle;
-        updateGL();
+        update();
         showview();
     }
 }
@@ -752,7 +757,7 @@ void pvQtView::setZoom(int angle)
     if (angle != izoom) {
         izoom = angle;
         setFOV(a);
-        updateGL();
+        update();
         showview();
     }
 }
@@ -793,7 +798,7 @@ void pvQtView::initializeGL()
     // abort if the OpenGL version is insufficient
     if( !OpenGLOK() ) return;
 
-    qglClearColor(Qt::black);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glShadeModel(GL_SMOOTH);
     glEnable(GL_CULL_FACE);
 
@@ -1067,7 +1072,7 @@ void pvQtView::resizeGL(int width, int height)
     fwf = 2.0 / width; fhf = 2.0 / height;
     portAR = (double)Width / (double)Height;
 
-    updateGL();
+    update();
     showview();  // displays settings
 }
 
@@ -1299,7 +1304,7 @@ void pvQtView::newFace( pvQtPic::PicFace face )
         delete p;
     }
 
-    updateGL();
+    update();
     showview();
 
 }
@@ -1314,11 +1319,10 @@ bool pvQtView::saveView( QString name, QSize size )
 {
     bool done = false;
     int W = size.width(), H = size.height();
-    if( ( W != Width || H != Height )
-            && QGLFramebufferObject::hasOpenGLFramebufferObjects() ){
+    if( ( W != Width || H != Height ) ){
         makeCurrent();
         // create private frame buffer
-        QGLFramebufferObject fbo( W, H );
+        QOpenGLFramebufferObject fbo( W, H );
         bool ok = fbo.isValid();
         // try to render and save
         if( ok && fbo.bind() ){
@@ -1378,7 +1382,7 @@ bool pvQtView::showOverlay( QImage * ovl ){
         }
     }
     povly = ovl;
-    updateGL();
+    update();
     return true;
 }
 
@@ -1390,6 +1394,6 @@ void pvQtView::recenterMode( bool ckd ){
     ivangl = -itilt;
     eyex = eyey = eyez = 0;
     setDist( 0 );
-    updateGL();
+    update();
     showview();
 }

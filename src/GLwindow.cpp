@@ -165,7 +165,7 @@ void GLwindow::dropEvent(QDropEvent *event)
             if( n > 1 ){
                 ok = loadTypedFiles( "cube", paths );
             } else { // add or replace one cube face
-                QPoint pnt = event->pos();
+                QPoint pnt = event->position().toPoint();
                 pvQtPic::PicFace pf = glview->pickFace( pnt );
                 ok = pvpic->setFaceImage( pf, paths[0] );
                 if( ok ){

@@ -3,11 +3,11 @@ TEMPLATE = app
 VERSION = 0.73.0
 TARGET = panini
 CONFIG += debug_and_release
-QT = gui core opengl
+QT = gui core opengl openglwidgets widgets
 LIBS += -lz -lGLU
 
-# We want Qt5 now
-lessThan(QT_MAJOR_VERSION, 5): error("requires Qt 5")
+# We want Qt6 now
+lessThan(QT_MAJOR_VERSION, 6): error("requires Qt 6")
 
 ## Directories ##
 OBJECTS_DIR = build
