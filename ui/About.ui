@@ -79,7 +79,7 @@ Qt vers</string>
     <rect>
      <x>160</x>
      <y>50</y>
-     <width>191</width>
+     <width>250</width>
      <height>41</height>
     </rect>
    </property>
@@ -131,7 +131,7 @@ Qt vers</string>
     <rect>
      <x>160</x>
      <y>90</y>
-     <width>211</width>
+     <width>250</width>
      <height>41</height>
     </rect>
    </property>
